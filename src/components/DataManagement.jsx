@@ -1,7 +1,8 @@
 import React, { useRef } from 'react';
-import { Download, Upload, Trash2 } from 'lucide-react';
+import { Download, Upload, Trash2, DollarSign } from 'lucide-react';
+import { CURRENCIES } from '../utils/currency';
 
-const DataManagement = ({ onExport, onImport, onClearAll }) => {
+const DataManagement = ({ onExport, onImport, onClearAll, currency, onCurrencyChange }) => {
   const fileInputRef = useRef(null);
 
   const handleImportClick = () => {
@@ -16,11 +17,45 @@ const DataManagement = ({ onExport, onImport, onClearAll }) => {
     }
   };
 
+  const handleCurrencyChange = (e) => {
+    onCurrencyChange(e.target.value);
+  };
+
   return (
     <div className="card">
-      <h2 className="text-2xl font-light mb-6">Data Management</h2>
+      <h2 className="text-2xl font-light mb-6">Settings</h2>
       
       <div className="space-y-4">
+        {/* Currency Setting */}
+        <div className="flex items-start gap-4 p-4 bg-slate-50 rounded-lg border border-slate-200">
+          <div className="flex-shrink-0 text-slate-600">
+            <DollarSign className="w-5 h-5" />
+          </div>
+          <div className="flex-1">
+            <h3 className="font-medium text-slate-900 mb-1">Currency</h3>
+            <p className="text-sm text-slate-600 mb-3">
+              Select your preferred currency for displaying amounts throughout the app.
+            </p>
+            <div className="form-group mb-0">
+              <select 
+                value={currency} 
+                onChange={handleCurrencyChange}
+                className="filter-select w-full max-w-xs"
+              >
+                {CURRENCIES.map(curr => (
+                  <option key={curr.code} value={curr.code}>
+                    {curr.symbol} {curr.name} ({curr.code})
+                  </option>
+                ))}
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <div className="border-t border-slate-200 my-6"></div>
+
+        <h3 className="text-xl font-light mb-4">Data Management</h3>
+
         <div className="flex items-start gap-4 p-4 bg-blue-50 rounded-lg border border-blue-200">
           <div className="flex-shrink-0 text-blue-600">
             <Download className="w-5 h-5" />

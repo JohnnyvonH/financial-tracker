@@ -1,4 +1,5 @@
 const STORAGE_KEY = 'finance-dashboard-data';
+const SETTINGS_KEY = 'finance-dashboard-settings';
 
 export const storageService = {
   getData: () => {
@@ -25,6 +26,30 @@ export const storageService = {
       return true;
     } catch (error) {
       console.error('Error saving data:', error);
+      return false;
+    }
+  },
+
+  getSettings: () => {
+    try {
+      const settings = localStorage.getItem(SETTINGS_KEY);
+      return settings ? JSON.parse(settings) : {
+        currency: 'USD'
+      };
+    } catch (error) {
+      console.error('Error loading settings:', error);
+      return {
+        currency: 'USD'
+      };
+    }
+  },
+
+  saveSettings: (settings) => {
+    try {
+      localStorage.setItem(SETTINGS_KEY, JSON.stringify(settings));
+      return true;
+    } catch (error) {
+      console.error('Error saving settings:', error);
       return false;
     }
   },
