@@ -51,7 +51,7 @@ export default function Header({ view, setView, isDarkMode, onToggleDarkMode }) 
         <div className="header-actions">
           <DarkModeToggle isDark={isDarkMode} onToggle={onToggleDarkMode} />
           
-          <AuthButton />
+          <AuthButton onSignInClick={() => setView('auth')} />
           
           {actionButtons.map((button) => {
             const Icon = button.icon;
