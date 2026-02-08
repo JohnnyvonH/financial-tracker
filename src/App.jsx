@@ -19,11 +19,12 @@ import Toast from './components/Toast';
 import LoadingSpinner from './components/LoadingSpinner';
 import { useAuth } from './contexts/AuthContext';
 import { storageService } from './services/storage';
+import { supabaseSync } from './services/supabaseSync';
 import { processRecurringTransactions } from './utils/recurring';
 import { getInitialTheme, saveTheme, applyTheme } from './utils/theme';
 
 function App() {
-  const { isConfigured } = useAuth();
+  const { user, isConfigured } = useAuth();
   const [data, setData] = useState({
     balance: 0,
     transactions: [],
@@ -35,6 +36,7 @@ function App() {
   const [theme, setTheme] = useState('light');
   const [view, setView] = useState('dashboard');
   const [loading, setLoading] = useState(true);
+  const [syncing, setSyncing] = useState(false);
   const [toast, setToast] = useState(null);
 
   // Show toast notification
@@ -42,61 +44,106 @@ function App() {
     setToast({ message, type });
   };
 
-  // Load data and settings on mount
+  // Initialize data on mount or when user changes
   useEffect(() => {
-    try {
+    const initializeData = async () => {
+      setLoading(true);
+      
+      try {
+        // If user is logged in and Supabase is configured, use cloud data
+        if (user && isConfigured) {
+          console.log('🔄 Loading data from Supabase...');
+          
+          // Initialize sync service
+          await supabaseSync.initialize(user.id);
+          
+          // Try to fetch cloud data
+          const cloudData = await supabaseSync.fetchAllData();
+          
+          if (cloudData) {
+            // Check if this is first login - migrate local data
+            if (cloudData.transactions.length === 0) {
+              const localData = storageService.getData();
+              
+              if (localData.transactions.length > 0 || localData.goals.length > 0) {
+                showToast('Migrating your local data to cloud...', 'info');
+                const migrated = await supabaseSync.migrateLocalData(localData);
+                
+                if (migrated) {
+                  showToast('✅ Data migrated successfully!', 'success');
+                  // Fetch again to get migrated data
+                  const freshData = await supabaseSync.fetchAllData();
+                  setData(freshData);
+                } else {
+                  setData(localData);
+                }
+              } else {
+                setData(cloudData);
+              }
+            } else {
+              // Use cloud data
+              setData(cloudData);
+              showToast('Data loaded from cloud ☁️', 'success');
+            }
+            
+            // Load user settings
+            const settings = await supabaseSync.getUserSettings();
+            if (settings) {
+              setCurrency(settings.currency || 'USD');
+              const userTheme = settings.theme || getInitialTheme();
+              setTheme(userTheme);
+              applyTheme(userTheme);
+            }
+          } else {
+            // Fallback to local storage
+            console.warn('⚠️ Could not load from Supabase, using local storage');
+            loadLocalData();
+          }
+        } else {
+          // Not logged in or not configured - use local storage
+          loadLocalData();
+        }
+      } catch (error) {
+        console.error('Failed to load data:', error);
+        showToast('Failed to load data. Using local storage.', 'error');
+        loadLocalData();
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    const loadLocalData = () => {
       const savedData = storageService.getData();
-      // Ensure all fields exist
       if (!savedData.budgets) savedData.budgets = {};
       if (!savedData.recurringTransactions) savedData.recurringTransactions = [];
       setData(savedData);
 
-      // Load settings
       const savedSettings = storageService.getSettings();
       setCurrency(savedSettings.currency || 'USD');
       
-      // Load and apply theme
       const initialTheme = savedSettings.theme || getInitialTheme();
       setTheme(initialTheme);
       applyTheme(initialTheme);
-      
-      setLoading(false);
-    } catch (error) {
-      console.error('Failed to load data:', error);
-      showToast('Failed to load data. Starting fresh.', 'error');
-      setLoading(false);
-    }
-  }, []);
+    };
+
+    initializeData();
+  }, [user, isConfigured]);
 
   // Process recurring transactions daily
   useEffect(() => {
     if (loading || data.recurringTransactions.length === 0) return;
 
-    const processRecurring = () => {
+    const processRecurring = async () => {
       const { newTransactions, updatedRecurring } = processRecurringTransactions(
         data.recurringTransactions.filter(r => r.active)
       );
 
       if (newTransactions.length > 0) {
-        // Update balance
-        let newBalance = data.balance;
-        newTransactions.forEach(t => {
-          if (t.type === 'income') {
-            newBalance += t.amount;
-          } else {
-            newBalance -= t.amount;
-          }
-        });
+        // Add new transactions
+        for (const transaction of newTransactions) {
+          await addTransaction(transaction, false); // Don't show toast for each
+        }
 
-        // Save updated data
-        const updatedData = {
-          ...data,
-          balance: newBalance,
-          transactions: [...newTransactions, ...data.transactions],
-          recurringTransactions: updatedRecurring
-        };
-
-        saveData(updatedData);
         showToast(
           `${newTransactions.length} recurring transaction${newTransactions.length > 1 ? 's' : ''} processed!`,
           'success'
@@ -105,20 +152,26 @@ function App() {
     };
 
     processRecurring();
-    // Check every hour
     const interval = setInterval(processRecurring, 60 * 60 * 1000);
     return () => clearInterval(interval);
   }, [loading, data.recurringTransactions]);
 
-  // Save data whenever it changes
-  const saveData = (newData) => {
+  // Save data (to both local storage and Supabase if logged in)
+  const saveData = async (newData) => {
     try {
       setData(newData);
-      const success = storageService.saveData(newData);
-      if (!success) {
-        showToast('Failed to save data. Please try again.', 'error');
+      
+      // Always save to local storage as backup
+      storageService.saveData(newData);
+      
+      // If logged in, also save to Supabase
+      if (user && isConfigured && supabaseSync.isAvailable()) {
+        // Note: Individual operations handle their own Supabase sync
+        // This is just for updating balance in settings
+        await supabaseSync.updateUserSettings({ balance: newData.balance });
       }
-      return success;
+      
+      return true;
     } catch (error) {
       console.error('Error saving data:', error);
       showToast('Error saving data. Please try again.', 'error');
@@ -127,16 +180,20 @@ function App() {
   };
 
   // Handle currency change
-  const handleCurrencyChange = (newCurrency) => {
+  const handleCurrencyChange = async (newCurrency) => {
     try {
       setCurrency(newCurrency);
+      
+      // Save to local storage
       const settings = storageService.getSettings();
-      const success = storageService.saveSettings({ ...settings, currency: newCurrency });
-      if (success) {
-        showToast('Currency updated successfully!', 'success');
-      } else {
-        showToast('Failed to save currency setting.', 'error');
+      storageService.saveSettings({ ...settings, currency: newCurrency });
+      
+      // Save to Supabase if logged in
+      if (user && isConfigured && supabaseSync.isAvailable()) {
+        await supabaseSync.updateUserSettings({ currency: newCurrency });
       }
+      
+      showToast('Currency updated successfully!', 'success');
     } catch (error) {
       console.error('Error updating currency:', error);
       showToast('Failed to update currency. Please try again.', 'error');
@@ -144,37 +201,61 @@ function App() {
   };
 
   // Handle theme toggle
-  const handleThemeToggle = () => {
+  const handleThemeToggle = async () => {
     const newTheme = theme === 'light' ? 'dark' : 'light';
     setTheme(newTheme);
     applyTheme(newTheme);
     saveTheme(newTheme);
     
+    // Save to local storage
     const settings = storageService.getSettings();
     storageService.saveSettings({ ...settings, theme: newTheme });
+    
+    // Save to Supabase if logged in
+    if (user && isConfigured && supabaseSync.isAvailable()) {
+      await supabaseSync.updateUserSettings({ theme: newTheme });
+    }
+    
     showToast(`Switched to ${newTheme} mode`, 'info');
   };
 
   // Add transaction
-  const addTransaction = (transaction) => {
+  const addTransaction = async (transaction, showToastMsg = true) => {
     try {
-      const newTransaction = {
-        id: Date.now(),
-        ...transaction,
+      setSyncing(true);
+      
+      const transactionData = {
+        type: transaction.type,
+        amount: transaction.amount,
+        category: transaction.category,
+        description: transaction.description || '',
+        date: transaction.date,
         timestamp: Date.now()
+      };
+
+      // If logged in, save to Supabase first
+      let savedTransaction = null;
+      if (user && isConfigured && supabaseSync.isAvailable()) {
+        savedTransaction = await supabaseSync.addTransaction(transactionData);
+      }
+
+      // Use Supabase ID if available, otherwise generate local ID
+      const newTransaction = savedTransaction || {
+        id: Date.now(),
+        ...transactionData
       };
 
       const newBalance = transaction.type === 'income'
         ? data.balance + transaction.amount
         : data.balance - transaction.amount;
 
-      const success = saveData({
+      await saveData({
         ...data,
         balance: newBalance,
         transactions: [newTransaction, ...data.transactions]
       });
 
-      if (success) {
+      if (showToastMsg) {
         showToast(
           `${transaction.type === 'income' ? 'Income' : 'Expense'} added successfully!`,
           'success'
@@ -184,184 +265,265 @@ function App() {
     } catch (error) {
       console.error('Error adding transaction:', error);
       showToast('Failed to add transaction. Please try again.', 'error');
+    } finally {
+      setSyncing(false);
     }
   };
 
   // Delete transaction
-  const deleteTransaction = (id) => {
+  const deleteTransaction = async (id) => {
     if (!confirm('Are you sure you want to delete this transaction?')) return;
 
     try {
+      setSyncing(true);
+      
       const transaction = data.transactions.find(t => t.id === id);
       if (!transaction) {
         showToast('Transaction not found.', 'error');
         return;
       }
 
+      // Delete from Supabase if logged in
+      if (user && isConfigured && supabaseSync.isAvailable()) {
+        await supabaseSync.deleteTransaction(id);
+      }
+
       const newBalance = transaction.type === 'income'
         ? data.balance - transaction.amount
         : data.balance + transaction.amount;
 
-      const success = saveData({
+      await saveData({
         ...data,
         balance: newBalance,
         transactions: data.transactions.filter(t => t.id !== id)
       });
 
-      if (success) {
-        showToast('Transaction deleted successfully!', 'success');
-      }
+      showToast('Transaction deleted successfully!', 'success');
     } catch (error) {
       console.error('Error deleting transaction:', error);
       showToast('Failed to delete transaction. Please try again.', 'error');
+    } finally {
+      setSyncing(false);
     }
   };
 
   // Add recurring transaction
-  const addRecurringTransaction = (recurring) => {
+  const addRecurringTransaction = async (recurring) => {
     try {
-      const newRecurring = {
-        id: Date.now(),
+      setSyncing(true);
+      
+      const recurringData = {
         ...recurring,
+        active: true,
+        last_processed: null
+      };
+
+      // Save to Supabase if logged in
+      let savedRecurring = null;
+      if (user && isConfigured && supabaseSync.isAvailable()) {
+        savedRecurring = await supabaseSync.addRecurringTransaction(recurringData);
+      }
+
+      const newRecurring = savedRecurring || {
+        id: Date.now(),
+        ...recurringData,
         createdAt: Date.now()
       };
 
-      const success = saveData({
+      await saveData({
         ...data,
         recurringTransactions: [...data.recurringTransactions, newRecurring]
       });
 
-      if (success) {
-        showToast('Recurring transaction created successfully!', 'success');
-        setView('dashboard');
-      }
+      showToast('Recurring transaction created successfully!', 'success');
+      setView('dashboard');
     } catch (error) {
       console.error('Error adding recurring transaction:', error);
       showToast('Failed to add recurring transaction. Please try again.', 'error');
+    } finally {
+      setSyncing(false);
     }
   };
 
   // Delete recurring transaction
-  const deleteRecurringTransaction = (id) => {
+  const deleteRecurringTransaction = async (id) => {
     if (!confirm('Are you sure you want to delete this recurring transaction?')) return;
 
     try {
-      const success = saveData({
+      setSyncing(true);
+      
+      // Delete from Supabase if logged in
+      if (user && isConfigured && supabaseSync.isAvailable()) {
+        await supabaseSync.deleteRecurringTransaction(id);
+      }
+
+      await saveData({
         ...data,
         recurringTransactions: data.recurringTransactions.filter(r => r.id !== id)
       });
 
-      if (success) {
-        showToast('Recurring transaction deleted successfully!', 'success');
-      }
+      showToast('Recurring transaction deleted successfully!', 'success');
     } catch (error) {
       console.error('Error deleting recurring transaction:', error);
       showToast('Failed to delete recurring transaction. Please try again.', 'error');
+    } finally {
+      setSyncing(false);
     }
   };
 
   // Toggle recurring transaction active status
-  const toggleRecurringActive = (id) => {
+  const toggleRecurringActive = async (id) => {
     try {
+      setSyncing(true);
+      
+      const recurring = data.recurringTransactions.find(r => r.id === id);
+      const newActive = !recurring.active;
+      
+      // Update in Supabase if logged in
+      if (user && isConfigured && supabaseSync.isAvailable()) {
+        await supabaseSync.updateRecurringTransaction(id, { active: newActive });
+      }
+
       const updatedRecurring = data.recurringTransactions.map(r =>
-        r.id === id ? { ...r, active: !r.active } : r
+        r.id === id ? { ...r, active: newActive } : r
       );
 
-      const success = saveData({
+      await saveData({
         ...data,
         recurringTransactions: updatedRecurring
       });
 
-      if (success) {
-        const recurring = updatedRecurring.find(r => r.id === id);
-        showToast(
-          `Recurring transaction ${recurring.active ? 'resumed' : 'paused'}!`,
-          'success'
-        );
-      }
+      showToast(
+        `Recurring transaction ${newActive ? 'resumed' : 'paused'}!`,
+        'success'
+      );
     } catch (error) {
       console.error('Error toggling recurring transaction:', error);
       showToast('Failed to update recurring transaction. Please try again.', 'error');
+    } finally {
+      setSyncing(false);
     }
   };
 
   // Add goal
-  const addGoal = (goal) => {
+  const addGoal = async (goal) => {
     try {
-      const newGoal = {
+      setSyncing(true);
+      
+      const goalData = {
+        name: goal.name,
+        target_amount: goal.target,
+        current_amount: goal.current || 0,
+        deadline: goal.deadline || null
+      };
+
+      // Save to Supabase if logged in
+      let savedGoal = null;
+      if (user && isConfigured && supabaseSync.isAvailable()) {
+        savedGoal = await supabaseSync.addGoal(goalData);
+      }
+
+      const newGoal = savedGoal ? {
+        id: savedGoal.id,
+        name: savedGoal.name,
+        target: savedGoal.target_amount,
+        current: savedGoal.current_amount,
+        deadline: savedGoal.deadline
+      } : {
         id: Date.now(),
         ...goal
       };
 
-      const success = saveData({
+      await saveData({
         ...data,
         goals: [...data.goals, newGoal]
       });
 
-      if (success) {
-        showToast('Savings goal created successfully!', 'success');
-        setView('dashboard');
-      }
+      showToast('Savings goal created successfully!', 'success');
+      setView('dashboard');
     } catch (error) {
       console.error('Error adding goal:', error);
       showToast('Failed to add goal. Please try again.', 'error');
+    } finally {
+      setSyncing(false);
     }
   };
 
   // Update goal progress
-  const updateGoalProgress = (id, newCurrent) => {
+  const updateGoalProgress = async (id, newCurrent) => {
     try {
+      setSyncing(true);
+      
+      // Update in Supabase if logged in
+      if (user && isConfigured && supabaseSync.isAvailable()) {
+        await supabaseSync.updateGoal(id, { current_amount: newCurrent });
+      }
+
       const updatedGoals = data.goals.map(g =>
         g.id === id ? { ...g, current: newCurrent } : g
       );
 
-      const success = saveData({
+      await saveData({
         ...data,
         goals: updatedGoals
       });
 
-      if (success) {
-        showToast('Goal progress updated!', 'success');
-      }
+      showToast('Goal progress updated!', 'success');
     } catch (error) {
       console.error('Error updating goal:', error);
       showToast('Failed to update goal. Please try again.', 'error');
+    } finally {
+      setSyncing(false);
     }
   };
 
   // Delete goal
-  const deleteGoal = (id) => {
+  const deleteGoal = async (id) => {
     if (!confirm('Are you sure you want to delete this goal?')) return;
 
     try {
-      const success = saveData({
+      setSyncing(true);
+      
+      // Delete from Supabase if logged in
+      if (user && isConfigured && supabaseSync.isAvailable()) {
+        await supabaseSync.deleteGoal(id);
+      }
+
+      await saveData({
         ...data,
         goals: data.goals.filter(g => g.id !== id)
       });
 
-      if (success) {
-        showToast('Goal deleted successfully!', 'success');
-      }
+      showToast('Goal deleted successfully!', 'success');
     } catch (error) {
       console.error('Error deleting goal:', error);
       showToast('Failed to delete goal. Please try again.', 'error');
+    } finally {
+      setSyncing(false);
     }
   };
 
   // Update budgets
-  const updateBudgets = (newBudgets) => {
+  const updateBudgets = async (newBudgets) => {
     try {
-      const success = saveData({
+      setSyncing(true);
+      
+      // Update in Supabase if logged in
+      if (user && isConfigured && supabaseSync.isAvailable()) {
+        await supabaseSync.updateBudgets(newBudgets);
+      }
+
+      await saveData({
         ...data,
         budgets: newBudgets
       });
 
-      if (success) {
-        showToast('Budgets updated successfully!', 'success');
-      }
+      showToast('Budgets updated successfully!', 'success');
     } catch (error) {
       console.error('Error updating budgets:', error);
       showToast('Failed to update budgets. Please try again.', 'error');
+    } finally {
+      setSyncing(false);
     }
   };
 
@@ -384,7 +546,6 @@ function App() {
   const handleImportData = async (file) => {
     try {
       const importedData = await storageService.importData(file);
-      // Ensure all fields exist
       if (!importedData.budgets) importedData.budgets = {};
       if (!importedData.recurringTransactions) importedData.recurringTransactions = [];
       setData(importedData);
@@ -502,6 +663,15 @@ function App() {
             type={toast.type}
             onClose={() => setToast(null)}
           />
+        )}
+        
+        {syncing && (
+          <div className="fixed top-20 right-4 z-50">
+            <div className="bg-blue-500 text-white px-4 py-2 rounded-lg shadow-lg flex items-center gap-2">
+              <LoadingSpinner size="sm" />
+              <span>Syncing...</span>
+            </div>
+          </div>
         )}
         
         <Header 
