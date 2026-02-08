@@ -1,49 +1,42 @@
 import React from 'react';
 import { DollarSign, TrendingUp, TrendingDown } from 'lucide-react';
+import { formatCurrency } from '../utils/currency';
 
-export default function KPICards({ balance, monthlyIncome, monthlyExpenses }) {
-  const formatCurrency = (amount) => {
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: 'USD',
-      minimumFractionDigits: 2
-    }).format(amount);
-  };
-
+export default function KPICards({ balance, monthlyIncome, monthlyExpenses, currency = 'USD' }) {
   return (
-    <div className="grid grid-3">
+    <div className="kpi-grid">
       <div className="stat-card kpi-card rounded-xl shadow-xl card-hover">
-        <div className="kpi-icon icon-green">
+        <div className="kpi-icon-small icon-green">
           <DollarSign />
         </div>
         <div className="kpi-info">
           <span className="kpi-label">Current Balance</span>
           <h2 className="kpi-value">
-            {formatCurrency(balance)}
+            {formatCurrency(balance, currency)}
           </h2>
         </div>
       </div>
 
       <div className="stat-card kpi-card rounded-xl shadow-xl card-hover">
-        <div className="kpi-icon icon-blue">
+        <div className="kpi-icon-small icon-blue">
           <TrendingUp />
         </div>
         <div className="kpi-info">
           <span className="kpi-label">Monthly Income</span>
           <h2 className="kpi-value">
-            {formatCurrency(monthlyIncome)}
+            {formatCurrency(monthlyIncome, currency)}
           </h2>
         </div>
       </div>
 
       <div className="stat-card kpi-card rounded-xl shadow-xl card-hover">
-        <div className="kpi-icon icon-red">
+        <div className="kpi-icon-small icon-red">
           <TrendingDown />
         </div>
         <div className="kpi-info">
           <span className="kpi-label">Monthly Expenses</span>
           <h2 className="kpi-value">
-            {formatCurrency(monthlyExpenses)}
+            {formatCurrency(monthlyExpenses, currency)}
           </h2>
         </div>
       </div>
