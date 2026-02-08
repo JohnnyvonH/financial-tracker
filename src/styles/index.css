@@ -11,6 +11,7 @@
   --success: #10b981;
   --danger: #ef4444;
   --warning: #f59e0b;
+  --info: #06b6d4;
   
   /* Light text on dark backgrounds */
   --text-primary: #f8fafc;
@@ -161,7 +162,7 @@ body {
 .container {
   max-width: 1400px;
   margin: 2rem auto;
-  padding: 0 2rem;
+  padding: 0 2rem 5rem 2rem;
 }
 
 .card {
@@ -178,6 +179,231 @@ body {
   box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.4), 0 4px 6px -4px rgba(0, 0, 0, 0.4);
   transform: translateY(-2px);
   border-color: var(--border-light);
+}
+
+/* ========================================
+   QUICK ADD FAB
+   ======================================== */
+.quick-add-fab {
+  position: fixed;
+  bottom: 2rem;
+  right: 2rem;
+  width: 3.5rem;
+  height: 3.5rem;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #10b981 0%, #06b6d4 100%);
+  color: white;
+  border: none;
+  box-shadow: 0 4px 16px rgba(16, 185, 129, 0.4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  z-index: 999;
+}
+
+.quick-add-fab:hover {
+  transform: scale(1.1) rotate(90deg);
+  box-shadow: 0 8px 24px rgba(16, 185, 129, 0.6);
+}
+
+.quick-add-fab:active {
+  transform: scale(0.95);
+}
+
+/* ========================================
+   MODAL
+   ======================================== */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.7);
+  backdrop-filter: blur(4px);
+  z-index: 1000;
+  animation: fadeIn 0.2s ease-out;
+}
+
+.modal-container {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: var(--card-bg);
+  border-radius: 1rem;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5);
+  z-index: 1001;
+  max-width: 500px;
+  width: 90%;
+  max-height: 90vh;
+  overflow-y: auto;
+  animation: scaleIn 0.3s ease-out;
+  border: 1px solid var(--border-light);
+}
+
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1.5rem;
+  border-bottom: 1px solid var(--border);
+}
+
+.modal-header h2 {
+  color: var(--text-primary);
+}
+
+.modal-content {
+  padding: 1.5rem;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes scaleIn {
+  from {
+    transform: translate(-50%, -50%) scale(0.9);
+    opacity: 0;
+  }
+  to {
+    transform: translate(-50%, -50%) scale(1);
+    opacity: 1;
+  }
+}
+
+/* ========================================
+   SMART INSIGHTS
+   ======================================== */
+.insight-card {
+  background: var(--bg-secondary);
+  border-radius: 0.75rem;
+  padding: 1rem;
+  border: 1px solid var(--border);
+  transition: all 0.2s;
+  animation: slideInLeft 0.3s ease-out;
+}
+
+.insight-card:hover {
+  border-color: var(--border-light);
+  transform: translateX(4px);
+}
+
+.insight-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.5rem;
+  height: 2.5rem;
+  border-radius: 0.5rem;
+  flex-shrink: 0;
+}
+
+.insight-icon-success {
+  background: rgba(16, 185, 129, 0.1);
+  color: #10b981;
+}
+
+.insight-icon-warning {
+  background: rgba(245, 158, 11, 0.1);
+  color: #f59e0b;
+}
+
+.insight-icon-danger {
+  background: rgba(239, 68, 68, 0.1);
+  color: #ef4444;
+}
+
+.insight-icon-info {
+  background: rgba(6, 182, 212, 0.1);
+  color: #06b6d4;
+}
+
+.insight-action-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1rem;
+  background: rgba(16, 185, 129, 0.1);
+  color: var(--primary);
+  border: 1px solid rgba(16, 185, 129, 0.3);
+  border-radius: 0.375rem;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.insight-action-btn:hover {
+  background: rgba(16, 185, 129, 0.2);
+  border-color: var(--primary);
+}
+
+@keyframes slideInLeft {
+  from {
+    transform: translateX(-20px);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+/* ========================================
+   BILL REMINDERS
+   ======================================== */
+.bill-form {
+  background: var(--bg-secondary);
+  border-radius: 0.75rem;
+  padding: 1.5rem;
+  border: 1px solid var(--border);
+}
+
+.bill-item {
+  padding: 1rem;
+  background: var(--bg-secondary);
+  border-radius: 0.5rem;
+  border: 1px solid var(--border);
+  transition: all 0.2s;
+}
+
+.bill-item:hover {
+  background: var(--bg-tertiary);
+  border-color: var(--border-light);
+}
+
+.bill-item-paid {
+  opacity: 0.6;
+}
+
+.bill-checkbox {
+  width: 1.5rem;
+  height: 1.5rem;
+  border: 2px solid var(--border-light);
+  border-radius: 0.375rem;
+  background: transparent;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s;
+  flex-shrink: 0;
+}
+
+.bill-checkbox:hover {
+  border-color: var(--primary);
+  background: rgba(16, 185, 129, 0.1);
+}
+
+.bill-checkbox-checked {
+  background: var(--primary);
+  border-color: var(--primary);
+  color: white;
 }
 
 /* ========================================
@@ -886,6 +1112,9 @@ body {
 .text-green-600 { color: #10b981; }
 .text-red-600 { color: #ef4444; }
 .text-amber-600 { color: #f59e0b; }
+.text-danger { color: #ef4444; }
+.text-warning { color: #f59e0b; }
+.text-success { color: #10b981; }
 
 .text-primary { color: var(--primary); }
 
@@ -901,6 +1130,7 @@ body {
 .mb-6 { margin-bottom: 1.5rem; }
 
 .mt-1 { margin-top: 0.25rem; }
+.mt-2 { margin-top: 0.5rem; }
 .mt-4 { margin-top: 1rem; }
 .mt-6 { margin-top: 1.5rem; }
 
@@ -911,10 +1141,13 @@ body {
 
 .w-full { width: 100%; }
 .flex { display: flex; }
+.flex-1 { flex: 1; }
 .flex-col { flex-direction: column; }
+.items-start { align-items: flex-start; }
 .items-center { align-items: center; }
 .justify-center { justify-content: center; }
 .justify-between { justify-content: space-between; }
+.gap-1 { gap: 0.25rem; }
 .gap-2 { gap: 0.5rem; }
 .gap-3 { gap: 0.75rem; }
 .gap-4 { gap: 1rem; }
@@ -978,7 +1211,7 @@ body {
   }
 
   .container {
-    padding: 0 1rem;
+    padding: 0 1rem 5rem 1rem;
     margin: 1rem auto;
   }
 
@@ -1017,6 +1250,17 @@ body {
   
   .goal-controls {
     grid-template-columns: repeat(2, 1fr);
+  }
+  
+  .quick-add-fab {
+    bottom: 1rem;
+    right: 1rem;
+    width: 3rem;
+    height: 3rem;
+  }
+  
+  .modal-container {
+    width: 95%;
   }
 }
 
