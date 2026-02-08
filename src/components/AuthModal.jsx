@@ -61,31 +61,10 @@ export default function AuthModal({ isOpen, onClose }) {
   };
 
   return (
-    <div 
-      className="modal-overlay" 
-      onClick={onClose}
-      style={{
-        position: 'fixed',
-        top: 0,
-        left: 0,
-        right: 0,
-        bottom: 0,
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        zIndex: 9999,
-        padding: '1rem',
-      }}
-    >
+    <div className="modal-overlay" onClick={onClose}>
       <div 
         className="modal-container" 
         onClick={(e) => e.stopPropagation()}
-        style={{ 
-          maxWidth: '450px',
-          width: '100%',
-          maxHeight: '90vh',
-          overflowY: 'auto',
-        }}
       >
         {/* Header */}
         <div className="modal-header">
