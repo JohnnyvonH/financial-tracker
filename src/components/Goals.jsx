@@ -15,9 +15,10 @@ export default function Goals({ goals, onUpdateGoal, onDeleteGoal, currency = 'U
   if (goals.length === 0) {
     return (
       <div className="card">
-        <h2 className="text-2xl font-light mb-4">
-          Savings Goals
-        </h2>
+        <div className="flex items-center gap-3 mb-6">
+          <Target className="text-primary" size={28} />
+          <h2 className="text-2xl font-light">Savings Goals</h2>
+        </div>
         <div className="flex flex-col items-center justify-center py-12 text-center">
           <div className="text-slate-400 mb-4">
             <Target size={48} />
@@ -32,12 +33,15 @@ export default function Goals({ goals, onUpdateGoal, onDeleteGoal, currency = 'U
 
   return (
     <div className="card">
-      <h2 className="text-2xl font-light mb-6">
-        Savings Goals
-      </h2>
+      <div className="flex items-center gap-3 mb-6">
+        <Target className="text-primary" size={28} />
+        <h2 className="text-2xl font-light">Savings Goals</h2>
+      </div>
       <div className="goals-grid">
         {goals.map((goal) => {
           const progress = Math.min((goal.current / goal.target) * 100, 100);
+          const isComplete = progress >= 100;
+          
           return (
             <div key={goal.id} className="goal-card">
               <div className="goal-header">
@@ -60,13 +64,13 @@ export default function Goals({ goals, onUpdateGoal, onDeleteGoal, currency = 'U
                 
                 <div className="progress-bar">
                   <div
-                    className={`progress-fill ${progress >= 100 ? '' : ''}`}
+                    className={`progress-fill ${isComplete ? 'bg-success' : ''}`}
                     style={{ width: `${progress}%` }}
                   />
                 </div>
                 
                 <div className="goal-progress-text">
-                  <span>{progress.toFixed(0)}% complete</span>
+                  <span className="font-semibold">{progress.toFixed(0)}% complete</span>
                   <span className="goal-remaining">
                     {formatCurrency(Math.max(0, goal.target - goal.current), currency)} remaining
                   </span>
@@ -77,6 +81,7 @@ export default function Goals({ goals, onUpdateGoal, onDeleteGoal, currency = 'U
                     onClick={() => handleDecrement(goal.id, goal.current, 100)}
                     className="goal-control-btn goal-control-minus"
                     title="Subtract 100"
+                    disabled={goal.current === 0}
                   >
                     <Minus size={16} />
                     <span>100</span>
@@ -85,6 +90,7 @@ export default function Goals({ goals, onUpdateGoal, onDeleteGoal, currency = 'U
                     onClick={() => handleDecrement(goal.id, goal.current, 10)}
                     className="goal-control-btn goal-control-minus"
                     title="Subtract 10"
+                    disabled={goal.current === 0}
                   >
                     <Minus size={16} />
                     <span>10</span>

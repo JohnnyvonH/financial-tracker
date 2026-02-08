@@ -1,5 +1,5 @@
 import React from 'react';
-import { DollarSign, Calendar, Tag, X, ArrowRight } from 'lucide-react';
+import { List, Calendar, Tag, X, ArrowRight } from 'lucide-react';
 import { formatCurrency } from '../utils/currency';
 import { getCategoryIcon } from '../utils/categories';
 
@@ -18,12 +18,13 @@ export default function Transactions({ transactions, onDeleteTransaction, onView
   if (transactions.length === 0) {
     return (
       <div className="card">
-        <h2 className="text-2xl font-light mb-6">
-          Recent Transactions
-        </h2>
+        <div className="flex items-center gap-3 mb-6">
+          <List className="text-primary" size={28} />
+          <h2 className="text-2xl font-light">Recent Transactions</h2>
+        </div>
         <div className="flex flex-col items-center justify-center py-12 text-center">
           <div className="text-slate-400 mb-4">
-            <DollarSign size={48} />
+            <List size={48} />
           </div>
           <p className="text-slate-600">
             No transactions yet. Add your first transaction to start tracking!
@@ -36,9 +37,10 @@ export default function Transactions({ transactions, onDeleteTransaction, onView
   return (
     <div className="card">
       <div className="flex justify-between items-center mb-6">
-        <h2 className="text-2xl font-light">
-          Recent Transactions
-        </h2>
+        <div className="flex items-center gap-3">
+          <List className="text-primary" size={28} />
+          <h2 className="text-2xl font-light">Recent Transactions</h2>
+        </div>
         {transactions.length > 3 && (
           <button
             onClick={onViewAll}
@@ -99,25 +101,13 @@ export default function Transactions({ transactions, onDeleteTransaction, onView
                   className="btn-icon"
                   title="Delete transaction"
                 >
-                  <X />
+                  <X size={18} />
                 </button>
               </div>
             </div>
           );
         })}
       </div>
-
-      {transactions.length > 3 && (
-        <div className="text-center mt-4 pt-4 border-t border-slate-200">
-          <button
-            onClick={onViewAll}
-            className="text-primary hover:text-primary-dark font-medium text-sm flex items-center gap-2 mx-auto"
-          >
-            View all {transactions.length} transactions
-            <ArrowRight size={16} />
-          </button>
-        </div>
-      )}
     </div>
   );
 }

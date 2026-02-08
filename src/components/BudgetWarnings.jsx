@@ -1,100 +1,90 @@
 import React from 'react';
-import { AlertTriangle, TrendingUp } from 'lucide-react';
+import { AlertTriangle, AlertCircle } from 'lucide-react';
 import { formatCurrency } from '../utils/currency';
 
 export default function BudgetWarnings({ budgets, currentMonthSpending, currency = 'USD' }) {
-  // Calculate which budgets are at risk (>75% spent)
-  const budgetsAtRisk = Object.entries(budgets)
-    .map(([category, budgetAmount]) => {
-      const spent = currentMonthSpending[category] || 0;
-      const percentage = (spent / budgetAmount) * 100;
-      const remaining = budgetAmount - spent;
-      return {
-        category,
-        budgetAmount,
-        spent,
-        percentage,
-        remaining,
-        isOverBudget: spent > budgetAmount,
-        isWarning: percentage >= 75 && percentage <= 100
-      };
-    })
-    .filter(budget => budget.isOverBudget || budget.isWarning)
-    .sort((a, b) => b.percentage - a.percentage);
+  const warnings = [];
 
-  if (budgetsAtRisk.length === 0) {
-    return (
-      <div className="card">
-        <h2 className="text-2xl font-light mb-6">Budget Status</h2>
-        <div className="flex flex-col items-center justify-center py-8 text-center">
-          <div className="text-green-500 mb-3">
-            <TrendingUp size={40} />
-          </div>
-          <p className="text-slate-700 font-medium mb-1">All budgets on track!</p>
-          <p className="text-sm text-slate-600">
-            You're managing your spending well this month.
-          </p>
-        </div>
-      </div>
-    );
+  Object.entries(budgets).forEach(([category, budgetAmount]) => {
+    const spent = currentMonthSpending[category] || 0;
+    const percentage = (spent / budgetAmount) * 100;
+
+    if (percentage >= 75) {
+      warnings.push({
+        category,
+        spent,
+        budget: budgetAmount,
+        percentage,
+        remaining: budgetAmount - spent,
+        isOver: percentage > 100
+      });
+    }
+  });
+
+  if (warnings.length === 0) {
+    return null;
   }
 
   return (
     <div className="card">
       <div className="flex items-center justify-between mb-6">
-        <h2 className="text-2xl font-light">Budget Alerts</h2>
-        <div className="flex items-center gap-2 text-amber-600">
-          <AlertTriangle size={20} />
-          <span className="text-sm font-medium">{budgetsAtRisk.length} Alert{budgetsAtRisk.length > 1 ? 's' : ''}</span>
+        <div className="flex items-center gap-3">
+          <AlertTriangle className="text-warning" size={28} />
+          <h2 className="text-2xl font-light">Budget Alerts</h2>
         </div>
+        <span className="text-sm font-semibold px-3 py-1 bg-warning/20 text-warning rounded-full">
+          {warnings.length} {warnings.length === 1 ? 'Alert' : 'Alerts'}
+        </span>
       </div>
 
       <div className="space-y-3">
-        {budgetsAtRisk.map(budget => (
+        {warnings.map((warning) => (
           <div
-            key={budget.category}
-            className={`budget-warning-item ${
-              budget.isOverBudget ? 'budget-over' : 'budget-warning'
-            }`}
+            key={warning.category}
+            className="budget-warning-card"
           >
-            <div className="flex justify-between items-start mb-2">
-              <div>
-                <h4 className="font-semibold text-slate-900">{budget.category}</h4>
-                <div className="text-sm text-slate-600 mt-1">
-                  {formatCurrency(budget.spent, currency)} of {formatCurrency(budget.budgetAmount, currency)}
+            <div className="flex items-start justify-between mb-3">
+              <div className="flex items-center gap-3">
+                <div className={`p-2 rounded-lg ${
+                  warning.isOver ? 'bg-danger/10 text-danger' : 'bg-warning/10 text-warning'
+                }`}>
+                  {warning.isOver ? <AlertCircle size={20} /> : <AlertTriangle size={20} />}
+                </div>
+                <div>
+                  <h3 className="font-semibold text-lg">{warning.category}</h3>
+                  <p className="text-sm text-slate-600">
+                    {formatCurrency(warning.spent, currency)} of {formatCurrency(warning.budget, currency)}
+                  </p>
                 </div>
               </div>
               <div className="text-right">
-                <div className={`text-lg font-bold ${
-                  budget.isOverBudget ? 'text-red-600' : 'text-amber-600'
+                <div className={`text-2xl font-bold ${
+                  warning.isOver ? 'text-danger' : 'text-warning'
                 }`}>
-                  {budget.percentage.toFixed(0)}%
+                  {warning.percentage.toFixed(0)}%
                 </div>
-                <div className="text-xs text-slate-600">
-                  {budget.isOverBudget ? 'Over budget' : 'Used'}
-                </div>
+                <div className="text-xs text-slate-500 font-medium">Used</div>
               </div>
             </div>
 
-            <div className="progress-bar" style={{ height: '6px' }}>
+            <div className="progress-bar mb-2">
               <div
                 className={`progress-fill ${
-                  budget.isOverBudget ? 'bg-red-500' : 'bg-amber-500'
+                  warning.isOver ? 'bg-danger-gradient' : 'bg-warning-gradient'
                 }`}
-                style={{ width: `${Math.min(budget.percentage, 100)}%` }}
+                style={{ width: `${Math.min(warning.percentage, 100)}%` }}
               />
             </div>
 
-            <div className="mt-2">
-              {budget.isOverBudget ? (
-                <p className="text-sm text-red-600 font-medium">
-                  ⚠️ {formatCurrency(Math.abs(budget.remaining), currency)} over budget
-                </p>
-              ) : (
-                <p className="text-sm text-amber-600 font-medium">
-                  ⚠️ {formatCurrency(budget.remaining, currency)} remaining
-                </p>
-              )}
+            <div className="flex justify-between text-sm">
+              <span className={warning.isOver ? 'text-danger font-semibold' : 'text-warning font-semibold'}>
+                {warning.isOver 
+                  ? `${formatCurrency(Math.abs(warning.remaining), currency)} over budget` 
+                  : `${formatCurrency(warning.remaining, currency)} remaining`}
+              </span>
+              <span className="text-slate-500">
+                {warning.isOver ? 'Over budget!' : 'Approaching limit'}
+              </span>
             </div>
           </div>
         ))}
