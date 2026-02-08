@@ -185,10 +185,10 @@ body {
   color: var(--text-primary);
 }
 
-/* KPI Section - Dedicated wrapper for spacing */
+/* KPI Section - Balanced spacing above and below divider */
 .kpi-section {
-  margin-bottom: 4rem !important;
   padding-bottom: 2rem;
+  margin-bottom: 2rem !important;
   border-bottom: 2px solid rgba(255, 255, 255, 0.1);
 }
 
