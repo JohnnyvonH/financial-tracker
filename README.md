@@ -1,312 +1,211 @@
 # 💰 Financial Tracker
 
-A modern, feature-rich personal finance management application built with React. Track income, expenses, budgets, savings goals, and recurring transactions with beautiful visualizations and insights.
+> A professional-grade personal finance management application built with React
 
-![Financial Tracker](https://img.shields.io/badge/React-18+-blue)
-![License](https://img.shields.io/badge/license-MIT-green)
-![Status](https://img.shields.io/badge/status-active-success)
+![Version](https://img.shields.io/badge/version-2.0.0-blue.svg)
+![React](https://img.shields.io/badge/React-18-61dafb.svg)
+![License](https://img.shields.io/badge/license-MIT-green.svg)
 
 ## ✨ Features
 
-### 💵 Transaction Management
-- **Add Transactions**: Record income and expenses with detailed categorization
-- **Category Icons**: Visual color-coded icons for 17+ categories
-- **Search & Filter**: Find transactions by text, date range, type, and category
-- **Date Range Filters**: View transactions from last 7, 30, 90 days, or all time
-- **CSV Export**: Export your transaction history to CSV for Excel/Sheets
-- **Delete & Edit**: Manage your transaction history with ease
+### 🎯 Core Functionality
+- **Transaction Management** - Track income and expenses with categories
+- **Budget Tracking** - Set and monitor category budgets with visual progress
+- **Savings Goals** - Create and track multiple financial goals
+- **Recurring Transactions** - Automate regular income/expenses
+- **Smart Insights** - AI-powered spending analysis and recommendations
+- **Bill Reminders** - Never miss a payment with due date tracking
 
-### 🔄 Recurring Transactions
-- **Automated Transactions**: Set up recurring income or expenses
-- **Multiple Frequencies**: Daily, weekly, bi-weekly, monthly, quarterly, yearly
-- **Start & End Dates**: Define when recurring transactions begin and end
-- **Pause/Resume**: Temporarily pause recurring transactions
-- **Auto-Processing**: Automatically creates transactions based on schedule
-- **Smart Notifications**: Get notified when recurring transactions are processed
-
-### 📊 Budget Management
-- **Category Budgets**: Set monthly budgets for expense categories
-- **Real-time Tracking**: See budget usage with progress bars
-- **Budget Alerts**: Get warnings when approaching or exceeding budget limits (75%+ usage)
-- **Budget Export**: Export budget data to CSV
-- **Multi-Period Views**: Analyze budgets by month, quarter, or year
-
-### 🎯 Savings Goals
-- **Goal Tracking**: Set and track multiple savings goals
-- **Progress Visualization**: Beautiful progress bars showing completion
-- **Quick Updates**: Increment/decrement goal progress with quick buttons (+/-10, +/-100)
-- **Goal Export**: Export your goals to CSV
-- **Completion Tracking**: See remaining amount and percentage complete
-
-### 📈 Reports & Analytics
-- **Financial Reports**: Comprehensive period-based reports (month, quarter, year, all-time)
-- **Month-over-Month Comparison**: Track spending trends
-- **Savings Rate**: Calculate your savings percentage
-- **Top Categories**: Identify your biggest spending categories
-- **Spending Charts**: Visual pie charts and breakdowns
-- **Average Transaction**: Understand your spending patterns
-- **Export Options**: Export reports, goals, and budgets to CSV
+### 📊 Analytics & Visualization
+- **Enhanced Charts** - Monthly trends, category breakdowns, income vs expenses
+- **Calendar View** - Visual timeline of your financial activity
+- **Reports** - Comprehensive analytics and export capabilities
+- **Real-time KPIs** - Instant overview of your financial health
 
 ### 🎨 User Experience
-- **Dark Mode**: Toggle between light and dark themes
-- **Toast Notifications**: Beautiful non-intrusive notifications
-- **Loading States**: Smooth loading indicators
-- **Error Handling**: Graceful error recovery with helpful messages
-- **Responsive Design**: Works on desktop, tablet, and mobile
-- **Form Validation**: Inline validation with helpful error messages
-- **Animations**: Smooth transitions and slide-in effects
-
-### 🌍 Multi-Currency Support
-- **24+ Currencies**: USD, EUR, GBP, JPY, CNY, AUD, CAD, CHF, INR, BRL, and more
-- **Automatic Formatting**: Numbers format correctly for each currency
-- **Persistent Settings**: Your currency choice is saved
+- **Dark/Light Mode** - Toggle between professional dark and light themes
+- **Quick Add FAB** - Floating action button for instant transaction entry
+- **Responsive Design** - Perfect on desktop, tablet, and mobile
+- **Smooth Animations** - Professional transitions and interactions
 
 ### 💾 Data Management
-- **Local Storage**: All data stored securely in your browser
-- **JSON Export/Import**: Backup and restore your complete financial data
-- **Data Validation**: Ensures data integrity on import
-- **Clear Data**: Option to start fresh (with confirmation)
-- **Auto-Save**: Changes are automatically saved
+- **CSV Import** - Bulk import from bank statements
+- **JSON Export/Import** - Full backup and restore
+- **Multi-Currency** - Support for 17+ currencies
+- **Local Storage** - Your data stays private on your device
 
-## 🚀 Getting Started
+## 🚀 Quick Start
 
 ### Prerequisites
-- Node.js 18+ and npm
+- Node.js 16+ and npm
 
 ### Installation
 
-1. **Clone the repository**
-   ```bash
-   git clone https://github.com/JohnnyvonH/financial-tracker.git
-   cd financial-tracker
-   ```
+```bash
+# Clone the repository
+git clone https://github.com/JohnnyvonH/financial-tracker.git
+cd financial-tracker
 
-2. **Install dependencies**
-   ```bash
-   npm install
-   ```
+# Install dependencies
+npm install
 
-3. **Start development server**
-   ```bash
-   npm run dev
-   ```
+# Start development server
+npm start
 
-4. **Open in browser**
-   - Navigate to `http://localhost:5173`
+# Open http://localhost:3000
+```
 
 ### Build for Production
 
 ```bash
+# Create optimized build
 npm run build
-```
 
-### Deploy to GitHub Pages
-
-```bash
+# Deploy to GitHub Pages
 npm run deploy
 ```
 
 ## 📖 Usage Guide
 
-### Adding a Transaction
-1. Click "Transaction" button in the header
-2. Select Income or Expense type
-3. Enter amount, description, category, and date
-4. Click "Add Transaction"
+### Getting Started
 
-### Setting Up Recurring Transactions
-1. Click "Recurring" button in the header
-2. Choose transaction type (income/expense)
-3. Enter amount, description, and category
-4. Select frequency (daily, weekly, monthly, etc.)
-5. Set start date and optional end date
-6. Click "Create Recurring Transaction"
+1. **Set Your Currency** - Go to Settings and select your preferred currency
+2. **Add Transactions** - Click the "+" FAB button or go to Transactions page
+3. **Create Budgets** - Set monthly spending limits per category
+4. **Set Goals** - Define your savings targets
+5. **Review Insights** - Check the Dashboard for AI-powered recommendations
 
-### Creating a Budget
-1. Go to "Budget" tab
-2. Click "Budgets" sub-tab
-3. Click "Add Budget"
-4. Select category and enter monthly budget amount
-5. Track your spending against budgets on the dashboard
+### Importing Bank Data
 
-### Setting Savings Goals
-1. Click "Goal" button in header
-2. Enter goal name, target amount, and starting amount
-3. Track progress on the dashboard
-4. Use +/- buttons to update progress
+1. Export transactions from your bank as CSV
+2. Go to Settings → Import from CSV
+3. Select your CSV file
+4. Preview and confirm import
 
-### Viewing Reports
-1. Go to "Reports" tab
-2. Select time period (month, quarter, year, all-time)
-3. View insights, charts, and statistics
-4. Export data using CSV export buttons
+CSV format should include: Date, Description, Amount, Category (optional)
 
-### Changing Currency
-1. Go to "Settings" tab
-2. Select your preferred currency from dropdown
-3. All amounts update automatically
+### Best Practices
 
-### Enabling Dark Mode
-1. Click the moon/sun icon in the header
-2. Theme preference is saved automatically
+- **Daily Entry** - Add transactions daily for accurate tracking
+- **Use Categories** - Consistent categorization improves insights
+- **Set Realistic Budgets** - Start conservative, adjust as needed
+- **Review Weekly** - Check your Dashboard and Reports regularly
+- **Export Regularly** - Create backups of your financial data
 
-## 🏗️ Project Structure
+## 🛠️ Technology Stack
+
+- **Frontend**: React 18 with Hooks
+- **Styling**: Custom CSS with CSS Variables
+- **Icons**: Lucide React
+- **Storage**: Browser LocalStorage
+- **Charts**: Custom SVG visualizations
+- **Build**: Create React App
+- **Deployment**: GitHub Pages
+
+## 📁 Project Structure
 
 ```
 financial-tracker/
+├── public/
+│   ├── index.html
+│   └── manifest.json
 ├── src/
-│   ├── components/       # React components
-│   │   ├── Budget.jsx
-│   │   ├── BudgetManager.jsx
-│   │   ├── BudgetWarnings.jsx
-│   │   ├── DarkModeToggle.jsx
-│   │   ├── ErrorBoundary.jsx
-│   │   ├── FormInput.jsx
-│   │   ├── Goals.jsx
+│   ├── components/
 │   │   ├── Header.jsx
-│   │   ├── KPICards.jsx
-│   │   ├── LoadingSpinner.jsx
-│   │   ├── RecurringTransactionForm.jsx
-│   │   ├── RecurringTransactionList.jsx
-│   │   ├── ReportsPage.jsx
-│   │   ├── SpendingChart.jsx
-│   │   ├── Toast.jsx
+│   │   ├── Dashboard.jsx
 │   │   ├── Transactions.jsx
+│   │   ├── Budget.jsx
+│   │   ├── Goals.jsx
+│   │   ├── SmartInsights.jsx
+│   │   ├── BillReminders.jsx
+│   │   ├── EnhancedCharts.jsx
+│   │   ├── CalendarView.jsx
+│   │   ├── CSVImport.jsx
+│   │   ├── QuickAddFAB.jsx
+│   │   ├── ThemeToggle.jsx
 │   │   └── ...
-│   ├── services/         # Business logic
-│   │   └── storage.js   # LocalStorage management
-│   ├── utils/           # Utility functions
-│   │   ├── categories.js    # Category icons & lists
-│   │   ├── currency.js      # Currency formatting
-│   │   ├── export.js        # CSV export utilities
-│   │   ├── recurring.js     # Recurring logic
-│   │   ├── theme.js         # Dark mode utilities
-│   │   └── validation.js    # Form validation
-│   ├── styles/          # CSS files
-│   ├── App.jsx          # Main app component
-│   └── main.jsx         # App entry point
-├── public/              # Static assets
+│   ├── utils/
+│   │   ├── currency.js
+│   │   ├── categories.js
+│   │   ├── insights.js
+│   │   ├── chartData.js
+│   │   └── csvParser.js
+│   ├── styles/
+│   │   ├── index.css
+│   │   └── new-features.css
+│   ├── App.jsx
+│   └── index.js
 ├── package.json
-├── vite.config.js
 └── README.md
 ```
 
-## 🎨 Categories
+## 🎨 Customization
 
-### Expense Categories (with icons)
-- 🍽️ Food & Dining
-- 🛒 Groceries
-- 🛍️ Shopping
-- 🏠 Housing
-- ⚡ Utilities
-- 🚗 Transportation
-- ✈️ Travel
-- ❤️ Healthcare
-- 🎓 Education
-- 👕 Clothing
-- 🎬 Entertainment
-- 📱 Technology
-- 💪 Fitness
-- ☕ Coffee & Drinks
-- 📦 Other
+### Changing Theme Colors
 
-### Income Categories
-- 💼 Salary
-- 💻 Freelance
-- 🏢 Business
-- 📈 Investment
-- 💰 Other Income
+Edit `src/styles/index.css`:
 
-## 🔧 Technologies Used
+```css
+:root {
+  --primary: #10b981;      /* Main accent color */
+  --accent: #06b6d4;       /* Secondary accent */
+  --success: #10b981;      /* Success states */
+  --danger: #ef4444;       /* Error states */
+  --warning: #f59e0b;      /* Warning states */
+}
+```
 
-- **React 18+** - UI framework
-- **Vite** - Build tool and dev server
-- **Lucide React** - Icon library
-- **LocalStorage API** - Data persistence
-- **CSS3** - Styling with dark mode support
+### Adding Categories
 
-## 🌟 Key Features in Detail
+Edit `src/utils/categories.js`:
 
-### Recurring Transactions
-Automate your regular income and expenses:
-- **Set it and forget it**: Define once, process automatically
-- **Flexible scheduling**: From daily bills to yearly subscriptions
-- **Full control**: Pause, resume, or delete anytime
-- **Smart processing**: Checks hourly for due transactions
-- **End dates**: Optionally set expiration dates
+```javascript
+export const categories = [
+  { name: 'Your Category', icon: YourIcon, color: '#color' },
+  // Add more categories
+];
+```
 
-### Advanced Filtering
-Find exactly what you need:
-- **Text search**: Search transaction descriptions
-- **Date ranges**: Last 7, 30, 90 days, or custom
-- **Category filter**: View specific spending categories
-- **Type filter**: Income vs expenses
-- **Combined filters**: Use multiple filters together
+### Adding Currencies
 
-### Budget Intelligence
-Stay on track with smart alerts:
-- **75% warning**: Yellow alert when budget usage hits 75%
-- **Over budget**: Red alert when exceeding budget
-- **Real-time updates**: See changes instantly
-- **Category breakdown**: Understand where money goes
+Edit `src/utils/currency.js`:
 
-### Data Portability
-Your data, your way:
-- **JSON backup**: Complete data export
-- **CSV exports**: Individual exports for transactions, goals, budgets
-- **Easy import**: Restore from JSON backup
-- **Data validation**: Ensures integrity on import
-
-## 🔒 Privacy & Security
-
-- ✅ **100% Local**: All data stored in your browser
-- ✅ **No Server**: No data sent to external servers
-- ✅ **No Tracking**: No analytics or tracking scripts
-- ✅ **Open Source**: Review the code yourself
-- ✅ **Your Control**: Export, import, or delete anytime
-
-## 📱 Browser Support
-
-- ✅ Chrome 90+
-- ✅ Firefox 88+
-- ✅ Safari 14+
-- ✅ Edge 90+
+```javascript
+export const CURRENCIES = [
+  { code: 'XYZ', name: 'Your Currency', symbol: 'X' },
+  // Add more currencies
+];
+```
 
 ## 🤝 Contributing
 
-Contributions are welcome! Please feel free to submit a Pull Request.
+Contributions are welcome! Feel free to:
 
-## 📄 License
+1. Fork the repository
+2. Create a feature branch (`git checkout -b feature/AmazingFeature`)
+3. Commit your changes (`git commit -m 'Add AmazingFeature'`)
+4. Push to the branch (`git push origin feature/AmazingFeature`)
+5. Open a Pull Request
 
-MIT License - feel free to use this project for personal or commercial purposes.
+## 📝 License
+
+This project is licensed under the MIT License - see the LICENSE file for details.
+
+## 👤 Author
+
+**Johnny von Holstein**
+- GitHub: [@JohnnyvonH](https://github.com/JohnnyvonH)
 
 ## 🙏 Acknowledgments
 
-- Built with modern React best practices
-- Icons from Lucide React
-- Inspired by modern finance apps
+- Icons by [Lucide](https://lucide.dev/)
+- Inspired by modern fintech apps like Robinhood, Revolut, and Stripe
+- Built with Create React App
 
-## 📞 Support
+## 📧 Support
 
-If you encounter any issues or have questions:
-1. Check the [Issues](https://github.com/JohnnyvonH/financial-tracker/issues) page
-2. Create a new issue with details
-3. Or reach out via GitHub
-
-## 🎯 Roadmap
-
-Future enhancements under consideration:
-- [ ] Cloud sync with authentication
-- [ ] Mobile app (React Native)
-- [ ] Bill reminders
-- [ ] Receipt attachments
-- [ ] Multi-user/household support
-- [ ] Advanced analytics & predictions
-- [ ] Bank integration (via open banking APIs)
-- [ ] Investment tracking
+If you have questions or need help, please open an issue on GitHub.
 
 ---
 
-**Made with ❤️ using React**
-
-Star ⭐ this repository if you found it helpful!
+**Happy Financial Tracking! 💰📊**
