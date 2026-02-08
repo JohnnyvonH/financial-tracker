@@ -14,13 +14,16 @@ import DataManagement from './components/DataManagement';
 import RecurringTransactionForm from './components/RecurringTransactionForm';
 import RecurringTransactionList from './components/RecurringTransactionList';
 import ReportsPage from './components/ReportsPage';
+import AuthPage from './pages/AuthPage';
 import Toast from './components/Toast';
 import LoadingSpinner from './components/LoadingSpinner';
+import { useAuth } from './contexts/AuthContext';
 import { storageService } from './services/storage';
 import { processRecurringTransactions } from './utils/recurring';
 import { getInitialTheme, saveTheme, applyTheme } from './utils/theme';
 
 function App() {
+  const { isConfigured } = useAuth();
   const [data, setData] = useState({
     balance: 0,
     transactions: [],
@@ -471,6 +474,22 @@ function App() {
       <div className="min-h-screen flex items-center justify-center">
         <LoadingSpinner size="xl" text="Loading your finances..." />
       </div>
+    );
+  }
+
+  // Show auth page if configured and requesting sign in
+  if (isConfigured && view === 'auth') {
+    return (
+      <ErrorBoundary>
+        {toast && (
+          <Toast
+            message={toast.message}
+            type={toast.type}
+            onClose={() => setToast(null)}
+          />
+        )}
+        <AuthPage onBack={() => setView('dashboard')} />
+      </ErrorBoundary>
     );
   }
 
