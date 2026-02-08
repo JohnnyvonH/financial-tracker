@@ -17,10 +17,7 @@ CREATE TABLE IF NOT EXISTS transactions (
   date DATE NOT NULL,
   timestamp BIGINT NOT NULL,
   created_at TIMESTAMPTZ DEFAULT NOW(),
-  updated_at TIMESTAMPTZ DEFAULT NOW(),
-  
-  -- Indexes for performance
-  CONSTRAINT transactions_user_id_idx PRIMARY KEY (id)
+  updated_at TIMESTAMPTZ DEFAULT NOW()
 );
 
 CREATE INDEX idx_transactions_user_id ON transactions(user_id);
