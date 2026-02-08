@@ -1,7 +1,8 @@
 import React from 'react';
 import { AlertTriangle, TrendingUp } from 'lucide-react';
+import { formatCurrency } from '../utils/currency';
 
-export default function BudgetWarnings({ budgets, currentMonthSpending }) {
+export default function BudgetWarnings({ budgets, currentMonthSpending, currency = 'USD' }) {
   // Calculate which budgets are at risk (>75% spent)
   const budgetsAtRisk = Object.entries(budgets)
     .map(([category, budgetAmount]) => {
@@ -60,7 +61,7 @@ export default function BudgetWarnings({ budgets, currentMonthSpending }) {
               <div>
                 <h4 className="font-semibold text-slate-900">{budget.category}</h4>
                 <div className="text-sm text-slate-600 mt-1">
-                  ${budget.spent.toFixed(2)} of ${budget.budgetAmount.toFixed(2)}
+                  {formatCurrency(budget.spent, currency)} of {formatCurrency(budget.budgetAmount, currency)}
                 </div>
               </div>
               <div className="text-right">
@@ -87,11 +88,11 @@ export default function BudgetWarnings({ budgets, currentMonthSpending }) {
             <div className="mt-2">
               {budget.isOverBudget ? (
                 <p className="text-sm text-red-600 font-medium">
-                  ⚠️ ${Math.abs(budget.remaining).toFixed(2)} over budget
+                  ⚠️ {formatCurrency(Math.abs(budget.remaining), currency)} over budget
                 </p>
               ) : (
                 <p className="text-sm text-amber-600 font-medium">
-                  ⚠️ ${budget.remaining.toFixed(2)} remaining
+                  ⚠️ {formatCurrency(budget.remaining, currency)} remaining
                 </p>
               )}
             </div>

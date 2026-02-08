@@ -1,10 +1,11 @@
 import React, { useState } from 'react';
 import { TrendingUp, TrendingDown, DollarSign, PieChart, Activity } from 'lucide-react';
+import { formatCurrency } from '../utils/currency';
 import SpendingPieChart from './SpendingPieChart';
 import BalanceLineChart from './BalanceLineChart';
 import BudgetManager from './BudgetManager';
 
-export default function Budget({ transactions, budgets, onUpdateBudgets }) {
+export default function Budget({ transactions, budgets, onUpdateBudgets, currency = 'USD' }) {
   const [activeTab, setActiveTab] = useState('overview');
 
   // Calculate spending by category
@@ -94,7 +95,7 @@ export default function Budget({ transactions, budgets, onUpdateBudgets }) {
             <span className="text-sm font-medium text-slate-600">Total Income</span>
           </div>
           <div className="text-2xl font-bold text-slate-900">
-            ${totalIncome.toLocaleString('en-US', { minimumFractionDigits: 2 })}
+            {formatCurrency(totalIncome, currency)}
           </div>
         </div>
 
@@ -106,7 +107,7 @@ export default function Budget({ transactions, budgets, onUpdateBudgets }) {
             <span className="text-sm font-medium text-slate-600">Total Expenses</span>
           </div>
           <div className="text-2xl font-bold text-slate-900">
-            ${totalExpenses.toLocaleString('en-US', { minimumFractionDigits: 2 })}
+            {formatCurrency(totalExpenses, currency)}
           </div>
         </div>
 
@@ -118,7 +119,7 @@ export default function Budget({ transactions, budgets, onUpdateBudgets }) {
             <span className="text-sm font-medium text-slate-600">Net Savings</span>
           </div>
           <div className={`text-2xl font-bold ${netSavings >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-            ${Math.abs(netSavings).toLocaleString('en-US', { minimumFractionDigits: 2 })}
+            {formatCurrency(Math.abs(netSavings), currency)}
           </div>
         </div>
       </div>
@@ -151,7 +152,7 @@ export default function Budget({ transactions, budgets, onUpdateBudgets }) {
       {/* Tab Content */}
       {activeTab === 'overview' && (
         <div className="grid grid-2" style={{ gap: '2rem' }}>
-          <SpendingPieChart spendingByCategory={spendingByCategory} />
+          <SpendingPieChart spendingByCategory={spendingByCategory} currency={currency} />
           <div className="card">
             <h3 className="text-xl font-semibold mb-4">Spending Breakdown</h3>
             <div className="space-y-3">
@@ -164,7 +165,7 @@ export default function Budget({ transactions, budgets, onUpdateBudgets }) {
                       <div className="flex justify-between items-center mb-2">
                         <span className="font-medium text-slate-700">{category}</span>
                         <span className="text-slate-900 font-semibold">
-                          ${amount.toLocaleString('en-US', { minimumFractionDigits: 2 })}
+                          {formatCurrency(amount, currency)}
                         </span>
                       </div>
                       <div className="progress-bar">
@@ -189,12 +190,13 @@ export default function Budget({ transactions, budgets, onUpdateBudgets }) {
           budgets={budgets}
           currentMonthSpending={currentMonthSpending}
           onUpdateBudgets={onUpdateBudgets}
+          currency={currency}
         />
       )}
 
       {activeTab === 'trends' && (
         <div>
-          <BalanceLineChart balanceData={balanceOverTime} />
+          <BalanceLineChart balanceData={balanceOverTime} currency={currency} />
         </div>
       )}
     </div>
