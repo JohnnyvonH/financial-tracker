@@ -1,24 +1,28 @@
 import React from 'react';
-import { Plus, Target, Settings, PieChart } from 'lucide-react';
+import { Home, Plus, Target, PieChart, List, Settings } from 'lucide-react';
 
 export default function Header({ view, setView }) {
   return (
-    <div className="header">
+    <header className="header">
       <div className="header-content">
         <div>
-          <h1 className="header-font">
-            Financial Tracker
-          </h1>
-          <p>
-            Track your wealth, achieve your goals
-          </p>
+          <h1 className="header-font">Financial Tracker</h1>
+          <p>Take control of your finances</p>
         </div>
-        <div className="nav-buttons">
+        <nav className="nav-buttons">
           <button
             onClick={() => setView('dashboard')}
             className={`btn ${view === 'dashboard' ? 'btn-primary' : ''}`}
           >
+            <Home size={18} />
             Dashboard
+          </button>
+          <button
+            onClick={() => setView('transactions')}
+            className={`btn ${view === 'transactions' ? 'btn-primary' : ''}`}
+          >
+            <List size={18} />
+            Transactions
           </button>
           <button
             onClick={() => setView('budget')}
@@ -29,17 +33,17 @@ export default function Header({ view, setView }) {
           </button>
           <button
             onClick={() => setView('add-transaction')}
-            className="btn"
+            className="btn btn-primary"
           >
             <Plus size={18} />
             Add Transaction
           </button>
           <button
             onClick={() => setView('add-goal')}
-            className="btn"
+            className="btn btn-primary"
           >
             <Target size={18} />
-            New Goal
+            Add Goal
           </button>
           <button
             onClick={() => setView('settings')}
@@ -48,8 +52,8 @@ export default function Header({ view, setView }) {
             <Settings size={18} />
             Settings
           </button>
-        </div>
+        </nav>
       </div>
-    </div>
+    </header>
   );
 }
