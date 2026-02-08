@@ -69,7 +69,7 @@ const DataManagement = ({ onExport, onImport, onClearAll }) => {
             <p className="text-sm text-red-700 mb-3">
               Permanently delete all transactions, goals, and balance data. This action cannot be undone.
             </p>
-            <button onClick={onClearAll} className="btn bg-red-600 hover:bg-red-700 text-white text-sm">
+            <button onClick={onClearAll} className="btn btn-danger text-sm">
               <Trash2 className="w-4 h-4" />
               Clear All Data
             </button>
