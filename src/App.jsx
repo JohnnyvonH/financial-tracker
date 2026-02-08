@@ -5,6 +5,7 @@ import Goals from './components/Goals';
 import Transactions from './components/Transactions';
 import TransactionForm from './components/TransactionForm';
 import GoalForm from './components/GoalForm';
+import Budget from './components/Budget';
 import DataManagement from './components/DataManagement';
 import Notification from './components/Notification';
 import { storageService } from './services/storage';
@@ -13,7 +14,8 @@ function App() {
   const [data, setData] = useState({
     balance: 0,
     transactions: [],
-    goals: []
+    goals: [],
+    budgets: {}
   });
   const [view, setView] = useState('dashboard');
   const [loading, setLoading] = useState(true);
@@ -28,6 +30,10 @@ function App() {
   useEffect(() => {
     try {
       const savedData = storageService.getData();
+      // Ensure budgets exists
+      if (!savedData.budgets) {
+        savedData.budgets = {};
+      }
       setData(savedData);
       setLoading(false);
     } catch (error) {
@@ -178,6 +184,23 @@ function App() {
     }
   };
 
+  // Update budgets
+  const updateBudgets = (newBudgets) => {
+    try {
+      const success = saveData({
+        ...data,
+        budgets: newBudgets
+      });
+
+      if (success) {
+        showNotification('Budgets updated successfully!', 'success');
+      }
+    } catch (error) {
+      console.error('Error updating budgets:', error);
+      showNotification('Failed to update budgets. Please try again.', 'error');
+    }
+  };
+
   // Export data
   const handleExportData = () => {
     try {
@@ -197,6 +220,10 @@ function App() {
   const handleImportData = async (file) => {
     try {
       const importedData = await storageService.importData(file);
+      // Ensure budgets exists
+      if (!importedData.budgets) {
+        importedData.budgets = {};
+      }
       setData(importedData);
       showNotification('Data imported successfully!', 'success');
       setView('dashboard');
@@ -216,7 +243,8 @@ function App() {
         setData({
           balance: 0,
           transactions: [],
-          goals: []
+          goals: [],
+          budgets: {}
         });
         showNotification('All data cleared successfully!', 'success');
         setView('dashboard');
@@ -294,6 +322,14 @@ function App() {
               onDeleteTransaction={deleteTransaction}
             />
           </>
+        )}
+
+        {view === 'budget' && (
+          <Budget
+            transactions={data.transactions}
+            budgets={data.budgets}
+            onUpdateBudgets={updateBudgets}
+          />
         )}
 
         {view === 'add-transaction' && (

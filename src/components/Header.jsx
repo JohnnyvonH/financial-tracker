@@ -1,5 +1,5 @@
 import React from 'react';
-import { Plus, Target, Settings } from 'lucide-react';
+import { Plus, Target, Settings, PieChart } from 'lucide-react';
 
 export default function Header({ view, setView }) {
   return (
@@ -19,6 +19,13 @@ export default function Header({ view, setView }) {
             className={`btn ${view === 'dashboard' ? 'btn-primary' : ''}`}
           >
             Dashboard
+          </button>
+          <button
+            onClick={() => setView('budget')}
+            className={`btn ${view === 'budget' ? 'btn-primary' : ''}`}
+          >
+            <PieChart size={18} />
+            Budget & Analytics
           </button>
           <button
             onClick={() => setView('add-transaction')}
