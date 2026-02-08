@@ -1,6 +1,7 @@
 import React from 'react';
 import { Home, Plus, DollarSign, TrendingUp, Settings, List, RefreshCw, BarChart3 } from 'lucide-react';
 import DarkModeToggle from './DarkModeToggle';
+import AuthButton from './AuthButton';
 
 export default function Header({ view, setView, isDarkMode, onToggleDarkMode }) {
   const navItems = [
@@ -49,6 +50,8 @@ export default function Header({ view, setView, isDarkMode, onToggleDarkMode }) 
 
         <div className="header-actions">
           <DarkModeToggle isDark={isDarkMode} onToggle={onToggleDarkMode} />
+          
+          <AuthButton />
           
           {actionButtons.map((button) => {
             const Icon = button.icon;
