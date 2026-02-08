@@ -173,7 +173,7 @@ export default function ReportsPage({
           
           <div className="flex items-center gap-3">
             {/* Period Selector with Icon */}
-            <div className="relative">
+            <div style={{ position: 'relative', display: 'inline-block' }}>
               <select
                 value={period}
                 onChange={(e) => setPeriod(e.target.value)}
@@ -181,7 +181,9 @@ export default function ReportsPage({
                 style={{ 
                   paddingRight: '2.5rem',
                   minWidth: '150px',
-                  appearance: 'none'
+                  appearance: 'none',
+                  WebkitAppearance: 'none',
+                  MozAppearance: 'none'
                 }}
               >
                 <option value="month">This Month</option>
@@ -189,17 +191,20 @@ export default function ReportsPage({
                 <option value="year">This Year</option>
                 <option value="all">All Time</option>
               </select>
-              <ChevronDown 
-                size={16} 
+              <div
                 style={{
                   position: 'absolute',
-                  right: '0.75rem',
+                  right: '12px',
                   top: '50%',
                   transform: 'translateY(-50%)',
                   pointerEvents: 'none',
+                  display: 'flex',
+                  alignItems: 'center',
                   color: 'var(--text-secondary)'
                 }}
-              />
+              >
+                <ChevronDown size={16} />
+              </div>
             </div>
           </div>
         </div>
