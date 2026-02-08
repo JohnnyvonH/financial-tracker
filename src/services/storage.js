@@ -8,14 +8,18 @@ export const storageService = {
       return data ? JSON.parse(data) : {
         balance: 0,
         transactions: [],
-        goals: []
+        goals: [],
+        budgets: {},
+        recurringTransactions: []
       };
     } catch (error) {
       console.error('Error loading data:', error);
       return {
         balance: 0,
         transactions: [],
-        goals: []
+        goals: [],
+        budgets: {},
+        recurringTransactions: []
       };
     }
   },
@@ -34,12 +38,14 @@ export const storageService = {
     try {
       const settings = localStorage.getItem(SETTINGS_KEY);
       return settings ? JSON.parse(settings) : {
-        currency: 'USD'
+        currency: 'USD',
+        theme: 'light'
       };
     } catch (error) {
       console.error('Error loading settings:', error);
       return {
-        currency: 'USD'
+        currency: 'USD',
+        theme: 'light'
       };
     }
   },
@@ -96,6 +102,10 @@ export const storageService = {
               !Array.isArray(data.goals)) {
             throw new Error('Invalid data format');
           }
+          // Ensure all required fields exist
+          if (!data.budgets) data.budgets = {};
+          if (!data.recurringTransactions) data.recurringTransactions = [];
+          
           storageService.saveData(data);
           resolve(data);
         } catch (error) {
