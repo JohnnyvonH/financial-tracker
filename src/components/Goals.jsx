@@ -1,16 +1,8 @@
 import React from 'react';
 import { Target, X, Plus, Minus } from 'lucide-react';
+import { formatCurrency } from '../utils/currency';
 
-export default function Goals({ goals, onUpdateGoal, onDeleteGoal }) {
-  const formatCurrency = (amount) => {
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: 'USD',
-      minimumFractionDigits: 0,
-      maximumFractionDigits: 0
-    }).format(amount);
-  };
-
+export default function Goals({ goals, onUpdateGoal, onDeleteGoal, currency = 'USD' }) {
   const handleIncrement = (goalId, currentAmount, increment = 100) => {
     onUpdateGoal(goalId, currentAmount + increment);
   };
@@ -61,14 +53,14 @@ export default function Goals({ goals, onUpdateGoal, onDeleteGoal }) {
               
               <div className="goal-content">
                 <div className="goal-amount-display">
-                  <span className="goal-current">{formatCurrency(goal.current)}</span>
+                  <span className="goal-current">{formatCurrency(goal.current, currency)}</span>
                   <span className="goal-separator">/</span>
-                  <span className="goal-target">{formatCurrency(goal.target)}</span>
+                  <span className="goal-target">{formatCurrency(goal.target, currency)}</span>
                 </div>
                 
                 <div className="progress-bar">
                   <div
-                    className="progress-fill"
+                    className={`progress-fill ${progress >= 100 ? '' : ''}`}
                     style={{ width: `${progress}%` }}
                   />
                 </div>
@@ -76,7 +68,7 @@ export default function Goals({ goals, onUpdateGoal, onDeleteGoal }) {
                 <div className="goal-progress-text">
                   <span>{progress.toFixed(0)}% complete</span>
                   <span className="goal-remaining">
-                    {formatCurrency(goal.target - goal.current)} remaining
+                    {formatCurrency(Math.max(0, goal.target - goal.current), currency)} remaining
                   </span>
                 </div>
                 
@@ -84,34 +76,34 @@ export default function Goals({ goals, onUpdateGoal, onDeleteGoal }) {
                   <button
                     onClick={() => handleDecrement(goal.id, goal.current, 100)}
                     className="goal-control-btn goal-control-minus"
-                    title="Subtract $100"
+                    title="Subtract 100"
                   >
                     <Minus size={16} />
-                    <span>$100</span>
+                    <span>100</span>
                   </button>
                   <button
                     onClick={() => handleDecrement(goal.id, goal.current, 10)}
                     className="goal-control-btn goal-control-minus"
-                    title="Subtract $10"
+                    title="Subtract 10"
                   >
                     <Minus size={16} />
-                    <span>$10</span>
+                    <span>10</span>
                   </button>
                   <button
                     onClick={() => handleIncrement(goal.id, goal.current, 10)}
                     className="goal-control-btn goal-control-plus"
-                    title="Add $10"
+                    title="Add 10"
                   >
                     <Plus size={16} />
-                    <span>$10</span>
+                    <span>10</span>
                   </button>
                   <button
                     onClick={() => handleIncrement(goal.id, goal.current, 100)}
                     className="goal-control-btn goal-control-plus"
-                    title="Add $100"
+                    title="Add 100"
                   >
                     <Plus size={16} />
-                    <span>$100</span>
+                    <span>100</span>
                   </button>
                 </div>
               </div>
