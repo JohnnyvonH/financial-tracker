@@ -144,11 +144,12 @@ body {
   background: #dc2626;
 }
 
+/* KPI Cards */
 .kpi-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
   gap: 1.5rem;
-  margin-bottom: 2rem;
+  margin-bottom: 3rem; /* Increased spacing after KPI cards */
 }
 
 .kpi-card {
@@ -458,6 +459,11 @@ body {
 
 .justify-center {
   justify-content: center;
+}
+
+/* Section Spacing */
+.card + .card {
+  margin-top: 2rem;
 }
 
 /* Notification Animation */
