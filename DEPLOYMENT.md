@@ -38,37 +38,53 @@ This guide will help you deploy your Financial Tracker to GitHub Pages.
 2. Under **Source**, select **GitHub Actions**
 3. Click **Save**
 
-### Step 3: Update Supabase Redirect URLs
+### Step 3: Update Supabase Redirect URLs ⚠️ CRITICAL
 
 Your app will be hosted at: `https://johnnyvonh.github.io/financial-tracker/`
+
+**This is the most important step for OAuth to work!**
 
 1. Go to your [Supabase Dashboard](https://supabase.com/dashboard)
 2. Select your project
 3. Go to **Authentication** → **URL Configuration**
-4. Add to **Redirect URLs**:
-   ```
-   https://johnnyvonh.github.io/financial-tracker/
-   ```
-5. Add to **Site URL**:
-   ```
-   https://johnnyvonh.github.io/financial-tracker/
-   ```
-6. Click **Save**
+4. Update the following fields:
 
-### Step 4: Update Google OAuth (If Using)
+   **Site URL:**
+   ```
+   https://johnnyvonh.github.io/financial-tracker/
+   ```
+
+   **Redirect URLs** (add ALL of these):
+   ```
+   https://johnnyvonh.github.io/financial-tracker/
+   https://johnnyvonh.github.io/financial-tracker/**
+   http://localhost:5173/**
+   ```
+
+5. Click **Save**
+6. **WAIT 2-3 MINUTES** for Supabase to apply the changes
+
+### Step 4: Update Google OAuth
 
 1. Go to [Google Cloud Console](https://console.cloud.google.com)
-2. Go to **APIs & Services** → **Credentials**
-3. Click on your OAuth 2.0 Client ID
-4. Under **Authorized JavaScript origins**, add:
+2. Select your project
+3. Go to **APIs & Services** → **Credentials**
+4. Click on your OAuth 2.0 Client ID
+5. Under **Authorized JavaScript origins**, make sure you have:
    ```
    https://johnnyvonh.github.io
+   http://localhost:5173
+   https://YOUR-PROJECT-ID.supabase.co
    ```
-5. Under **Authorized redirect URIs**, add:
+
+6. Under **Authorized redirect URIs**, add **EXACTLY** (replace YOUR-PROJECT-ID):
    ```
-   https://your-project-id.supabase.co/auth/v1/callback
+   https://YOUR-PROJECT-ID.supabase.co/auth/v1/callback
+   http://localhost:5173/
    ```
-6. Click **Save**
+
+7. Click **Save**
+8. **WAIT 5-10 MINUTES** for Google to propagate changes
 
 ### Step 5: Trigger Deployment
 
@@ -110,6 +126,33 @@ Every time you push to `main` branch, GitHub Actions will automatically:
 
 ## 🐛 Troubleshooting
 
+### OAuth Error: "404 There isn't a GitHub Pages site here"
+
+**This is a redirect URL issue!** Fix it:
+
+1. Go to Supabase Dashboard → **Authentication** → **URL Configuration**
+2. Make sure **Redirect URLs** includes:
+   ```
+   https://johnnyvonh.github.io/financial-tracker/**
+   ```
+3. The `/**` wildcard at the end is CRITICAL
+4. Click **Save**
+5. **Wait 2-3 minutes** for changes to apply
+6. Clear browser cache (Ctrl+Shift+Del)
+7. Try signing in again
+
+### OAuth Error: "Error 401: invalid_client"
+
+**Google OAuth credentials issue:**
+
+1. Verify your Google OAuth Client ID and Secret in Supabase match Google Cloud Console
+2. Check that Google OAuth redirect URIs include your Supabase callback URL:
+   ```
+   https://YOUR-PROJECT-ID.supabase.co/auth/v1/callback
+   ```
+3. Make sure you've waited 5-10 minutes after saving Google OAuth settings
+4. Try using an incognito window to rule out cached credentials
+
 ### Build Fails
 
 **Check the Actions tab:**
@@ -127,13 +170,14 @@ Every time you push to `main` branch, GitHub Actions will automatically:
 
 **Supabase connection issues:**
 - Check that secrets are correctly set in GitHub
-- Verify Supabase redirect URLs include your GitHub Pages URL
+- Verify Supabase redirect URLs include your GitHub Pages URL with `/**` wildcard
 - Check browser console (F12) for specific errors
 
 **OAuth not working:**
-- Verify Google OAuth redirect URIs include your GitHub Pages domain
-- Make sure Supabase redirect URLs are correct
-- Clear browser cache and try again
+- Verify redirect URLs in Supabase include the `/**` wildcard
+- Make sure Google OAuth redirect URIs include your Supabase callback
+- Clear browser cache and try again in incognito mode
+- Check that you've waited for changes to propagate (2-10 minutes)
 
 ### Blank Page
 
@@ -148,6 +192,30 @@ Every time you push to `main` branch, GitHub Actions will automatically:
 2. Verify the workflow completed successfully
 3. Wait a few minutes for DNS propagation
 4. Try accessing: `https://johnnyvonh.github.io/financial-tracker/index.html`
+
+---
+
+## 🔍 Testing OAuth Locally
+
+Before deploying, test OAuth locally:
+
+1. Make sure your `.env.local` has:
+   ```
+   VITE_SUPABASE_URL=https://YOUR-PROJECT-ID.supabase.co
+   VITE_SUPABASE_ANON_KEY=your-anon-key
+   ```
+
+2. In Supabase redirect URLs, include:
+   ```
+   http://localhost:5173/**
+   ```
+
+3. In Google OAuth, include:
+   ```
+   http://localhost:5173
+   ```
+
+4. Run `npm run dev` and test sign in
 
 ---
 
@@ -224,11 +292,14 @@ git push origin main
 https://github.com/JohnnyvonH/financial-tracker/actions
 ```
 
-**Check Build Locally:**
+**Test Build Locally:**
 ```bash
 npm run build
 npm run preview
 ```
+
+**Critical Supabase Setting:**
+Redirect URLs must include: `https://johnnyvonh.github.io/financial-tracker/**`
 
 ---
 
