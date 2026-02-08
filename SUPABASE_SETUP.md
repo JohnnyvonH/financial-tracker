@@ -1,346 +1,229 @@
-# 🚀 Supabase Cloud Sync Setup Guide
+# 🗄️ Supabase Database Setup Guide
 
-This guide will walk you through setting up cloud sync for your Financial Tracker app using Supabase.
-
----
-
-## 📋 What You'll Get
-
-✅ **Multi-device sync** - Access your finances from any device
-✅ **Secure authentication** - Email/password + Google/GitHub OAuth
-✅ **Real-time updates** - Changes sync instantly across devices
-✅ **Goal milestones** - Automatic celebrations at 25%, 50%, 75%, 100%
-✅ **Spending alerts** - Smart notifications for unusual spending
-✅ **Data backup** - Your data is safely stored in the cloud
-✅ **Row-level security** - Your data is private and secure
+This guide will help you set up the database tables for your Financial Tracker.
 
 ---
 
-## 🛠️ Setup Steps
+## 📋 Quick Setup (5 minutes)
 
-### Step 1: Create Supabase Account
+### Step 1: Go to Supabase SQL Editor
 
-1. Go to **[supabase.com](https://supabase.com)**
-2. Click **"Start your project"**
-3. Sign up with GitHub (recommended) or email
+1. Open your [Supabase Dashboard](https://supabase.com/dashboard)
+2. Select your project
+3. Click **SQL Editor** in the left sidebar
+4. Click **New Query**
 
-### Step 2: Create New Project
+### Step 2: Run the Migration
 
-1. Click **"New Project"** in your dashboard
-2. Fill in project details:
-   - **Name:** `financial-tracker` (or any name you like)
-   - **Database Password:** Create a strong password and **save it securely**
-   - **Region:** Choose **Europe West (London)** or closest to you
-   - **Pricing Plan:** Free (perfect for personal use)
-3. Click **"Create new project"**
-4. Wait ~2 minutes for your database to provision ☕
+1. Open the migration file: [`supabase/migrations/001_initial_schema.sql`](./supabase/migrations/001_initial_schema.sql)
+2. **Copy the entire contents** of that file
+3. **Paste it** into the Supabase SQL Editor
+4. Click **Run** (or press Ctrl+Enter)
+5. Wait for "Success. No rows returned" message ✅
 
-### Step 3: Run Database Schema
+### Step 3: Verify Tables Created
 
-1. In your Supabase Dashboard, click **"SQL Editor"** in the left sidebar
-2. Click **"New Query"** button
-3. Open the file `supabase/schema.sql` from this repo
-4. **Copy all contents** (it's a long file!)
-5. **Paste into SQL Editor**
-6. Click **"Run"** button (or press `Cmd/Ctrl + Enter`)
-7. You should see: ✅ **"Success. No rows returned"**
+1. Click **Table Editor** in the left sidebar
+2. You should see these 5 new tables:
+   - ✅ `transactions`
+   - ✅ `goals`
+   - ✅ `budgets`
+   - ✅ `recurring_transactions`
+   - ✅ `user_settings`
 
-This creates all your tables, security policies, and database functions.
-
-### Step 4: Configure Authentication
-
-#### Enable Email Authentication (Already Done)
-1. Go to **Authentication → Providers**
-2. **Email** should already be enabled ✅
-
-#### Enable Google OAuth (Recommended)
-1. In Supabase, go to **Authentication → Providers**
-2. Click **Google**
-3. You'll see:
-   - **Redirect URL** - Copy this (you'll need it)
-   - Example: `https://xxxxx.supabase.co/auth/v1/callback`
-
-4. Go to [Google Cloud Console](https://console.cloud.google.com)
-5. Create a new project or select existing
-6. Enable **Google+ API**
-7. Go to **Credentials → Create Credentials → OAuth 2.0 Client ID**
-8. Configure OAuth consent screen (if needed)
-9. Application type: **Web application**
-10. Add **Authorized redirect URI**: Paste the Supabase redirect URL
-11. Click **Create**
-12. Copy **Client ID** and **Client Secret**
-
-13. Back in Supabase, paste:
-    - **Client ID**
-    - **Client Secret**
-14. Click **Save**
-
-#### Enable GitHub OAuth (Optional)
-Same process as Google, but use GitHub OAuth Apps:
-1. Go to [GitHub Developer Settings](https://github.com/settings/developers)
-2. Click **New OAuth App**
-3. Fill in:
-   - **Application name:** Financial Tracker
-   - **Homepage URL:** `http://localhost:5173` (for dev)
-   - **Authorization callback URL:** Your Supabase redirect URL
-4. Copy **Client ID** and **Client Secret** to Supabase
-
-### Step 5: Get Your API Keys
-
-1. In Supabase, go to **Project Settings** (gear icon)
-2. Click **API** in the left sidebar
-3. You'll see:
-   - **Project URL** - Example: `https://xxxxx.supabase.co`
-   - **anon public** key - This is safe for frontend
-   - **service_role** key - ⚠️ Keep this secret! (you won't need it for now)
-
-4. Copy both **Project URL** and **anon public** key
-
-### Step 6: Configure Your App
-
-1. In your project root, create a file called `.env.local`
-2. Add your Supabase credentials:
-
-```bash
-VITE_SUPABASE_URL=https://your-project-id.supabase.co
-VITE_SUPABASE_ANON_KEY=your-anon-key-here
-```
-
-3. **Important:** Make sure `.env.local` is in your `.gitignore` (it should be by default)
-
-### Step 7: Install Dependencies
-
-```bash
-npm install @supabase/supabase-js
-```
-
-### Step 8: Update Your App
-
-Open `src/main.jsx` and wrap your app with the AuthProvider:
-
-```jsx
-import React from 'react';
-import ReactDOM from 'react-dom/client';
-import App from './App.jsx';
-import { AuthProvider } from './contexts/AuthContext.jsx';
-import './index.css';
-
-ReactDOM.createRoot(document.getElementById('root')).render(
-  <React.StrictMode>
-    <AuthProvider>
-      <App />
-    </AuthProvider>
-  </React.StrictMode>,
-);
-```
-
-### Step 9: Add Auth Button to Header
-
-In your main component or header, add the AuthButton:
-
-```jsx
-import AuthButton from './components/AuthButton';
-
-// Inside your header/navbar:
-<AuthButton />
-```
-
-### Step 10: Test It Out!
-
-1. **Start your dev server:**
-   ```bash
-   npm run dev
-   ```
-
-2. **Click "Sign In"** button
-3. **Create an account** with email or OAuth
-4. Check your email for verification (if using email signup)
-5. **Sign in** and you're live! 🎉
+**Done!** Your database is ready! 🎉
 
 ---
 
-## 📱 Testing Multi-Device Sync
+## 🔍 What Was Created?
 
-1. **Sign in on your computer**
+### **Tables**
+
+#### 1. **transactions**
+Stores all income and expense transactions
+- Fields: `id`, `user_id`, `type`, `amount`, `category`, `description`, `date`, `timestamp`
+- Indexed by: user, date, type, category
+
+#### 2. **goals**
+Savings goals with targets and deadlines
+- Fields: `id`, `user_id`, `name`, `target_amount`, `current_amount`, `deadline`
+
+#### 3. **budgets**
+Monthly spending limits by category
+- Fields: `id`, `user_id`, `category`, `monthly_limit`
+- One budget per category per user
+
+#### 4. **recurring_transactions**
+Automatically recurring transactions (bills, salary)
+- Fields: `id`, `user_id`, `type`, `amount`, `category`, `description`, `frequency`, `start_date`, `active`
+
+#### 5. **user_settings**
+User preferences and balance
+- Fields: `user_id`, `currency`, `theme`, `balance`
+- Auto-created when user signs up
+
+### **Security**
+
+✅ **Row Level Security (RLS) enabled** on all tables
+- Users can ONLY see their own data
+- Users can ONLY modify their own data
+- Complete data isolation between users
+
+### **Performance**
+
+✅ **Indexes created** for fast queries:
+- User ID lookups
+- Date-based filtering
+- Category grouping
+- Transaction type filtering
+
+### **Automation**
+
+✅ **Triggers configured**:
+- Auto-update `updated_at` timestamps
+- Auto-create user settings on signup
+
+---
+
+## 🧪 Test Your Database
+
+Once tables are created, test in Supabase:
+
+### Test 1: Check RLS Policies
+
+1. Go to **Authentication** → **Policies**
+2. You should see policies for each table
+3. All policies should reference `auth.uid()`
+
+### Test 2: Try Inserting Data
+
+1. Go to **Table Editor** → `transactions`
+2. Try to insert a row without being authenticated
+3. You should get a permission error ✅ (RLS working!)
+
+### Test 3: Sign In and Insert
+
+1. Sign in to your app
 2. Add a transaction
-3. **Open your app on your phone** (or another browser)
-4. Sign in with the same account
-5. **Your transaction appears instantly!** ⚡
+3. Go to **Table Editor** → `transactions`
+4. You should see your transaction! ✅
 
 ---
 
-## 🔄 Migrating Existing Data
+## 🔧 Troubleshooting
 
-If you already have data in localStorage, the app will automatically offer to migrate it when you first sign in.
+### Error: "relation already exists"
 
-Or you can manually trigger migration:
+**Solution:** Tables already created! You're good to go.
 
-```javascript
-import { migrateLocalDataToSupabase } from './utils/migration';
-import { useAuth } from './contexts/AuthContext';
+### Error: "permission denied"
 
-const { user } = useAuth();
+**Solution:** 
+1. Make sure you're running the query as the **postgres** user
+2. Check that RLS policies are created correctly
 
-if (user) {
-  const result = await migrateLocalDataToSupabase(user.id);
-  console.log('Migration result:', result);
-}
+### Tables not showing up
+
+**Solution:**
+1. Refresh the Table Editor page
+2. Check the SQL Editor for any error messages
+3. Re-run the migration script
+
+### Can't see data in Table Editor
+
+**Solution:** This is normal! RLS protects data. Use the app to add data, or query with:
+```sql
+SELECT * FROM transactions WHERE user_id = 'your-user-id';
 ```
 
 ---
 
-## 🔒 Security Features
+## 📊 Database Schema Diagram
 
-### Row Level Security (RLS)
-Every table has policies ensuring:
-- ✅ You can only see your own data
-- ✅ No one else can access your financial info
-- ✅ All queries are automatically filtered by user
-
-### Authentication
-- ✅ JWT tokens (industry standard)
-- ✅ Secure password hashing
-- ✅ Session management
-- ✅ OAuth providers (Google, GitHub)
-
----
-
-## 🎯 What Works Now
-
-### ✅ Implemented
-- User authentication (email + OAuth)
-- Cloud data sync for:
-  - Transactions
-  - Budgets
-  - Goals (with milestone tracking)
-  - Bills
-  - User settings
-- Real-time updates across devices
-- Automatic goal milestone celebrations
-- Data migration from localStorage
-- Secure row-level security
-
-### 🚧 Coming Soon (Phase 2)
-- Category deep-dive (click category → see all transactions)
-- AI-powered spending forecasts
-- Unusual spending alerts
-- PDF export for reports
-
----
-
-## 🧪 Database Tables
-
-Your Supabase project now has these tables:
-
-1. **profiles** - User profile information
-2. **user_settings** - App preferences (currency, notifications)
-3. **transactions** - All income/expense transactions
-4. **budgets** - Budget limits per category
-5. **goals** - Savings goals with progress tracking
-6. **bills** - Bill reminders and due dates
-7. **recurring_transactions** - Templates for recurring payments
-8. **spending_alerts** - Smart notifications
-9. **goal_milestones** - Achievement tracking (25%, 50%, 75%, 100%)
-
----
-
-## 🐛 Troubleshooting
-
-### "Missing Supabase environment variables"
-- Make sure `.env.local` exists in your project root
-- Check that variable names are exactly: `VITE_SUPABASE_URL` and `VITE_SUPABASE_ANON_KEY`
-- Restart your dev server after creating `.env.local`
-
-### "Row level security policy violation"
-- Make sure you're signed in
-- Check that the SQL schema was executed correctly
-- Verify RLS policies exist: Go to **Database → Tables → [table name] → Policies**
-
-### "Invalid login credentials"
-- Double-check email and password
-- If using email signup, verify your email first
-- Try password reset if needed
-
-### Data not syncing
-- Check browser console for errors
-- Verify you're signed in (check for user icon in header)
-- Make sure internet connection is stable
-- Check Supabase project status
-
-### OAuth redirect not working
-- Verify redirect URLs match exactly in OAuth provider settings
-- Check that provider is enabled in Supabase
-- Try clearing browser cache
+```
+┌─────────────────────┐
+│   auth.users        │
+│  (Supabase Auth)    │
+└──────────┬──────────┘
+           │
+           │ user_id (Foreign Key)
+           │
+    ┌──────┴──────────────────────────┐
+    │                                 │
+    ▼                                 ▼
+┌─────────────────┐          ┌──────────────────┐
+│  transactions   │          │  user_settings   │
+├─────────────────┤          ├──────────────────┤
+│ • id (PK)       │          │ • user_id (PK)   │
+│ • user_id (FK)  │          │ • currency       │
+│ • type          │          │ • theme          │
+│ • amount        │          │ • balance        │
+│ • category      │          └──────────────────┘
+│ • description   │
+│ • date          │
+│ • timestamp     │
+└─────────────────┘
+    │
+    ├──────────────────┐
+    │                  │
+    ▼                  ▼
+┌─────────────┐  ┌──────────────────────────┐
+│   goals     │  │  recurring_transactions  │
+├─────────────┤  ├──────────────────────────┤
+│ • id (PK)   │  │ • id (PK)                │
+│ • user_id   │  │ • user_id (FK)           │
+│ • name      │  │ • type                   │
+│ • target    │  │ • amount                 │
+│ • current   │  │ • category               │
+│ • deadline  │  │ • frequency              │
+└─────────────┘  │ • start_date             │
+                 │ • active                 │
+    │            └──────────────────────────┘
+    │
+    ▼
+┌─────────────┐
+│  budgets    │
+├─────────────┤
+│ • id (PK)   │
+│ • user_id   │
+│ • category  │
+│ • limit     │
+└─────────────┘
+```
 
 ---
 
-## 📊 Monitoring Your Database
+## ✅ Next Steps
 
-### View Data
-1. Go to **Table Editor** in Supabase
-2. Select any table to see your data
-3. You can manually edit/delete if needed
+Once your database is set up:
 
-### Check Logs
-1. Go to **Logs** in Supabase
-2. Filter by:
-   - API requests
-   - Postgres logs
-   - Auth events
-
-### Database Usage
-1. Go to **Settings → Usage**
-2. Monitor:
-   - Database size
-   - API requests
-   - Bandwidth
-   - Active users
-
----
-
-## 💰 Pricing
-
-### Free Tier Includes:
-- ✅ 500 MB database space
-- ✅ 1 GB file storage
-- ✅ 2 GB bandwidth/month
-- ✅ 50,000 monthly active users
-- ✅ Unlimited API requests
-
-**Perfect for personal use!** You'd need thousands of transactions to hit limits.
-
-### Upgrade When:
-- You need more storage
-- You want custom domain
-- You need priority support
-
----
-
-## 🎓 Next Steps
-
-1. ✅ **Test authentication** - Sign up, sign in, sign out
-2. ✅ **Add some data** - Create transactions, budgets, goals
-3. ✅ **Test multi-device** - Sign in from another device
-4. ✅ **Check goal milestones** - Update a goal to 25%, 50%, 75%, 100%
-5. 🚧 **Phase 2 features** - We'll add these next!
+1. ✅ Tables created and verified
+2. ⏭️ App will automatically sync data to Supabase
+3. ⏭️ Sign in and start using the app
+4. ⏭️ Your data will be available across all devices!
 
 ---
 
 ## 🆘 Need Help?
 
-- **Supabase Docs:** [supabase.com/docs](https://supabase.com/docs)
-- **Discord:** [Supabase Discord](https://discord.supabase.com)
-- **GitHub Issues:** Create an issue in this repo
+If you run into issues:
+
+1. Check the Supabase logs in the Dashboard
+2. Verify your RLS policies are active
+3. Make sure you're signed in when testing
+4. Review the migration file for any syntax errors
+
+**Pro tip:** You can always drop and recreate tables if needed:
+```sql
+DROP TABLE IF EXISTS transactions CASCADE;
+DROP TABLE IF EXISTS goals CASCADE;
+DROP TABLE IF EXISTS budgets CASCADE;
+DROP TABLE IF EXISTS recurring_transactions CASCADE;
+DROP TABLE IF EXISTS user_settings CASCADE;
+
+-- Then re-run the migration
+```
 
 ---
 
-## 🎉 You're All Set!
-
-Your Financial Tracker now has:
-- ✅ Cloud backup
-- ✅ Multi-device sync
-- ✅ Secure authentication
-- ✅ Real-time updates
-- ✅ Goal milestone tracking
-
-**Welcome to the cloud! 🌥️💰**
+You're all set! 🚀
