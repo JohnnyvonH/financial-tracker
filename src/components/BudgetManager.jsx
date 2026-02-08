@@ -1,20 +1,12 @@
 import React, { useState } from 'react';
 import { Plus, Edit2, Trash2, Check, X } from 'lucide-react';
+import { formatCurrency } from '../utils/currency';
+import { EXPENSE_CATEGORIES } from '../utils/categories';
 
-export default function BudgetManager({ budgets, currentMonthSpending, onUpdateBudgets }) {
+export default function BudgetManager({ budgets, currentMonthSpending, onUpdateBudgets, currency = 'USD' }) {
   const [isAdding, setIsAdding] = useState(false);
   const [editingId, setEditingId] = useState(null);
   const [formData, setFormData] = useState({ category: '', amount: '' });
-
-  const expenseCategories = [
-    'Food & Dining',
-    'Shopping',
-    'Transportation',
-    'Bills & Utilities',
-    'Entertainment',
-    'Healthcare',
-    'Other'
-  ];
 
   const handleAdd = () => {
     if (!formData.category || !formData.amount || parseFloat(formData.amount) <= 0) {
@@ -66,7 +58,7 @@ export default function BudgetManager({ budgets, currentMonthSpending, onUpdateB
     setFormData({ category: '', amount: '' });
   };
 
-  const availableCategories = expenseCategories.filter(cat => !budgets[cat] || cat === editingId);
+  const availableCategories = EXPENSE_CATEGORIES.filter(cat => !budgets[cat] || cat === editingId);
 
   return (
     <div className="card">
@@ -98,7 +90,7 @@ export default function BudgetManager({ budgets, currentMonthSpending, onUpdateB
               </select>
             </div>
             <div className="form-group" style={{ marginBottom: 0 }}>
-              <label>Budget Amount ($)</label>
+              <label>Budget Amount</label>
               <input
                 type="number"
                 step="0.01"
@@ -143,8 +135,7 @@ export default function BudgetManager({ budgets, currentMonthSpending, onUpdateB
                   <div>
                     <h4 className="font-semibold text-slate-900">{category}</h4>
                     <div className="text-sm text-slate-600 mt-1">
-                      ${spent.toLocaleString('en-US', { minimumFractionDigits: 2 })} of 
-                      ${budgetAmount.toLocaleString('en-US', { minimumFractionDigits: 2 })}
+                      {formatCurrency(spent, currency)} of {formatCurrency(budgetAmount, currency)}
                     </div>
                   </div>
                   <div className="flex gap-2">
@@ -177,8 +168,8 @@ export default function BudgetManager({ budgets, currentMonthSpending, onUpdateB
                     isOverBudget ? 'text-red-600' : remaining < budgetAmount * 0.2 ? 'text-amber-600' : 'text-green-600'
                   }`}>
                     {isOverBudget 
-                      ? `$${Math.abs(remaining).toLocaleString('en-US', { minimumFractionDigits: 2 })} over budget`
-                      : `$${remaining.toLocaleString('en-US', { minimumFractionDigits: 2 })} remaining`
+                      ? `${formatCurrency(Math.abs(remaining), currency)} over budget`
+                      : `${formatCurrency(remaining, currency)} remaining`
                     }
                   </span>
                   <span className="text-sm text-slate-600">

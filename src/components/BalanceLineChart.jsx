@@ -1,7 +1,8 @@
 import React from 'react';
 import { Activity } from 'lucide-react';
+import { formatCurrency } from '../utils/currency';
 
-export default function BalanceLineChart({ balanceData }) {
+export default function BalanceLineChart({ balanceData, currency = 'USD' }) {
   if (!balanceData || balanceData.length === 0) {
     return (
       <div className="card">
@@ -60,7 +61,7 @@ export default function BalanceLineChart({ balanceData }) {
       <div className="mb-4">
         <div className="text-sm text-slate-600 mb-1">Current Balance</div>
         <div className={`text-3xl font-bold ${isPositive ? 'text-green-600' : 'text-red-600'}`}>
-          ${Math.abs(currentBalance).toLocaleString('en-US', { minimumFractionDigits: 2 })}
+          {formatCurrency(Math.abs(currentBalance), currency)}
         </div>
       </div>
 
@@ -146,13 +147,13 @@ export default function BalanceLineChart({ balanceData }) {
         <div>
           <div className="text-sm text-slate-600 mb-1">Highest</div>
           <div className="text-lg font-semibold text-green-600">
-            ${maxBalance.toLocaleString('en-US', { minimumFractionDigits: 2 })}
+            {formatCurrency(maxBalance, currency)}
           </div>
         </div>
         <div>
           <div className="text-sm text-slate-600 mb-1">Lowest</div>
           <div className="text-lg font-semibold text-red-600">
-            ${minBalance.toLocaleString('en-US', { minimumFractionDigits: 2 })}
+            {formatCurrency(minBalance, currency)}
           </div>
         </div>
         <div>

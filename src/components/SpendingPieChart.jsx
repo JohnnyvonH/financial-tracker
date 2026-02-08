@@ -1,7 +1,8 @@
 import React from 'react';
 import { PieChart } from 'lucide-react';
+import { formatCurrency } from '../utils/currency';
 
-export default function SpendingPieChart({ spendingByCategory }) {
+export default function SpendingPieChart({ spendingByCategory, currency = 'USD' }) {
   const categories = Object.entries(spendingByCategory);
   const totalSpending = categories.reduce((sum, [, amount]) => sum + amount, 0);
 
@@ -104,7 +105,7 @@ export default function SpendingPieChart({ spendingByCategory }) {
               </div>
               <div className="text-right">
                 <div className="text-sm font-semibold text-slate-900">
-                  ${slice.amount.toLocaleString('en-US', { minimumFractionDigits: 2 })}
+                  {formatCurrency(slice.amount, currency)}
                 </div>
                 <div className="text-xs text-slate-500">
                   {slice.percentage.toFixed(1)}%
