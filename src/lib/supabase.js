@@ -34,6 +34,18 @@ export const isSupabaseConfigured = () => {
   return Boolean(supabaseUrl && supabaseAnonKey);
 };
 
+// Get the correct redirect URL (includes base path for GitHub Pages)
+const getRedirectUrl = () => {
+  // For development
+  if (window.location.hostname === 'localhost') {
+    return window.location.origin;
+  }
+  
+  // For production (GitHub Pages)
+  // Use the full URL including the pathname (base path)
+  return window.location.origin + window.location.pathname.replace(/\/+$/, '');
+};
+
 // Auth helpers
 export const auth = {
   // Sign up with email/password
@@ -59,10 +71,13 @@ export const auth = {
 
   // Sign in with OAuth (Google, GitHub)
   signInWithOAuth: async (provider) => {
+    const redirectUrl = getRedirectUrl();
+    console.log('OAuth redirectTo:', redirectUrl);
+    
     const { data, error } = await supabase.auth.signInWithOAuth({
       provider,
       options: {
-        redirectTo: window.location.origin,
+        redirectTo: redirectUrl,
       },
     });
     return { data, error };
@@ -89,7 +104,7 @@ export const auth = {
   // Reset password
   resetPassword: async (email) => {
     const { data, error } = await supabase.auth.resetPasswordForEmail(email, {
-      redirectTo: `${window.location.origin}/reset-password`,
+      redirectTo: `${getRedirectUrl()}/reset-password`,
     });
     return { data, error };
   },
