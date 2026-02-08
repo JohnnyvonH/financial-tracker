@@ -333,11 +333,14 @@ function App() {
       <div className="container">
         {view === 'dashboard' && (
           <>
-            <KPICards
-              balance={data.balance}
-              monthlyIncome={monthlyIncome}
-              monthlyExpenses={monthlyExpenses}
-            />
+            {/* KPI Cards Section with dedicated spacing */}
+            <div className="kpi-section">
+              <KPICards
+                balance={data.balance}
+                monthlyIncome={monthlyIncome}
+                monthlyExpenses={monthlyExpenses}
+              />
+            </div>
             
             {/* Budget Warnings */}
             {Object.keys(data.budgets).length > 0 && (
