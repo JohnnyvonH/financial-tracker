@@ -8,6 +8,7 @@ import TransactionForm from './components/TransactionForm';
 import GoalForm from './components/GoalForm';
 import Budget from './components/Budget';
 import BudgetWarnings from './components/BudgetWarnings';
+import SpendingChart from './components/SpendingChart';
 import DataManagement from './components/DataManagement';
 import Notification from './components/Notification';
 import { storageService } from './services/storage';
@@ -373,6 +374,12 @@ function App() {
                 currency={currency}
               />
             )}
+
+            {/* Spending Chart */}
+            <SpendingChart
+              transactions={data.transactions}
+              currency={currency}
+            />
 
             <Goals
               goals={data.goals}

@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { TrendingUp, TrendingDown } from 'lucide-react';
+import { EXPENSE_CATEGORIES, INCOME_CATEGORIES } from '../utils/categories';
 
 export default function TransactionForm({ onSubmit, onCancel }) {
   const [formData, setFormData] = useState({
@@ -10,25 +11,7 @@ export default function TransactionForm({ onSubmit, onCancel }) {
     date: new Date().toISOString().split('T')[0]
   });
 
-  const expenseCategories = [
-    'Food & Dining',
-    'Shopping',
-    'Transportation',
-    'Bills & Utilities',
-    'Entertainment',
-    'Healthcare',
-    'Other'
-  ];
-
-  const incomeCategories = [
-    'Salary',
-    'Freelance',
-    'Investment',
-    'Gift',
-    'Other'
-  ];
-
-  const categories = formData.type === 'expense' ? expenseCategories : incomeCategories;
+  const categories = formData.type === 'expense' ? EXPENSE_CATEGORIES : INCOME_CATEGORIES;
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -93,7 +76,7 @@ export default function TransactionForm({ onSubmit, onCancel }) {
 
         <div className="form-group">
           <label>
-            Amount ($)
+            Amount
           </label>
           <input
             type="number"
