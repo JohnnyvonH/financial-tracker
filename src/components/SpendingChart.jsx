@@ -37,12 +37,15 @@ export default function SpendingChart({ transactions, currency = 'USD' }) {
   if (sortedCategories.length === 0) {
     return (
       <div className="card">
-        <h2 className="text-2xl font-light mb-6">Spending by Category</h2>
+        <div className="flex items-center gap-3 mb-6">
+          <PieChart className="text-primary" size={28} />
+          <h2 className="text-2xl font-light">Spending by Category</h2>
+        </div>
         <div className="flex flex-col items-center justify-center py-12 text-center">
           <div className="text-slate-400 mb-4">
             <PieChart size={48} />
           </div>
-          <p className="text-slate-600">
+          <p style={{ color: 'var(--text-secondary)' }}>
             No expenses this month yet.
           </p>
         </div>
@@ -52,7 +55,10 @@ export default function SpendingChart({ transactions, currency = 'USD' }) {
 
   return (
     <div className="card">
-      <h2 className="text-2xl font-light mb-6">Spending by Category</h2>
+      <div className="flex items-center gap-3 mb-6">
+        <PieChart className="text-primary" size={28} />
+        <h2 className="text-2xl font-light">Spending by Category</h2>
+      </div>
       <div className="space-y-4">
         {sortedCategories.map((item, index) => {
           const percentage = (item.amount / totalSpending * 100).toFixed(1);
@@ -67,16 +73,23 @@ export default function SpendingChart({ transactions, currency = 'USD' }) {
                     className="kpi-icon-small"
                     style={{ 
                       backgroundColor: `${categoryInfo.color}20`,
-                      color: categoryInfo.color
+                      color: categoryInfo.color,
+                      width: '2.5rem',
+                      height: '2.5rem',
+                      borderRadius: '0.5rem'
                     }}
                   >
                     <CategoryIcon size={18} />
                   </div>
-                  <span className="font-medium text-slate-700">{item.category}</span>
+                  <span className="font-medium" style={{ color: 'var(--text-primary)' }}>
+                    {item.category}
+                  </span>
                 </div>
                 <div className="flex items-center gap-3">
-                  <span className="text-sm text-slate-500">{percentage}%</span>
-                  <span className="font-semibold text-slate-900">
+                  <span className="text-sm" style={{ color: 'var(--text-secondary)' }}>
+                    {percentage}%
+                  </span>
+                  <span className="font-semibold" style={{ color: 'var(--text-primary)' }}>
                     {formatCurrency(item.amount, currency)}
                   </span>
                 </div>
@@ -94,10 +107,12 @@ export default function SpendingChart({ transactions, currency = 'USD' }) {
           );
         })}
       </div>
-      <div className="mt-6 pt-6 border-t border-slate-200">
+      <div className="mt-6 pt-6" style={{ borderTop: '1px solid var(--border)' }}>
         <div className="flex justify-between items-center">
-          <span className="text-slate-600 font-medium">Total Spending</span>
-          <span className="text-xl font-bold text-slate-900">
+          <span style={{ color: 'var(--text-secondary)' }} className="font-medium">
+            Total Spending
+          </span>
+          <span className="text-xl font-bold" style={{ color: 'var(--text-primary)' }}>
             {formatCurrency(totalSpending, currency)}
           </span>
         </div>
