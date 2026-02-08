@@ -1,18 +1,13 @@
-import React, { useState } from 'react';
-import { DollarSign, TrendingUp, TrendingDown, Calendar, Tag, X, Search, Filter } from 'lucide-react';
+import React, { useState, useMemo } from 'react';
+import { DollarSign, Calendar, Tag, X, Search, Filter } from 'lucide-react';
+import { formatCurrency } from '../utils/currency';
+import { getCategoryIcon } from '../utils/categories';
 
-export default function TransactionsPage({ transactions, onDeleteTransaction }) {
+export default function TransactionsPage({ transactions, onDeleteTransaction, currency = 'USD' }) {
   const [searchTerm, setSearchTerm] = useState('');
-  const [filterType, setFilterType] = useState('all'); // all, income, expense
+  const [filterType, setFilterType] = useState('all');
   const [filterCategory, setFilterCategory] = useState('all');
-
-  const formatCurrency = (amount) => {
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: 'USD',
-      minimumFractionDigits: 2
-    }).format(amount);
-  };
+  const [dateRange, setDateRange] = useState('all'); // all, 7days, 30days, 90days
 
   const formatDate = (dateString) => {
     return new Date(dateString).toLocaleDateString('en-US', {
@@ -25,13 +20,33 @@ export default function TransactionsPage({ transactions, onDeleteTransaction }) 
   // Get unique categories
   const categories = ['all', ...new Set(transactions.map(t => t.category))];
 
+  // Filter by date range
+  const getDateFilteredTransactions = () => {
+    if (dateRange === 'all') return transactions;
+    
+    const now = new Date();
+    const daysAgo = {
+      '7days': 7,
+      '30days': 30,
+      '90days': 90
+    }[dateRange];
+    
+    const cutoffDate = new Date(now.getTime() - (daysAgo * 24 * 60 * 60 * 1000));
+    
+    return transactions.filter(t => new Date(t.date) >= cutoffDate);
+  };
+
   // Filter transactions
-  const filteredTransactions = transactions.filter(transaction => {
-    const matchesSearch = transaction.description.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesType = filterType === 'all' || transaction.type === filterType;
-    const matchesCategory = filterCategory === 'all' || transaction.category === filterCategory;
-    return matchesSearch && matchesType && matchesCategory;
-  });
+  const filteredTransactions = useMemo(() => {
+    const dateFiltered = getDateFilteredTransactions();
+    
+    return dateFiltered.filter(transaction => {
+      const matchesSearch = transaction.description.toLowerCase().includes(searchTerm.toLowerCase());
+      const matchesType = filterType === 'all' || transaction.type === filterType;
+      const matchesCategory = filterCategory === 'all' || transaction.category === filterCategory;
+      return matchesSearch && matchesType && matchesCategory;
+    });
+  }, [transactions, searchTerm, filterType, filterCategory, dateRange]);
 
   // Calculate totals
   const totalIncome = filteredTransactions
@@ -65,19 +80,19 @@ export default function TransactionsPage({ transactions, onDeleteTransaction }) 
         <div className="card" style={{ padding: '1.5rem', marginBottom: 0 }}>
           <div className="text-sm text-slate-600 mb-1">Filtered Income</div>
           <div className="text-2xl font-bold text-green-600">
-            {formatCurrency(totalIncome)}
+            {formatCurrency(totalIncome, currency)}
           </div>
         </div>
         <div className="card" style={{ padding: '1.5rem', marginBottom: 0 }}>
           <div className="text-sm text-slate-600 mb-1">Filtered Expenses</div>
           <div className="text-2xl font-bold text-red-600">
-            {formatCurrency(totalExpenses)}
+            {formatCurrency(totalExpenses, currency)}
           </div>
         </div>
         <div className="card" style={{ padding: '1.5rem', marginBottom: 0 }}>
           <div className="text-sm text-slate-600 mb-1">Net</div>
           <div className={`text-2xl font-bold ${totalIncome - totalExpenses >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-            {formatCurrency(totalIncome - totalExpenses)}
+            {formatCurrency(totalIncome - totalExpenses, currency)}
           </div>
         </div>
       </div>
@@ -97,6 +112,21 @@ export default function TransactionsPage({ transactions, onDeleteTransaction }) 
               onChange={(e) => setSearchTerm(e.target.value)}
               className="search-input"
             />
+          </div>
+
+          {/* Date Range Filter */}
+          <div className="filter-group">
+            <Calendar size={18} />
+            <select
+              value={dateRange}
+              onChange={(e) => setDateRange(e.target.value)}
+              className="filter-select"
+            >
+              <option value="all">All Time</option>
+              <option value="7days">Last 7 Days</option>
+              <option value="30days">Last 30 Days</option>
+              <option value="90days">Last 90 Days</option>
+            </select>
           </div>
 
           {/* Type Filter */}
@@ -142,57 +172,60 @@ export default function TransactionsPage({ transactions, onDeleteTransaction }) 
           </div>
         ) : (
           <div className="transaction-list">
-            {filteredTransactions.map((transaction, index) => (
-              <div
-                key={transaction.id}
-                className="transaction-item animate-slide-in"
-                style={{ animationDelay: `${Math.min(index * 0.02, 0.6)}s` }}
-              >
-                <div className="transaction-left">
-                  <div
-                    className={`transaction-icon ${
-                      transaction.type === 'income' ? 'icon-green' : 'icon-red'
-                    }`}
-                  >
-                    {transaction.type === 'income' ? (
-                      <TrendingUp />
-                    ) : (
-                      <TrendingDown />
-                    )}
-                  </div>
-                  <div className="transaction-details">
-                    <h4>{transaction.description}</h4>
-                    <div className="transaction-meta">
-                      <span>
-                        <Calendar size={12} />
-                        {formatDate(transaction.date)}
-                      </span>
-                      <span>
-                        <Tag size={12} />
-                        {transaction.category}
-                      </span>
+            {filteredTransactions.map((transaction, index) => {
+              const categoryInfo = getCategoryIcon(transaction.category);
+              const CategoryIcon = categoryInfo.icon;
+              
+              return (
+                <div
+                  key={transaction.id}
+                  className="transaction-item animate-slide-in"
+                  style={{ animationDelay: `${Math.min(index * 0.02, 0.6)}s` }}
+                >
+                  <div className="transaction-left">
+                    <div
+                      className="transaction-icon"
+                      style={{ 
+                        backgroundColor: `${categoryInfo.color}20`,
+                        color: categoryInfo.color
+                      }}
+                    >
+                      <CategoryIcon size={20} />
+                    </div>
+                    <div className="transaction-details">
+                      <h4>{transaction.description}</h4>
+                      <div className="transaction-meta">
+                        <span>
+                          <Calendar size={12} />
+                          {formatDate(transaction.date)}
+                        </span>
+                        <span>
+                          <Tag size={12} />
+                          {transaction.category}
+                        </span>
+                      </div>
                     </div>
                   </div>
+                  <div className="transaction-right">
+                    <span
+                      className={`transaction-amount ${
+                        transaction.type === 'income' ? 'amount-income' : 'amount-expense'
+                      }`}
+                    >
+                      {transaction.type === 'income' ? '+' : '-'}
+                      {formatCurrency(transaction.amount, currency)}
+                    </span>
+                    <button
+                      onClick={() => onDeleteTransaction(transaction.id)}
+                      className="btn-icon"
+                      title="Delete transaction"
+                    >
+                      <X />
+                    </button>
+                  </div>
                 </div>
-                <div className="transaction-right">
-                  <span
-                    className={`transaction-amount ${
-                      transaction.type === 'income' ? 'amount-income' : 'amount-expense'
-                    }`}
-                  >
-                    {transaction.type === 'income' ? '+' : '-'}
-                    {formatCurrency(transaction.amount)}
-                  </span>
-                  <button
-                    onClick={() => onDeleteTransaction(transaction.id)}
-                    className="btn-icon"
-                    title="Delete transaction"
-                  >
-                    <X />
-                  </button>
-                </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         )}
       </div>

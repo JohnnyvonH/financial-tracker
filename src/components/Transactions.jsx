@@ -1,15 +1,9 @@
 import React from 'react';
-import { DollarSign, TrendingUp, TrendingDown, Calendar, Tag, X, ArrowRight } from 'lucide-react';
+import { DollarSign, Calendar, Tag, X, ArrowRight } from 'lucide-react';
+import { formatCurrency } from '../utils/currency';
+import { getCategoryIcon } from '../utils/categories';
 
-export default function Transactions({ transactions, onDeleteTransaction, onViewAll }) {
-  const formatCurrency = (amount) => {
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: 'USD',
-      minimumFractionDigits: 2
-    }).format(amount);
-  };
-
+export default function Transactions({ transactions, onDeleteTransaction, onViewAll, currency = 'USD' }) {
   const formatDate = (dateString) => {
     return new Date(dateString).toLocaleDateString('en-US', {
       month: 'short',
@@ -57,57 +51,60 @@ export default function Transactions({ transactions, onDeleteTransaction, onView
       </div>
       
       <div className="transaction-list">
-        {recentTransactions.map((transaction, index) => (
-          <div
-            key={transaction.id}
-            className="transaction-item animate-slide-in"
-            style={{ animationDelay: `${index * 0.05}s` }}
-          >
-            <div className="transaction-left">
-              <div
-                className={`transaction-icon ${
-                  transaction.type === 'income' ? 'icon-green' : 'icon-red'
-                }`}
-              >
-                {transaction.type === 'income' ? (
-                  <TrendingUp />
-                ) : (
-                  <TrendingDown />
-                )}
-              </div>
-              <div className="transaction-details">
-                <h4>{transaction.description}</h4>
-                <div className="transaction-meta">
-                  <span>
-                    <Calendar size={12} />
-                    {formatDate(transaction.date)}
-                  </span>
-                  <span>
-                    <Tag size={12} />
-                    {transaction.category}
-                  </span>
+        {recentTransactions.map((transaction, index) => {
+          const categoryInfo = getCategoryIcon(transaction.category);
+          const CategoryIcon = categoryInfo.icon;
+          
+          return (
+            <div
+              key={transaction.id}
+              className="transaction-item animate-slide-in"
+              style={{ animationDelay: `${index * 0.05}s` }}
+            >
+              <div className="transaction-left">
+                <div
+                  className="transaction-icon"
+                  style={{ 
+                    backgroundColor: `${categoryInfo.color}20`,
+                    color: categoryInfo.color
+                  }}
+                >
+                  <CategoryIcon size={20} />
+                </div>
+                <div className="transaction-details">
+                  <h4>{transaction.description}</h4>
+                  <div className="transaction-meta">
+                    <span>
+                      <Calendar size={12} />
+                      {formatDate(transaction.date)}
+                    </span>
+                    <span>
+                      <Tag size={12} />
+                      {transaction.category}
+                    </span>
+                  </div>
                 </div>
               </div>
+              <div className="transaction-right">
+                <span
+                  className={`transaction-amount ${
+                    transaction.type === 'income' ? 'amount-income' : 'amount-expense'
+                  }`}
+                >
+                  {transaction.type === 'income' ? '+' : '-'}
+                  {formatCurrency(transaction.amount, currency)}
+                </span>
+                <button
+                  onClick={() => onDeleteTransaction(transaction.id)}
+                  className="btn-icon"
+                  title="Delete transaction"
+                >
+                  <X />
+                </button>
+              </div>
             </div>
-            <div className="transaction-right">
-              <span
-                className={`transaction-amount ${
-                  transaction.type === 'income' ? 'amount-income' : 'amount-expense'
-                }`}
-              >
-                {transaction.type === 'income' ? '+' : '-'}
-                {formatCurrency(transaction.amount)}
-              </span>
-              <button
-                onClick={() => onDeleteTransaction(transaction.id)}
-                className="btn-icon"
-                title="Delete transaction"
-              >
-                <X />
-              </button>
-            </div>
-          </div>
-        ))}
+          );
+        })}
       </div>
 
       {transactions.length > 3 && (
