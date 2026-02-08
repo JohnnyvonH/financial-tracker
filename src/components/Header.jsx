@@ -1,13 +1,13 @@
 import React from 'react';
-import { Plus, Target } from 'lucide-react';
+import { Plus, Target, Settings } from 'lucide-react';
 
-export default function Header({ view, setView, onClearData }) {
+export default function Header({ view, setView }) {
   return (
     <div className="header">
       <div className="header-content">
         <div>
           <h1 className="header-font">
-            Financial Dashboard
+            Financial Tracker
           </h1>
           <p>
             Track your wealth, achieve your goals
@@ -35,10 +35,11 @@ export default function Header({ view, setView, onClearData }) {
             New Goal
           </button>
           <button
-            onClick={onClearData}
-            className="btn btn-danger"
+            onClick={() => setView('settings')}
+            className={`btn ${view === 'settings' ? 'btn-primary' : ''}`}
           >
-            Clear All
+            <Settings size={18} />
+            Settings
           </button>
         </div>
       </div>
