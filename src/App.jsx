@@ -5,6 +5,8 @@ import Goals from './components/Goals';
 import Transactions from './components/Transactions';
 import TransactionForm from './components/TransactionForm';
 import GoalForm from './components/GoalForm';
+import DataManagement from './components/DataManagement';
+import Notification from './components/Notification';
 import { storageService } from './services/storage';
 
 function App() {
@@ -15,104 +17,216 @@ function App() {
   });
   const [view, setView] = useState('dashboard');
   const [loading, setLoading] = useState(true);
+  const [notification, setNotification] = useState(null);
+
+  // Show notification helper
+  const showNotification = (message, type = 'info') => {
+    setNotification({ message, type });
+  };
 
   // Load data on mount
   useEffect(() => {
-    const savedData = storageService.getData();
-    setData(savedData);
-    setLoading(false);
+    try {
+      const savedData = storageService.getData();
+      setData(savedData);
+      setLoading(false);
+    } catch (error) {
+      console.error('Failed to load data:', error);
+      showNotification('Failed to load data. Starting fresh.', 'error');
+      setLoading(false);
+    }
   }, []);
 
   // Save data whenever it changes
   const saveData = (newData) => {
-    setData(newData);
-    storageService.saveData(newData);
+    try {
+      setData(newData);
+      const success = storageService.saveData(newData);
+      if (!success) {
+        showNotification('Failed to save data. Please try again.', 'error');
+      }
+      return success;
+    } catch (error) {
+      console.error('Error saving data:', error);
+      showNotification('Error saving data. Please try again.', 'error');
+      return false;
+    }
   };
 
   // Add transaction
   const addTransaction = (transaction) => {
-    const newTransaction = {
-      id: Date.now(),
-      ...transaction,
-      timestamp: Date.now()
-    };
+    try {
+      const newTransaction = {
+        id: Date.now(),
+        ...transaction,
+        timestamp: Date.now()
+      };
 
-    const newBalance = transaction.type === 'income'
-      ? data.balance + transaction.amount
-      : data.balance - transaction.amount;
+      const newBalance = transaction.type === 'income'
+        ? data.balance + transaction.amount
+        : data.balance - transaction.amount;
 
-    saveData({
-      ...data,
-      balance: newBalance,
-      transactions: [newTransaction, ...data.transactions]
-    });
+      const success = saveData({
+        ...data,
+        balance: newBalance,
+        transactions: [newTransaction, ...data.transactions]
+      });
 
-    setView('dashboard');
+      if (success) {
+        showNotification(
+          `${transaction.type === 'income' ? 'Income' : 'Expense'} added successfully!`,
+          'success'
+        );
+        setView('dashboard');
+      }
+    } catch (error) {
+      console.error('Error adding transaction:', error);
+      showNotification('Failed to add transaction. Please try again.', 'error');
+    }
   };
 
   // Delete transaction
   const deleteTransaction = (id) => {
     if (!confirm('Are you sure you want to delete this transaction?')) return;
 
-    const transaction = data.transactions.find(t => t.id === id);
-    const newBalance = transaction.type === 'income'
-      ? data.balance - transaction.amount
-      : data.balance + transaction.amount;
+    try {
+      const transaction = data.transactions.find(t => t.id === id);
+      if (!transaction) {
+        showNotification('Transaction not found.', 'error');
+        return;
+      }
 
-    saveData({
-      ...data,
-      balance: newBalance,
-      transactions: data.transactions.filter(t => t.id !== id)
-    });
+      const newBalance = transaction.type === 'income'
+        ? data.balance - transaction.amount
+        : data.balance + transaction.amount;
+
+      const success = saveData({
+        ...data,
+        balance: newBalance,
+        transactions: data.transactions.filter(t => t.id !== id)
+      });
+
+      if (success) {
+        showNotification('Transaction deleted successfully!', 'success');
+      }
+    } catch (error) {
+      console.error('Error deleting transaction:', error);
+      showNotification('Failed to delete transaction. Please try again.', 'error');
+    }
   };
 
   // Add goal
   const addGoal = (goal) => {
-    const newGoal = {
-      id: Date.now(),
-      ...goal
-    };
+    try {
+      const newGoal = {
+        id: Date.now(),
+        ...goal
+      };
 
-    saveData({
-      ...data,
-      goals: [...data.goals, newGoal]
-    });
+      const success = saveData({
+        ...data,
+        goals: [...data.goals, newGoal]
+      });
 
-    setView('dashboard');
+      if (success) {
+        showNotification('Savings goal created successfully!', 'success');
+        setView('dashboard');
+      }
+    } catch (error) {
+      console.error('Error adding goal:', error);
+      showNotification('Failed to add goal. Please try again.', 'error');
+    }
   };
 
   // Update goal progress
   const updateGoalProgress = (id, newCurrent) => {
-    const updatedGoals = data.goals.map(g =>
-      g.id === id ? { ...g, current: newCurrent } : g
-    );
+    try {
+      const updatedGoals = data.goals.map(g =>
+        g.id === id ? { ...g, current: newCurrent } : g
+      );
 
-    saveData({
-      ...data,
-      goals: updatedGoals
-    });
+      const success = saveData({
+        ...data,
+        goals: updatedGoals
+      });
+
+      if (success) {
+        showNotification('Goal progress updated!', 'success');
+      }
+    } catch (error) {
+      console.error('Error updating goal:', error);
+      showNotification('Failed to update goal. Please try again.', 'error');
+    }
   };
 
   // Delete goal
   const deleteGoal = (id) => {
     if (!confirm('Are you sure you want to delete this goal?')) return;
 
-    saveData({
-      ...data,
-      goals: data.goals.filter(g => g.id !== id)
-    });
+    try {
+      const success = saveData({
+        ...data,
+        goals: data.goals.filter(g => g.id !== id)
+      });
+
+      if (success) {
+        showNotification('Goal deleted successfully!', 'success');
+      }
+    } catch (error) {
+      console.error('Error deleting goal:', error);
+      showNotification('Failed to delete goal. Please try again.', 'error');
+    }
+  };
+
+  // Export data
+  const handleExportData = () => {
+    try {
+      const success = storageService.exportData();
+      if (success) {
+        showNotification('Data exported successfully!', 'success');
+      } else {
+        showNotification('Failed to export data.', 'error');
+      }
+    } catch (error) {
+      console.error('Error exporting data:', error);
+      showNotification('Failed to export data. Please try again.', 'error');
+    }
+  };
+
+  // Import data
+  const handleImportData = async (file) => {
+    try {
+      const importedData = await storageService.importData(file);
+      setData(importedData);
+      showNotification('Data imported successfully!', 'success');
+      setView('dashboard');
+    } catch (error) {
+      console.error('Error importing data:', error);
+      showNotification('Failed to import data. Please check the file format.', 'error');
+    }
   };
 
   // Clear all data
   const clearAllData = () => {
     if (!confirm('Are you sure you want to clear ALL data? This cannot be undone!')) return;
 
-    storageService.clearData();
-    setData({
-      balance: 0,
-      transactions: [],
-      goals: []
-    });
+    try {
+      const success = storageService.clearData();
+      if (success) {
+        setData({
+          balance: 0,
+          transactions: [],
+          goals: []
+        });
+        showNotification('All data cleared successfully!', 'success');
+        setView('dashboard');
+      } else {
+        showNotification('Failed to clear data.', 'error');
+      }
+    } catch (error) {
+      console.error('Error clearing data:', error);
+      showNotification('Failed to clear data. Please try again.', 'error');
+    }
   };
 
   // Calculate monthly statistics
@@ -149,10 +263,17 @@ function App() {
 
   return (
     <div className="min-h-screen">
+      {notification && (
+        <Notification
+          message={notification.message}
+          type={notification.type}
+          onClose={() => setNotification(null)}
+        />
+      )}
+      
       <Header 
         view={view} 
-        setView={setView} 
-        onClearData={clearAllData}
+        setView={setView}
       />
       
       <div className="container">
@@ -186,6 +307,14 @@ function App() {
           <GoalForm
             onSubmit={addGoal}
             onCancel={() => setView('dashboard')}
+          />
+        )}
+
+        {view === 'settings' && (
+          <DataManagement
+            onExport={handleExportData}
+            onImport={handleImportData}
+            onClearAll={clearAllData}
           />
         )}
       </div>
