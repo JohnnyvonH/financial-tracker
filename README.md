@@ -1,211 +1,275 @@
 # 💰 Financial Tracker
 
-> A professional-grade personal finance management application built with React
+> A modern, professional financial management application built with React, Supabase, and cloud synchronization.
 
-![Version](https://img.shields.io/badge/version-2.0.0-blue.svg)
-![React](https://img.shields.io/badge/React-18-61dafb.svg)
-![License](https://img.shields.io/badge/license-MIT-green.svg)
+[![Live Demo](https://img.shields.io/badge/demo-live-brightgreen)](https://johnnyvonh.github.io/financial-tracker/)
+[![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
+
+![Financial Tracker](https://raw.githubusercontent.com/JohnnyvonH/financial-tracker/main/public/favicon.svg)
+
+---
 
 ## ✨ Features
 
-### 🎯 Core Functionality
-- **Transaction Management** - Track income and expenses with categories
-- **Budget Tracking** - Set and monitor category budgets with visual progress
-- **Savings Goals** - Create and track multiple financial goals
-- **Recurring Transactions** - Automate regular income/expenses
-- **Smart Insights** - AI-powered spending analysis and recommendations
-- **Bill Reminders** - Never miss a payment with due date tracking
+### 💳 Transaction Management
+- ✅ Track income and expenses with categories
+- ✅ Add descriptions and dates to transactions
+- ✅ View transaction history with filtering
+- ✅ Delete transactions with balance auto-update
 
-### 📊 Analytics & Visualization
-- **Enhanced Charts** - Monthly trends, category breakdowns, income vs expenses
-- **Calendar View** - Visual timeline of your financial activity
-- **Reports** - Comprehensive analytics and export capabilities
-- **Real-time KPIs** - Instant overview of your financial health
+### 🎯 Savings Goals
+- ✅ Set savings targets with deadlines
+- ✅ Track progress with visual indicators
+- ✅ Update goal progress easily
+- ✅ Achievement notifications
+
+### 📊 Budget Management
+- ✅ Set monthly spending limits per category
+- ✅ Real-time budget warnings (80%, 90%, 100%)
+- ✅ Visual budget vs. actual spending
+- ✅ Category-based tracking
+
+### 🔄 Recurring Transactions
+- ✅ Set up automatic recurring bills/income
+- ✅ Daily, weekly, monthly, yearly frequencies
+- ✅ Pause/resume recurring transactions
+- ✅ Automatic transaction generation
+
+### 📈 Reports & Analytics
+- ✅ Monthly spending trends
+- ✅ Category-wise breakdown charts
+- ✅ Income vs. expense comparisons
+- ✅ Financial insights dashboard
+
+### ☁️ Cloud Sync
+- ✅ **Supabase integration** - Your data in the cloud
+- ✅ **Cross-device sync** - Access from anywhere
+- ✅ **Automatic backup** - Never lose your data
+- ✅ **Offline support** - Works without internet
+- ✅ **Google OAuth** - Secure authentication
 
 ### 🎨 User Experience
-- **Dark/Light Mode** - Toggle between professional dark and light themes
-- **Quick Add FAB** - Floating action button for instant transaction entry
-- **Responsive Design** - Perfect on desktop, tablet, and mobile
-- **Smooth Animations** - Professional transitions and interactions
+- ✅ **Dark/Light themes** - Easy on the eyes
+- ✅ **Multi-currency support** - USD, EUR, GBP, etc.
+- ✅ **Responsive design** - Works on all devices
+- ✅ **PWA support** - Install as mobile app
+- ✅ **Professional UI** - Modern, clean design
 
 ### 💾 Data Management
-- **CSV Import** - Bulk import from bank statements
-- **JSON Export/Import** - Full backup and restore
-- **Multi-Currency** - Support for 17+ currencies
-- **Local Storage** - Your data stays private on your device
+- ✅ Export data as JSON
+- ✅ Import data from backups
+- ✅ Clear all data option
+- ✅ Local storage fallback
 
-## 🚀 Quick Start
+---
+
+## 🚀 Live Demo
+
+**Try it now:** [https://johnnyvonh.github.io/financial-tracker/](https://johnnyvonh.github.io/financial-tracker/)
+
+---
+
+## 🛠️ Tech Stack
+
+- **Frontend:** React 18, Vite
+- **Styling:** Custom CSS with modern design
+- **Icons:** Lucide React
+- **Authentication:** Supabase Auth + Google OAuth
+- **Database:** Supabase PostgreSQL
+- **Hosting:** GitHub Pages
+- **Charts:** Custom SVG visualizations
+
+---
+
+## 📦 Installation
 
 ### Prerequisites
-- Node.js 16+ and npm
 
-### Installation
+- Node.js 18+ and npm
+- Supabase account (free tier)
+- Google OAuth credentials (optional)
 
-```bash
-# Clone the repository
-git clone https://github.com/JohnnyvonH/financial-tracker.git
-cd financial-tracker
+### Local Development
 
-# Install dependencies
-npm install
+1. **Clone the repository**
+   ```bash
+   git clone https://github.com/JohnnyvonH/financial-tracker.git
+   cd financial-tracker
+   ```
 
-# Start development server
-npm start
+2. **Install dependencies**
+   ```bash
+   npm install
+   ```
 
-# Open http://localhost:3000
-```
+3. **Set up environment variables**
+   ```bash
+   cp .env.example .env.local
+   ```
+   
+   Edit `.env.local` and add your Supabase credentials:
+   ```env
+   VITE_SUPABASE_URL=https://your-project.supabase.co
+   VITE_SUPABASE_ANON_KEY=your-anon-key
+   ```
 
-### Build for Production
+4. **Set up Supabase database**
+   
+   Follow the guide in [`SUPABASE_SETUP.md`](./SUPABASE_SETUP.md)
 
-```bash
-# Create optimized build
-npm run build
+5. **Run development server**
+   ```bash
+   npm run dev
+   ```
 
-# Deploy to GitHub Pages
-npm run deploy
-```
+6. **Open in browser**
+   ```
+   http://localhost:5173
+   ```
 
-## 📖 Usage Guide
+---
+
+## 🔧 Configuration
+
+### Supabase Setup
+
+See detailed instructions in [`SUPABASE_SETUP.md`](./SUPABASE_SETUP.md)
+
+**Quick steps:**
+1. Create Supabase project
+2. Run migration SQL (in `supabase/migrations/`)
+3. Configure redirect URLs
+4. Add environment variables
+
+### Google OAuth Setup
+
+1. Create OAuth credentials in [Google Cloud Console](https://console.cloud.google.com)
+2. Add to Supabase: **Authentication** → **Providers** → **Google**
+3. Configure redirect URLs:
+   - `https://your-project.supabase.co/auth/v1/callback`
+   - `http://localhost:5173/`
+
+---
+
+## 📱 Deployment
+
+See [`DEPLOYMENT.md`](./DEPLOYMENT.md) for complete deployment guide.
+
+**GitHub Pages (automated):**
+1. Push to `main` branch
+2. GitHub Actions automatically builds and deploys
+3. Live in 2-3 minutes!
+
+---
+
+## 🎯 Usage
 
 ### Getting Started
 
-1. **Set Your Currency** - Go to Settings and select your preferred currency
-2. **Add Transactions** - Click the "+" FAB button or go to Transactions page
-3. **Create Budgets** - Set monthly spending limits per category
-4. **Set Goals** - Define your savings targets
-5. **Review Insights** - Check the Dashboard for AI-powered recommendations
+1. **Sign in** with Google (or use without account for local-only mode)
+2. **Add your first transaction** using the "+ Transaction" button
+3. **Set up budgets** in the Budget tab
+4. **Create savings goals** with "+ Goal" button
+5. **View reports** to analyze your spending
 
-### Importing Bank Data
+### Key Features
 
-1. Export transactions from your bank as CSV
-2. Go to Settings → Import from CSV
-3. Select your CSV file
-4. Preview and confirm import
+**Dashboard View:**
+- View balance, income, expenses at a glance
+- See budget warnings if overspending
+- Track savings goal progress
+- Recent transactions list
 
-CSV format should include: Date, Description, Amount, Category (optional)
+**Transactions Page:**
+- Full transaction history
+- Filter by date, category, type
+- Search functionality
+- Quick delete actions
 
-### Best Practices
+**Budget Tab:**
+- Set monthly limits per category
+- See current spending vs. budget
+- Visual progress bars
+- Warning indicators
 
-- **Daily Entry** - Add transactions daily for accurate tracking
-- **Use Categories** - Consistent categorization improves insights
-- **Set Realistic Budgets** - Start conservative, adjust as needed
-- **Review Weekly** - Check your Dashboard and Reports regularly
-- **Export Regularly** - Create backups of your financial data
+**Reports:**
+- Monthly spending trends
+- Category breakdowns
+- Income vs. expense charts
+- Financial summaries
 
-## 🛠️ Technology Stack
+---
 
-- **Frontend**: React 18 with Hooks
-- **Styling**: Custom CSS with CSS Variables
-- **Icons**: Lucide React
-- **Storage**: Browser LocalStorage
-- **Charts**: Custom SVG visualizations
-- **Build**: Create React App
-- **Deployment**: GitHub Pages
+## 🔒 Privacy & Security
 
-## 📁 Project Structure
+- ✅ **Row Level Security** - Users only see their own data
+- ✅ **Secure OAuth** - Google authentication
+- ✅ **No tracking** - Your data stays private
+- ✅ **Local storage backup** - Fallback option
+- ✅ **Open source** - Transparent codebase
 
-```
-financial-tracker/
-├── public/
-│   ├── index.html
-│   └── manifest.json
-├── src/
-│   ├── components/
-│   │   ├── Header.jsx
-│   │   ├── Dashboard.jsx
-│   │   ├── Transactions.jsx
-│   │   ├── Budget.jsx
-│   │   ├── Goals.jsx
-│   │   ├── SmartInsights.jsx
-│   │   ├── BillReminders.jsx
-│   │   ├── EnhancedCharts.jsx
-│   │   ├── CalendarView.jsx
-│   │   ├── CSVImport.jsx
-│   │   ├── QuickAddFAB.jsx
-│   │   ├── ThemeToggle.jsx
-│   │   └── ...
-│   ├── utils/
-│   │   ├── currency.js
-│   │   ├── categories.js
-│   │   ├── insights.js
-│   │   ├── chartData.js
-│   │   └── csvParser.js
-│   ├── styles/
-│   │   ├── index.css
-│   │   └── new-features.css
-│   ├── App.jsx
-│   └── index.js
-├── package.json
-└── README.md
-```
+---
 
-## 🎨 Customization
+## 💰 Cost
 
-### Changing Theme Colors
+**100% FREE for personal use!**
 
-Edit `src/styles/index.css`:
+- Supabase Free Tier: 50,000 users, unlimited API requests
+- Google OAuth: Free up to 50,000 MAU
+- GitHub Pages: Free hosting
 
-```css
-:root {
-  --primary: #10b981;      /* Main accent color */
-  --accent: #06b6d4;       /* Secondary accent */
-  --success: #10b981;      /* Success states */
-  --danger: #ef4444;       /* Error states */
-  --warning: #f59e0b;      /* Warning states */
-}
-```
+**Total monthly cost: $0** 🎉
 
-### Adding Categories
+See FAQ for details on limits.
 
-Edit `src/utils/categories.js`:
-
-```javascript
-export const categories = [
-  { name: 'Your Category', icon: YourIcon, color: '#color' },
-  // Add more categories
-];
-```
-
-### Adding Currencies
-
-Edit `src/utils/currency.js`:
-
-```javascript
-export const CURRENCIES = [
-  { code: 'XYZ', name: 'Your Currency', symbol: 'X' },
-  // Add more currencies
-];
-```
+---
 
 ## 🤝 Contributing
 
-Contributions are welcome! Feel free to:
+Contributions are welcome!
 
 1. Fork the repository
-2. Create a feature branch (`git checkout -b feature/AmazingFeature`)
-3. Commit your changes (`git commit -m 'Add AmazingFeature'`)
-4. Push to the branch (`git push origin feature/AmazingFeature`)
+2. Create a feature branch (`git checkout -b feature/amazing-feature`)
+3. Commit your changes (`git commit -m 'Add amazing feature'`)
+4. Push to branch (`git push origin feature/amazing-feature`)
 5. Open a Pull Request
+
+---
 
 ## 📝 License
 
-This project is licensed under the MIT License - see the LICENSE file for details.
+MIT License - see [LICENSE](LICENSE) file for details.
 
-## 👤 Author
-
-**Johnny von Holstein**
-- GitHub: [@JohnnyvonH](https://github.com/JohnnyvonH)
+---
 
 ## 🙏 Acknowledgments
 
 - Icons by [Lucide](https://lucide.dev/)
-- Inspired by modern fintech apps like Robinhood, Revolut, and Stripe
-- Built with Create React App
-
-## 📧 Support
-
-If you have questions or need help, please open an issue on GitHub.
+- Authentication by [Supabase](https://supabase.com/)
+- Hosting by [GitHub Pages](https://pages.github.com/)
+- Built with [React](https://react.dev/) and [Vite](https://vitejs.dev/)
 
 ---
 
-**Happy Financial Tracking! 💰📊**
+## 📧 Contact
+
+**Johnny von Holstein**
+- GitHub: [@JohnnyvonH](https://github.com/JohnnyvonH)
+- Email: johnnyvonh@gmail.com
+
+---
+
+## 🗺️ Roadmap
+
+- [ ] Real-time sync across devices
+- [ ] Receipt upload with OCR
+- [ ] Bank account integration (Plaid/TrueLayer)
+- [ ] AI-powered insights
+- [ ] Mobile app (React Native)
+- [ ] Investment tracking
+- [ ] Tax export reports
+- [ ] Shared budgets for families
+
+---
+
+**Built with ❤️ by Johnny von Holstein**
