@@ -1,12 +1,10 @@
-import React, { useState } from 'react';
-import { LogIn, UserPlus } from 'lucide-react';
+import React from 'react';
+import { LogIn } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
-import AuthModal from './AuthModal';
 import UserMenu from './UserMenu';
 
-export default function AuthButton() {
+export default function AuthButton({ onSignInClick }) {
   const { isAuthenticated, isConfigured, loading } = useAuth();
-  const [showAuthModal, setShowAuthModal] = useState(false);
 
   // Don't show anything while loading
   if (loading) return null;
@@ -35,22 +33,15 @@ export default function AuthButton() {
     return <UserMenu />;
   }
 
-  // Show sign in/sign up buttons
+  // Show sign in button
   return (
-    <>
-      <button
-        onClick={() => setShowAuthModal(true)}
-        className="btn"
-        style={{ fontSize: '0.875rem' }}
-      >
-        <LogIn size={16} />
-        Sign In
-      </button>
-
-      <AuthModal 
-        isOpen={showAuthModal} 
-        onClose={() => setShowAuthModal(false)} 
-      />
-    </>
+    <button
+      onClick={onSignInClick}
+      className="btn"
+      style={{ fontSize: '0.875rem' }}
+    >
+      <LogIn size={16} />
+      Sign In
+    </button>
   );
 }
