@@ -27,13 +27,13 @@ const DataManagement = ({ onExport, onImport, onClearAll, currency, onCurrencyCh
       
       <div className="space-y-4">
         {/* Currency Setting */}
-        <div className="flex items-start gap-4 p-4 bg-slate-50 rounded-lg border border-slate-200">
-          <div className="flex-shrink-0 text-slate-600">
+        <div className="settings-section">
+          <div className="flex-shrink-0" style={{ color: 'var(--primary)' }}>
             <DollarSign className="w-5 h-5" />
           </div>
           <div className="flex-1">
-            <h3 className="font-medium text-slate-900 mb-1">Currency</h3>
-            <p className="text-sm text-slate-600 mb-3">
+            <h3 className="font-medium mb-1" style={{ color: 'var(--text-primary)' }}>Currency</h3>
+            <p className="text-sm mb-3" style={{ color: 'var(--text-secondary)' }}>
               Select your preferred currency for displaying amounts throughout the app.
             </p>
             <div className="form-group mb-0">
@@ -52,17 +52,17 @@ const DataManagement = ({ onExport, onImport, onClearAll, currency, onCurrencyCh
           </div>
         </div>
 
-        <div className="border-t border-slate-200 my-6"></div>
+        <div style={{ borderTop: '1px solid var(--border)', margin: '1.5rem 0' }}></div>
 
-        <h3 className="text-xl font-light mb-4">Data Management</h3>
+        <h3 className="text-xl font-light mb-4" style={{ color: 'var(--text-primary)' }}>Data Management</h3>
 
-        <div className="flex items-start gap-4 p-4 bg-blue-50 rounded-lg border border-blue-200">
-          <div className="flex-shrink-0 text-blue-600">
+        <div className="settings-section settings-section-info">
+          <div className="flex-shrink-0" style={{ color: 'var(--accent)' }}>
             <Download className="w-5 h-5" />
           </div>
           <div className="flex-1">
-            <h3 className="font-medium text-blue-900 mb-1">Export Data</h3>
-            <p className="text-sm text-blue-700 mb-3">
+            <h3 className="font-medium mb-1" style={{ color: 'var(--text-primary)' }}>Export Data</h3>
+            <p className="text-sm mb-3" style={{ color: 'var(--text-secondary)' }}>
               Download your financial data as a JSON file for backup or transfer to another device.
             </p>
             <button onClick={onExport} className="btn btn-primary text-sm">
@@ -72,13 +72,13 @@ const DataManagement = ({ onExport, onImport, onClearAll, currency, onCurrencyCh
           </div>
         </div>
 
-        <div className="flex items-start gap-4 p-4 bg-green-50 rounded-lg border border-green-200">
-          <div className="flex-shrink-0 text-green-600">
+        <div className="settings-section settings-section-success">
+          <div className="flex-shrink-0" style={{ color: 'var(--success)' }}>
             <Upload className="w-5 h-5" />
           </div>
           <div className="flex-1">
-            <h3 className="font-medium text-green-900 mb-1">Import Data</h3>
-            <p className="text-sm text-green-700 mb-3">
+            <h3 className="font-medium mb-1" style={{ color: 'var(--text-primary)' }}>Import Data</h3>
+            <p className="text-sm mb-3" style={{ color: 'var(--text-secondary)' }}>
               Restore your financial data from a previously exported JSON file. This will replace all current data.
             </p>
             <input
@@ -95,13 +95,13 @@ const DataManagement = ({ onExport, onImport, onClearAll, currency, onCurrencyCh
           </div>
         </div>
 
-        <div className="flex items-start gap-4 p-4 bg-red-50 rounded-lg border border-red-200">
-          <div className="flex-shrink-0 text-red-600">
+        <div className="settings-section settings-section-danger">
+          <div className="flex-shrink-0" style={{ color: 'var(--danger)' }}>
             <Trash2 className="w-5 h-5" />
           </div>
           <div className="flex-1">
-            <h3 className="font-medium text-red-900 mb-1">Clear All Data</h3>
-            <p className="text-sm text-red-700 mb-3">
+            <h3 className="font-medium mb-1" style={{ color: 'var(--text-primary)' }}>Clear All Data</h3>
+            <p className="text-sm mb-3" style={{ color: 'var(--text-secondary)' }}>
               Permanently delete all transactions, goals, and balance data. This action cannot be undone.
             </p>
             <button onClick={onClearAll} className="btn btn-danger text-sm">
