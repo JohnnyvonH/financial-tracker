@@ -155,7 +155,7 @@ function App() {
         onClearData={clearAllData}
       />
       
-      <div className="max-w-7xl mx-auto px-6 py-8">
+      <div className="container">
         {view === 'dashboard' && (
           <>
             <KPICards

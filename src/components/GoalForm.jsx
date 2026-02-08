@@ -32,27 +32,27 @@ export default function GoalForm({ onSubmit, onCancel }) {
 
   return (
     <div className="animate-slide-in max-w-2xl mx-auto">
-      <div className="stat-card rounded-2xl p-8 shadow-xl">
-        <h2 className="text-3xl font-bold header-font text-slate-800 mb-6">
+      <div className="stat-card rounded-2xl shadow-xl" style={{ padding: '2rem' }}>
+        <h2 className="section-title" style={{ fontSize: '1.875rem' }}>
           Create Savings Goal
         </h2>
         <form onSubmit={handleSubmit}>
-          <div className="mb-6">
-            <label className="block text-sm font-semibold text-slate-700 mb-2">
+          <div className="form-group">
+            <label className="form-label">
               Goal Name
             </label>
             <input
               type="text"
               value={formData.name}
               onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-              className="w-full px-4 py-3 rounded-xl border-2 border-slate-200 focus:border-emerald-500 focus:outline-none transition-colors"
+              className="form-input"
               placeholder="e.g., Emergency Fund, Vacation, New Car"
               required
             />
           </div>
 
-          <div className="mb-6">
-            <label className="block text-sm font-semibold text-slate-700 mb-2">
+          <div className="form-group">
+            <label className="form-label">
               Target Amount ($)
             </label>
             <input
@@ -60,14 +60,14 @@ export default function GoalForm({ onSubmit, onCancel }) {
               step="0.01"
               value={formData.target}
               onChange={(e) => setFormData({ ...formData, target: e.target.value })}
-              className="w-full px-4 py-3 rounded-xl border-2 border-slate-200 focus:border-emerald-500 focus:outline-none transition-colors text-lg"
+              className="form-input"
               placeholder="0.00"
               required
             />
           </div>
 
-          <div className="mb-8">
-            <label className="block text-sm font-semibold text-slate-700 mb-2">
+          <div className="form-group" style={{ marginBottom: '2rem' }}>
+            <label className="form-label">
               Current Progress ($)
             </label>
             <input
@@ -75,46 +75,27 @@ export default function GoalForm({ onSubmit, onCancel }) {
               step="0.01"
               value={formData.current}
               onChange={(e) => setFormData({ ...formData, current: e.target.value })}
-              className="w-full px-4 py-3 rounded-xl border-2 border-slate-200 focus:border-emerald-500 focus:outline-none transition-colors"
+              className="form-input"
               placeholder="0.00"
             />
           </div>
 
-          <div className="flex gap-4">
+          <div className="form-actions">
             <button
               type="submit"
-              className="flex-1 btn-primary text-white font-semibold py-4 rounded-xl shadow-lg"
+              className="btn btn-primary"
             >
               Create Goal
             </button>
             <button
               type="button"
               onClick={onCancel}
-              className="px-8 py-4 rounded-xl border-2 border-slate-200 text-slate-600 font-semibold hover:bg-slate-50 transition-colors"
+              className="btn"
             >
               Cancel
             </button>
           </div>
         </form>
-
-        <style jsx>{`
-          .stat-card {
-            background: linear-gradient(135deg, rgba(255,255,255,0.9) 0%, rgba(255,255,255,0.7) 100%);
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(255,255,255,0.5);
-          }
-          
-          .btn-primary {
-            background: linear-gradient(135deg, #0f766e 0%, #059669 100%);
-            transition: all 0.3s ease;
-          }
-          
-          .btn-primary:hover {
-            background: linear-gradient(135deg, #0d5f58 0%, #047857 100%);
-            transform: translateY(-1px);
-            box-shadow: 0 8px 16px rgba(15, 118, 110, 0.3);
-          }
-        `}</style>
       </div>
     </div>
   );

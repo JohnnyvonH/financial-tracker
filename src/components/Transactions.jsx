@@ -21,12 +21,12 @@ export default function Transactions({ transactions, onDeleteTransaction }) {
   if (transactions.length === 0) {
     return (
       <div>
-        <h2 className="text-2xl font-bold header-font text-slate-800 mb-4">
+        <h2 className="section-title">
           Recent Transactions
         </h2>
-        <div className="stat-card rounded-2xl p-8 shadow-xl text-center">
-          <DollarSign className="mx-auto text-slate-300 mb-3" size={48} />
-          <p className="text-slate-500 font-light">
+        <div className="stat-card rounded-2xl shadow-xl empty-state">
+          <DollarSign size={48} />
+          <p>
             No transactions yet. Add your first transaction to start tracking!
           </p>
         </div>
@@ -36,47 +36,47 @@ export default function Transactions({ transactions, onDeleteTransaction }) {
 
   return (
     <div>
-      <h2 className="text-2xl font-bold header-font text-slate-800 mb-4">
+      <h2 className="section-title">
         Recent Transactions
       </h2>
-      <div className="stat-card rounded-2xl shadow-xl overflow-hidden">
-        <div className="max-h-96 overflow-y-auto">
+      <div className="stat-card rounded-2xl shadow-xl">
+        <div className="transaction-list">
           {transactions.slice(0, 20).map((transaction, index) => (
             <div
               key={transaction.id}
-              className="flex items-center justify-between p-4 border-b border-slate-100 last:border-b-0 hover:bg-slate-50/50 transition-colors animate-slide-in"
+              className="transaction-item animate-slide-in"
               style={{ animationDelay: `${index * 0.05}s` }}
             >
-              <div className="flex items-center gap-4">
+              <div className="transaction-left">
                 <div
-                  className={`p-2 rounded-lg ${
-                    transaction.type === 'income' ? 'bg-emerald-100' : 'bg-rose-100'
+                  className={`transaction-icon ${
+                    transaction.type === 'income' ? 'icon-green' : 'icon-red'
                   }`}
                 >
                   {transaction.type === 'income' ? (
-                    <TrendingUp className="text-emerald-600" size={20} />
+                    <TrendingUp />
                   ) : (
-                    <TrendingDown className="text-rose-600" size={20} />
+                    <TrendingDown />
                   )}
                 </div>
-                <div>
-                  <p className="font-semibold text-slate-800">{transaction.description}</p>
-                  <div className="flex items-center gap-3 mt-1 flex-wrap">
-                    <span className="text-xs text-slate-500 flex items-center gap-1">
+                <div className="transaction-details">
+                  <h4>{transaction.description}</h4>
+                  <div className="transaction-meta">
+                    <span>
                       <Calendar size={12} />
                       {formatDate(transaction.date)}
                     </span>
-                    <span className="text-xs text-slate-500 flex items-center gap-1">
+                    <span>
                       <Tag size={12} />
                       {transaction.category}
                     </span>
                   </div>
                 </div>
               </div>
-              <div className="flex items-center gap-3">
+              <div className="transaction-right">
                 <span
-                  className={`text-lg font-bold ${
-                    transaction.type === 'income' ? 'text-emerald-600' : 'text-rose-600'
+                  className={`transaction-amount ${
+                    transaction.type === 'income' ? 'amount-income' : 'amount-expense'
                   }`}
                 >
                   {transaction.type === 'income' ? '+' : '-'}
@@ -84,24 +84,16 @@ export default function Transactions({ transactions, onDeleteTransaction }) {
                 </span>
                 <button
                   onClick={() => onDeleteTransaction(transaction.id)}
-                  className="text-slate-400 hover:text-rose-500 transition-colors"
+                  className="btn-icon"
                   title="Delete transaction"
                 >
-                  <X size={18} />
+                  <X />
                 </button>
               </div>
             </div>
           ))}
         </div>
       </div>
-
-      <style jsx>{`
-        .stat-card {
-          background: linear-gradient(135deg, rgba(255,255,255,0.9) 0%, rgba(255,255,255,0.7) 100%);
-          backdrop-filter: blur(10px);
-          border: 1px solid rgba(255,255,255,0.5);
-        }
-      `}</style>
     </div>
   );
 }
