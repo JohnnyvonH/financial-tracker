@@ -1,0 +1,281 @@
+/* ========================================
+   DARK THEME ONLY
+   Light mode has been removed
+   ======================================== */
+
+/* Remove all light mode CSS */
+.light {
+  /* No longer needed - removed */
+}
+
+/* Settings sections remain */
+.settings-section {
+  display: flex;
+  align-items: start;
+  gap: 1rem;
+  padding: 1.25rem;
+  background: var(--bg-secondary);
+  border-radius: 0.75rem;
+  border: 1px solid var(--border);
+  transition: all 0.2s;
+}
+
+.settings-section:hover {
+  border-color: var(--border-light);
+  transform: translateY(-1px);
+}
+
+.settings-section-info {
+  border-left: 3px solid var(--accent);
+}
+
+.settings-section-success {
+  border-left: 3px solid var(--success);
+}
+
+.settings-section-danger {
+  border-left: 3px solid var(--danger);
+}
+
+/* ========================================
+   ENHANCED CHARTS
+   ======================================== */
+.chart-tabs {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  border-bottom: 2px solid var(--border);
+  padding-bottom: 0;
+}
+
+.chart-tab {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1.25rem;
+  background: none;
+  border: none;
+  border-bottom: 3px solid transparent;
+  color: var(--text-secondary);
+  font-size: 0.875rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  margin-bottom: -2px;
+  opacity: 0.7;
+  border-radius: 0.5rem 0.5rem 0 0;
+}
+
+.chart-tab:hover {
+  opacity: 1;
+  color: var(--text-primary);
+  background: rgba(16, 185, 129, 0.05);
+}
+
+.chart-tab-active {
+  color: var(--primary);
+  border-bottom-color: var(--primary);
+  opacity: 1;
+  background: rgba(16, 185, 129, 0.1);
+}
+
+.chart-container {
+  min-height: 300px;
+}
+
+.chart-svg {
+  filter: drop-shadow(0 4px 12px rgba(0, 0, 0, 0.3));
+}
+
+.chart-segment {
+  transition: opacity 0.2s;
+  cursor: pointer;
+}
+
+.chart-segment:hover {
+  opacity: 1 !important;
+  filter: brightness(1.1);
+}
+
+/* ========================================
+   CALENDAR VIEW
+   ======================================== */
+.calendar-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 0.5rem;
+}
+
+.calendar-day-name {
+  text-align: center;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  padding: 0.5rem;
+  letter-spacing: 0.05em;
+}
+
+.calendar-day {
+  aspect-ratio: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 0.5rem;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border);
+  border-radius: 0.5rem;
+  cursor: pointer;
+  transition: all 0.2s;
+  position: relative;
+}
+
+.calendar-day:hover:not(.calendar-day-empty) {
+  background: var(--bg-tertiary);
+  border-color: var(--border-light);
+  transform: scale(1.05);
+}
+
+.calendar-day-empty {
+  background: transparent;
+  border: none;
+  cursor: default;
+}
+
+.calendar-day-number {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.calendar-day-today {
+  border: 2px solid var(--primary);
+  background: rgba(16, 185, 129, 0.1);
+}
+
+.calendar-day-today .calendar-day-number {
+  color: var(--primary);
+  font-weight: 700;
+}
+
+.calendar-day-selected {
+  background: linear-gradient(135deg, #10b981 0%, #06b6d4 100%);
+  border-color: transparent;
+  box-shadow: 0 4px 12px rgba(16, 185, 129, 0.4);
+}
+
+.calendar-day-selected .calendar-day-number {
+  color: white;
+}
+
+.calendar-day-has-transactions {
+  font-weight: 600;
+}
+
+.calendar-day-indicators {
+  display: flex;
+  gap: 0.25rem;
+  margin-top: 0.25rem;
+}
+
+.calendar-indicator {
+  width: 0.375rem;
+  height: 0.375rem;
+  border-radius: 50%;
+}
+
+.calendar-indicator-income {
+  background: var(--success);
+}
+
+.calendar-indicator-expense {
+  background: var(--danger);
+}
+
+.calendar-details {
+  padding: 1.5rem;
+  background: var(--bg-secondary);
+  border-radius: 0.75rem;
+  border: 1px solid var(--border);
+  margin-top: 1rem;
+}
+
+/* ========================================
+   ADDITIONAL UTILITIES
+   ======================================== */
+.max-w-xs {
+  max-width: 20rem;
+}
+
+.max-w-2xl {
+  max-width: 42rem;
+}
+
+.mx-auto {
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.overflow-y-auto {
+  overflow-y: auto;
+}
+
+.max-h-64 {
+  max-height: 16rem;
+}
+
+.grid-cols-1 {
+  grid-template-columns: repeat(1, minmax(0, 1fr));
+}
+
+@media (min-width: 1024px) {
+  .lg\:grid-cols-2 {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+.grid {
+  display: grid;
+}
+
+/* ========================================
+   RESPONSIVE CHART ADJUSTMENTS
+   ======================================== */
+@media (max-width: 768px) {
+  .chart-tabs {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+  
+  .chart-tab span {
+    display: none;
+  }
+  
+  .calendar-grid {
+    gap: 0.25rem;
+  }
+  
+  .calendar-day {
+    padding: 0.25rem;
+  }
+  
+  .calendar-day-number {
+    font-size: 0.75rem;
+  }
+  
+  .calendar-indicator {
+    width: 0.25rem;
+    height: 0.25rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .settings-section {
+    flex-direction: column;
+  }
+  
+  .chart-tab {
+    padding: 0.5rem 0.75rem;
+  }
+}
