@@ -19,6 +19,7 @@ function App() {
     goals: [],
     budgets: {}
   });
+  const [currency, setCurrency] = useState('USD');
   const [view, setView] = useState('dashboard');
   const [loading, setLoading] = useState(true);
   const [notification, setNotification] = useState(null);
@@ -28,7 +29,7 @@ function App() {
     setNotification({ message, type });
   };
 
-  // Load data on mount
+  // Load data and settings on mount
   useEffect(() => {
     try {
       const savedData = storageService.getData();
@@ -37,6 +38,11 @@ function App() {
         savedData.budgets = {};
       }
       setData(savedData);
+
+      // Load settings
+      const savedSettings = storageService.getSettings();
+      setCurrency(savedSettings.currency || 'USD');
+      
       setLoading(false);
     } catch (error) {
       console.error('Failed to load data:', error);
@@ -58,6 +64,22 @@ function App() {
       console.error('Error saving data:', error);
       showNotification('Error saving data. Please try again.', 'error');
       return false;
+    }
+  };
+
+  // Handle currency change
+  const handleCurrencyChange = (newCurrency) => {
+    try {
+      setCurrency(newCurrency);
+      const success = storageService.saveSettings({ currency: newCurrency });
+      if (success) {
+        showNotification('Currency updated successfully!', 'success');
+      } else {
+        showNotification('Failed to save currency setting.', 'error');
+      }
+    } catch (error) {
+      console.error('Error updating currency:', error);
+      showNotification('Failed to update currency. Please try again.', 'error');
     }
   };
 
@@ -339,6 +361,7 @@ function App() {
                 balance={data.balance}
                 monthlyIncome={monthlyIncome}
                 monthlyExpenses={monthlyExpenses}
+                currency={currency}
               />
             </div>
             
@@ -347,6 +370,7 @@ function App() {
               <BudgetWarnings
                 budgets={data.budgets}
                 currentMonthSpending={currentMonthSpending}
+                currency={currency}
               />
             )}
 
@@ -354,12 +378,14 @@ function App() {
               goals={data.goals}
               onUpdateGoal={updateGoalProgress}
               onDeleteGoal={deleteGoal}
+              currency={currency}
             />
             
             <Transactions
               transactions={data.transactions}
               onDeleteTransaction={deleteTransaction}
               onViewAll={() => setView('transactions')}
+              currency={currency}
             />
           </>
         )}
@@ -368,6 +394,7 @@ function App() {
           <TransactionsPage
             transactions={data.transactions}
             onDeleteTransaction={deleteTransaction}
+            currency={currency}
           />
         )}
 
@@ -376,6 +403,7 @@ function App() {
             transactions={data.transactions}
             budgets={data.budgets}
             onUpdateBudgets={updateBudgets}
+            currency={currency}
           />
         )}
 
@@ -398,6 +426,8 @@ function App() {
             onExport={handleExportData}
             onImport={handleImportData}
             onClearAll={clearAllData}
+            currency={currency}
+            onCurrencyChange={handleCurrencyChange}
           />
         )}
       </div>
