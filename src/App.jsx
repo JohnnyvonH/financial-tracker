@@ -3,9 +3,11 @@ import Header from './components/Header';
 import KPICards from './components/KPICards';
 import Goals from './components/Goals';
 import Transactions from './components/Transactions';
+import TransactionsPage from './components/TransactionsPage';
 import TransactionForm from './components/TransactionForm';
 import GoalForm from './components/GoalForm';
 import Budget from './components/Budget';
+import BudgetWarnings from './components/BudgetWarnings';
 import DataManagement from './components/DataManagement';
 import Notification from './components/Notification';
 import { storageService } from './services/storage';
@@ -279,7 +281,31 @@ function App() {
     return { monthlyIncome, monthlyExpenses };
   };
 
+  // Get current month spending by category
+  const getCurrentMonthSpending = () => {
+    const now = new Date();
+    const thisMonth = now.getMonth();
+    const thisYear = now.getFullYear();
+
+    const categorySpending = {};
+    
+    data.transactions
+      .filter(t => {
+        const tDate = new Date(t.date);
+        return t.type === 'expense' && 
+               tDate.getMonth() === thisMonth && 
+               tDate.getFullYear() === thisYear;
+      })
+      .forEach(transaction => {
+        const category = transaction.category || 'Other';
+        categorySpending[category] = (categorySpending[category] || 0) + transaction.amount;
+      });
+
+    return categorySpending;
+  };
+
   const { monthlyIncome, monthlyExpenses } = getMonthlyStats();
+  const currentMonthSpending = getCurrentMonthSpending();
 
   if (loading) {
     return (
@@ -312,16 +338,34 @@ function App() {
               monthlyIncome={monthlyIncome}
               monthlyExpenses={monthlyExpenses}
             />
+            
+            {/* Budget Warnings */}
+            {Object.keys(data.budgets).length > 0 && (
+              <BudgetWarnings
+                budgets={data.budgets}
+                currentMonthSpending={currentMonthSpending}
+              />
+            )}
+
             <Goals
               goals={data.goals}
               onUpdateGoal={updateGoalProgress}
               onDeleteGoal={deleteGoal}
             />
+            
             <Transactions
               transactions={data.transactions}
               onDeleteTransaction={deleteTransaction}
+              onViewAll={() => setView('transactions')}
             />
           </>
+        )}
+
+        {view === 'transactions' && (
+          <TransactionsPage
+            transactions={data.transactions}
+            onDeleteTransaction={deleteTransaction}
+          />
         )}
 
         {view === 'budget' && (

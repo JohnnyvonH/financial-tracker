@@ -1,7 +1,7 @@
 import React from 'react';
-import { DollarSign, TrendingUp, TrendingDown, Calendar, Tag, X } from 'lucide-react';
+import { DollarSign, TrendingUp, TrendingDown, Calendar, Tag, X, ArrowRight } from 'lucide-react';
 
-export default function Transactions({ transactions, onDeleteTransaction }) {
+export default function Transactions({ transactions, onDeleteTransaction, onViewAll }) {
   const formatCurrency = (amount) => {
     return new Intl.NumberFormat('en-US', {
       style: 'currency',
@@ -17,6 +17,9 @@ export default function Transactions({ transactions, onDeleteTransaction }) {
       year: 'numeric'
     });
   };
+
+  // Show only the 3 most recent transactions
+  const recentTransactions = transactions.slice(0, 3);
 
   if (transactions.length === 0) {
     return (
@@ -38,11 +41,23 @@ export default function Transactions({ transactions, onDeleteTransaction }) {
 
   return (
     <div className="card">
-      <h2 className="text-2xl font-light mb-6">
-        Recent Transactions
-      </h2>
+      <div className="flex justify-between items-center mb-6">
+        <h2 className="text-2xl font-light">
+          Recent Transactions
+        </h2>
+        {transactions.length > 3 && (
+          <button
+            onClick={onViewAll}
+            className="btn btn-primary text-sm"
+          >
+            View All ({transactions.length})
+            <ArrowRight size={16} />
+          </button>
+        )}
+      </div>
+      
       <div className="transaction-list">
-        {transactions.slice(0, 20).map((transaction, index) => (
+        {recentTransactions.map((transaction, index) => (
           <div
             key={transaction.id}
             className="transaction-item animate-slide-in"
@@ -94,6 +109,18 @@ export default function Transactions({ transactions, onDeleteTransaction }) {
           </div>
         ))}
       </div>
+
+      {transactions.length > 3 && (
+        <div className="text-center mt-4 pt-4 border-t border-slate-200">
+          <button
+            onClick={onViewAll}
+            className="text-primary hover:text-primary-dark font-medium text-sm flex items-center gap-2 mx-auto"
+          >
+            View all {transactions.length} transactions
+            <ArrowRight size={16} />
+          </button>
+        </div>
+      )}
     </div>
   );
 }
