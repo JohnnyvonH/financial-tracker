@@ -6,7 +6,8 @@ import {
   Download,
   BarChart3,
   PieChart,
-  DollarSign
+  DollarSign,
+  ChevronDown
 } from 'lucide-react';
 import { formatCurrency } from '../utils/currency';
 import { exportToCSV, exportGoalsToCSV, exportBudgetsToCSV } from '../utils/export';
@@ -171,16 +172,35 @@ export default function ReportsPage({
           </div>
           
           <div className="flex items-center gap-3">
-            <select
-              value={period}
-              onChange={(e) => setPeriod(e.target.value)}
-              className="text-sm"
-            >
-              <option value="month">This Month</option>
-              <option value="quarter">This Quarter</option>
-              <option value="year">This Year</option>
-              <option value="all">All Time</option>
-            </select>
+            {/* Period Selector with Icon */}
+            <div className="relative">
+              <select
+                value={period}
+                onChange={(e) => setPeriod(e.target.value)}
+                className="filter-select"
+                style={{ 
+                  paddingRight: '2.5rem',
+                  minWidth: '150px',
+                  appearance: 'none'
+                }}
+              >
+                <option value="month">This Month</option>
+                <option value="quarter">This Quarter</option>
+                <option value="year">This Year</option>
+                <option value="all">All Time</option>
+              </select>
+              <ChevronDown 
+                size={16} 
+                style={{
+                  position: 'absolute',
+                  right: '0.75rem',
+                  top: '50%',
+                  transform: 'translateY(-50%)',
+                  pointerEvents: 'none',
+                  color: 'var(--text-secondary)'
+                }}
+              />
+            </div>
           </div>
         </div>
         
@@ -220,12 +240,12 @@ export default function ReportsPage({
             <div className="kpi-icon-small icon-green">
               <TrendingUp size={20} />
             </div>
-            <span className="text-sm font-medium text-slate-600">Income</span>
+            <span className="text-sm font-medium" style={{ color: 'var(--text-secondary)' }}>Income</span>
           </div>
-          <div className="text-2xl font-bold text-green-600">
+          <div className="text-2xl font-bold" style={{ color: 'var(--success)' }}>
             {formatCurrency(stats.income, currency)}
           </div>
-          <div className="text-xs text-slate-500 mt-1">{getPeriodLabel()}</div>
+          <div className="text-xs mt-1" style={{ color: 'var(--text-muted)' }}>{getPeriodLabel()}</div>
         </div>
         
         <div className="kpi-card">
@@ -233,12 +253,12 @@ export default function ReportsPage({
             <div className="kpi-icon-small icon-red">
               <TrendingDown size={20} />
             </div>
-            <span className="text-sm font-medium text-slate-600">Expenses</span>
+            <span className="text-sm font-medium" style={{ color: 'var(--text-secondary)' }}>Expenses</span>
           </div>
-          <div className="text-2xl font-bold text-red-600">
+          <div className="text-2xl font-bold" style={{ color: 'var(--danger)' }}>
             {formatCurrency(stats.expenses, currency)}
           </div>
-          <div className="text-xs text-slate-500 mt-1">{getPeriodLabel()}</div>
+          <div className="text-xs mt-1" style={{ color: 'var(--text-muted)' }}>{getPeriodLabel()}</div>
         </div>
         
         <div className="kpi-card">
@@ -246,12 +266,12 @@ export default function ReportsPage({
             <div className={`kpi-icon-small ${stats.savings >= 0 ? 'icon-blue' : 'icon-red'}`}>
               <DollarSign size={20} />
             </div>
-            <span className="text-sm font-medium text-slate-600">Net Savings</span>
+            <span className="text-sm font-medium" style={{ color: 'var(--text-secondary)' }}>Net Savings</span>
           </div>
-          <div className={`text-2xl font-bold ${stats.savings >= 0 ? 'text-blue-600' : 'text-red-600'}`}>
+          <div className="text-2xl font-bold" style={{ color: stats.savings >= 0 ? 'var(--accent)' : 'var(--danger)' }}>
             {formatCurrency(Math.abs(stats.savings), currency)}
           </div>
-          <div className="text-xs text-slate-500 mt-1">
+          <div className="text-xs mt-1" style={{ color: 'var(--text-muted)' }}>
             {stats.savingsRate.toFixed(1)}% savings rate
           </div>
         </div>
@@ -259,27 +279,34 @@ export default function ReportsPage({
       
       {/* Month Comparison */}
       <div className="card mb-6">
-        <h3 className="text-xl font-semibold mb-4">Month-over-Month</h3>
+        <h3 className="text-xl font-semibold mb-4" style={{ color: 'var(--text-primary)' }}>Month-over-Month</h3>
         <div className="grid grid-2 gap-6">
           <div>
-            <div className="text-sm text-slate-600 mb-1">This Month</div>
-            <div className="text-2xl font-bold text-slate-900">
+            <div className="text-sm mb-1" style={{ color: 'var(--text-secondary)' }}>This Month</div>
+            <div className="text-2xl font-bold" style={{ color: 'var(--text-primary)' }}>
               {formatCurrency(monthComparison.thisMonth, currency)}
             </div>
           </div>
           <div>
-            <div className="text-sm text-slate-600 mb-1">Last Month</div>
-            <div className="text-2xl font-bold text-slate-900">
+            <div className="text-sm mb-1" style={{ color: 'var(--text-secondary)' }}>Last Month</div>
+            <div className="text-2xl font-bold" style={{ color: 'var(--text-primary)' }}>
               {formatCurrency(monthComparison.lastMonth, currency)}
             </div>
           </div>
         </div>
-        <div className={`mt-4 p-4 rounded-lg ${
-          monthComparison.isIncrease ? 'bg-red-50' : 'bg-green-50'
-        }`}>
-          <div className={`flex items-center gap-2 ${
-            monthComparison.isIncrease ? 'text-red-600' : 'text-green-600'
-          }`}>
+        <div 
+          className="mt-4 p-4 rounded-lg"
+          style={{
+            background: monthComparison.isIncrease 
+              ? 'rgba(239, 68, 68, 0.1)' 
+              : 'rgba(16, 185, 129, 0.1)',
+            border: `1px solid ${monthComparison.isIncrease ? 'rgba(239, 68, 68, 0.3)' : 'rgba(16, 185, 129, 0.3)'}`,
+          }}
+        >
+          <div 
+            className="flex items-center gap-2"
+            style={{ color: monthComparison.isIncrease ? 'var(--danger)' : 'var(--success)' }}
+          >
             {monthComparison.isIncrease ? <TrendingUp size={20} /> : <TrendingDown size={20} />}
             <span className="font-semibold">
               {Math.abs(monthComparison.change).toFixed(1)}% {monthComparison.isIncrease ? 'increase' : 'decrease'}
@@ -297,9 +324,9 @@ export default function ReportsPage({
         />
         
         <div className="card">
-          <h3 className="text-xl font-semibold mb-4">Top Spending Categories</h3>
+          <h3 className="text-xl font-semibold mb-4" style={{ color: 'var(--text-primary)' }}>Top Spending Categories</h3>
           {stats.topCategories.length === 0 ? (
-            <div className="text-center py-12 text-slate-600">
+            <div className="text-center py-12" style={{ color: 'var(--text-secondary)' }}>
               No expenses in this period
             </div>
           ) : (
@@ -309,8 +336,8 @@ export default function ReportsPage({
                 return (
                   <div key={category}>
                     <div className="flex justify-between items-center mb-2">
-                      <span className="font-medium text-slate-700">{category}</span>
-                      <span className="font-semibold text-slate-900">
+                      <span className="font-medium" style={{ color: 'var(--text-primary)' }}>{category}</span>
+                      <span className="font-semibold" style={{ color: 'var(--text-primary)' }}>
                         {formatCurrency(amount, currency)}
                       </span>
                     </div>
@@ -320,7 +347,7 @@ export default function ReportsPage({
                         style={{ width: `${percentage}%` }}
                       />
                     </div>
-                    <div className="text-sm text-slate-500 mt-1">
+                    <div className="text-sm mt-1" style={{ color: 'var(--text-secondary)' }}>
                       {percentage.toFixed(1)}% of total expenses
                     </div>
                   </div>
@@ -333,23 +360,23 @@ export default function ReportsPage({
       
       {/* Additional Stats */}
       <div className="card">
-        <h3 className="text-xl font-semibold mb-4">Additional Insights</h3>
+        <h3 className="text-xl font-semibold mb-4" style={{ color: 'var(--text-primary)' }}>Additional Insights</h3>
         <div className="grid grid-3 gap-6">
           <div>
-            <div className="text-sm text-slate-600 mb-1">Average Transaction</div>
-            <div className="text-xl font-bold text-slate-900">
+            <div className="text-sm mb-1" style={{ color: 'var(--text-secondary)' }}>Average Transaction</div>
+            <div className="text-xl font-bold" style={{ color: 'var(--text-primary)' }}>
               {formatCurrency(stats.avgTransaction, currency)}
             </div>
           </div>
           <div>
-            <div className="text-sm text-slate-600 mb-1">Total Transactions</div>
-            <div className="text-xl font-bold text-slate-900">
+            <div className="text-sm mb-1" style={{ color: 'var(--text-secondary)' }}>Total Transactions</div>
+            <div className="text-xl font-bold" style={{ color: 'var(--text-primary)' }}>
               {stats.transactionCount}
             </div>
           </div>
           <div>
-            <div className="text-sm text-slate-600 mb-1">Categories Used</div>
-            <div className="text-xl font-bold text-slate-900">
+            <div className="text-sm mb-1" style={{ color: 'var(--text-secondary)' }}>Categories Used</div>
+            <div className="text-xl font-bold" style={{ color: 'var(--text-primary)' }}>
               {Object.keys(stats.categoryBreakdown).length}
             </div>
           </div>
