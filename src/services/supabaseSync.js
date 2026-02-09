@@ -208,6 +208,19 @@ class SupabaseSyncService {
   // ==============================================
 
   /**
+   * Transform Supabase goal to app format
+   */
+  transformGoalFromSupabase(supabaseGoal) {
+    return {
+      id: supabaseGoal.id,
+      name: supabaseGoal.name,
+      target: Number(supabaseGoal.target_amount || 0),
+      current: Number(supabaseGoal.current_amount || 0),
+      deadline: supabaseGoal.deadline,
+    };
+  }
+
+  /**
    * Get all goals for user
    */
   async getGoals() {
@@ -221,7 +234,9 @@ class SupabaseSyncService {
         .order('created_at', { ascending: false });
 
       if (error) throw error;
-      return data || [];
+      
+      // Transform goals to app format
+      return (data || []).map(goal => this.transformGoalFromSupabase(goal));
     } catch (error) {
       console.error('Error fetching goals:', error);
       return [];
@@ -484,7 +499,14 @@ class SupabaseSyncService {
       if (localData.goals?.length > 0) {
         console.log(`📤 Migrating ${localData.goals.length} goals...`);
         for (const goal of localData.goals) {
-          await this.addGoal(goal);
+          // Transform local goal format to Supabase format
+          const supabaseGoal = {
+            name: goal.name,
+            target_amount: goal.target,
+            current_amount: goal.current || 0,
+            deadline: goal.deadline || null,
+          };
+          await this.addGoal(supabaseGoal);
         }
       }
 
@@ -535,7 +557,7 @@ class SupabaseSyncService {
       return {
         balance: settings?.balance || 0,
         transactions: transactions || [],
-        goals: goals || [],
+        goals: goals || [], // Goals are already transformed by getGoals()
         budgets: budgets || {},
         recurringTransactions: recurringTransactions || [],
       };
