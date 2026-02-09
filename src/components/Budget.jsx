@@ -163,7 +163,7 @@ export default function Budget({ transactions, budgets, onUpdateBudgets, currenc
                   return (
                     <div key={category} className="spending-item">
                       <div className="flex justify-between items-center mb-2">
-                        <span className="font-medium text-slate-700">{category}</span>
+                        <span className="font-medium text-slate-700" style={{ color: 'var(--text-primary)' }}>{category}</span>
                         <span className="text-slate-900 font-semibold">
                           {formatCurrency(amount, currency)}
                         </span>

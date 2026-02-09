@@ -101,7 +101,7 @@ export default function SpendingPieChart({ spendingByCategory, currency = 'USD' 
                   className="w-4 h-4 rounded-sm" 
                   style={{ backgroundColor: slice.color }}
                 />
-                <span className="text-sm font-medium text-slate-700">{slice.category}</span>
+                <span className="text-sm font-medium text-slate-700" style={{ color: 'var(--text-primary)' }}>{slice.category}</span>
               </div>
               <div className="text-right">
                 <div className="text-sm font-semibold text-slate-900">
