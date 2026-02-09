@@ -74,7 +74,7 @@ export default function Transactions({ transactions, onDeleteTransaction, onView
                   <CategoryIcon size={20} />
                 </div>
                 <div className="transaction-details">
-                  <h4>{transaction.description}</h4>
+                  <h4 style={{ color: 'var(--text-primary)' }}>{transaction.description}</h4>
                   <div className="transaction-meta">
                     <span>
                       <Calendar size={12} />
