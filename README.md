@@ -5,8 +5,6 @@
 [![Live Demo](https://img.shields.io/badge/demo-live-brightgreen)](https://johnnyvonh.github.io/financial-tracker/)
 [![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 
-![Financial Tracker](https://raw.githubusercontent.com/JohnnyvonH/financial-tracker/main/public/favicon.svg)
-
 ---
 
 ## ✨ Features
