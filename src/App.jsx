@@ -721,6 +721,27 @@ function App() {
     return { monthlyIncome, monthlyExpenses };
   };
 
+  // Calculate last 30 days statistics
+  const getLast30DaysStats = () => {
+    const now = new Date();
+    const thirtyDaysAgo = new Date(now.getTime() - (30 * 24 * 60 * 60 * 1000));
+
+    const last30DaysTransactions = data.transactions.filter(t => {
+      const tDate = new Date(t.date);
+      return tDate >= thirtyDaysAgo && tDate <= now;
+    });
+
+    const last30DaysIncome = last30DaysTransactions
+      .filter(t => t.type === 'income')
+      .reduce((sum, t) => sum + t.amount, 0);
+
+    const last30DaysExpenses = last30DaysTransactions
+      .filter(t => t.type === 'expense')
+      .reduce((sum, t) => sum + t.amount, 0);
+
+    return { last30DaysIncome, last30DaysExpenses };
+  };
+
   // Get current month spending by category
   const getCurrentMonthSpending = () => {
     const now = new Date();
@@ -745,6 +766,7 @@ function App() {
   };
 
   const { monthlyIncome, monthlyExpenses } = getMonthlyStats();
+  const { last30DaysIncome, last30DaysExpenses } = getLast30DaysStats();
   const currentMonthSpending = getCurrentMonthSpending();
 
   if (loading) {
@@ -806,6 +828,8 @@ function App() {
                   balance={data.balance}
                   monthlyIncome={monthlyIncome}
                   monthlyExpenses={monthlyExpenses}
+                  last30DaysIncome={last30DaysIncome}
+                  last30DaysExpenses={last30DaysExpenses}
                   currency={currency}
                 />
               </div>
