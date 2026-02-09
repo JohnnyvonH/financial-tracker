@@ -1,8 +1,8 @@
 import React, { useRef } from 'react';
-import { Download, Upload, Trash2, DollarSign } from 'lucide-react';
+import { Download, Upload, Trash2, DollarSign, AlertTriangle } from 'lucide-react';
 import { CURRENCIES } from '../utils/currency';
 
-const DataManagement = ({ onExport, onImport, onClearAll, currency, onCurrencyChange }) => {
+const DataManagement = ({ onExport, onImport, onClearAll, onRemoveDuplicates, currency, onCurrencyChange, duplicateCount }) => {
   const fileInputRef = useRef(null);
 
   const handleImportClick = () => {
@@ -55,6 +55,25 @@ const DataManagement = ({ onExport, onImport, onClearAll, currency, onCurrencyCh
         <div style={{ borderTop: '1px solid var(--border)', margin: '1.5rem 0' }}></div>
 
         <h3 className="text-xl font-light mb-4" style={{ color: 'var(--text-primary)' }}>Data Management</h3>
+
+        {/* Remove Duplicates */}
+        {duplicateCount > 0 && (
+          <div className="settings-section settings-section-warning">
+            <div className="flex-shrink-0" style={{ color: 'var(--warning)' }}>
+              <AlertTriangle className="w-5 h-5" />
+            </div>
+            <div className="flex-1">
+              <h3 className="font-medium mb-1" style={{ color: 'var(--text-primary)' }}>Remove Duplicate Transactions</h3>
+              <p className="text-sm mb-3" style={{ color: 'var(--text-secondary)' }}>
+                Found {duplicateCount} duplicate transaction{duplicateCount > 1 ? 's' : ''}. Remove duplicates to clean up your data and fix incorrect balance calculations.
+              </p>
+              <button onClick={onRemoveDuplicates} className="btn btn-warning text-sm">
+                <AlertTriangle className="w-4 h-4" />
+                Remove {duplicateCount} Duplicate{duplicateCount > 1 ? 's' : ''}
+              </button>
+            </div>
+          </div>
+        )}
 
         <div className="settings-section settings-section-info">
           <div className="flex-shrink-0" style={{ color: 'var(--accent)' }}>
