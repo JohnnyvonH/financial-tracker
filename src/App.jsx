@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useRef } from 'react';
 import ErrorBoundary from './components/ErrorBoundary';
 import Header from './components/Header';
 import KPICards from './components/KPICards';
@@ -39,6 +39,7 @@ function App() {
   const [loading, setLoading] = useState(true);
   const [syncing, setSyncing] = useState(false);
   const [toast, setToast] = useState(null);
+  const recurringProcessedRef = useRef(false);
 
   // Count duplicates
   const duplicateCount = useMemo(() => countDuplicates(data.transactions), [data.transactions]);
@@ -52,6 +53,7 @@ function App() {
   useEffect(() => {
     const initializeData = async () => {
       setLoading(true);
+      recurringProcessedRef.current = false;
       
       try {
         // If user is logged in and Supabase is configured, use cloud data
@@ -77,6 +79,14 @@ function App() {
                   showToast('✅ Data migrated successfully!', 'success');
                   // Fetch again to get migrated data
                   const freshData = await supabaseSync.fetchAllData();
+                  
+                  // Auto-dedupe on load
+                  const uniqueTransactions = removeDuplicateTransactions(freshData.transactions);
+                  if (uniqueTransactions.length < freshData.transactions.length) {
+                    console.log('🧹 Auto-cleaned duplicates on load');
+                    freshData.transactions = uniqueTransactions;
+                  }
+                  
                   setData(freshData);
                 } else {
                   setData(localData);
@@ -85,7 +95,13 @@ function App() {
                 setData(cloudData);
               }
             } else {
-              // Use cloud data
+              // Use cloud data - auto dedupe
+              const uniqueTransactions = removeDuplicateTransactions(cloudData.transactions);
+              if (uniqueTransactions.length < cloudData.transactions.length) {
+                console.log('🧹 Auto-cleaned', cloudData.transactions.length - uniqueTransactions.length, 'duplicates on load');
+                cloudData.transactions = uniqueTransactions;
+              }
+              
               setData(cloudData);
               showToast('Data loaded from cloud ☁️', 'success');
             }
@@ -120,6 +136,15 @@ function App() {
       const savedData = storageService.getData();
       if (!savedData.budgets) savedData.budgets = {};
       if (!savedData.recurringTransactions) savedData.recurringTransactions = [];
+      
+      // Auto-dedupe on load
+      const uniqueTransactions = removeDuplicateTransactions(savedData.transactions);
+      if (uniqueTransactions.length < savedData.transactions.length) {
+        console.log('🧹 Auto-cleaned', savedData.transactions.length - uniqueTransactions.length, 'duplicates on load');
+        savedData.transactions = uniqueTransactions;
+        storageService.saveData(savedData);
+      }
+      
       setData(savedData);
 
       const savedSettings = storageService.getSettings();
@@ -133,33 +158,60 @@ function App() {
     initializeData();
   }, [user, isConfigured]);
 
-  // Process recurring transactions daily
+  // Process recurring transactions - ONLY ONCE per session
   useEffect(() => {
-    if (loading || data.recurringTransactions.length === 0) return;
+    if (loading || data.recurringTransactions.length === 0 || recurringProcessedRef.current) {
+      return;
+    }
 
     const processRecurring = async () => {
+      console.log('🔄 Processing recurring transactions...');
       const { newTransactions, updatedRecurring } = processRecurringTransactions(
         data.recurringTransactions.filter(r => r.active),
         data.transactions
       );
 
       if (newTransactions.length > 0) {
-        // Add new transactions
-        for (const transaction of newTransactions) {
-          await addTransaction(transaction, false); // Don't show toast for each
-        }
+        console.log('💰 Adding', newTransactions.length, 'recurring transactions');
+        
+        // Calculate new balance
+        let newBalance = data.balance;
+        newTransactions.forEach(t => {
+          newBalance = t.type === 'income' ? newBalance + t.amount : newBalance - t.amount;
+        });
+
+        // Save all at once
+        await saveData({
+          ...data,
+          balance: newBalance,
+          transactions: [...newTransactions, ...data.transactions],
+          recurringTransactions: updatedRecurring
+        });
 
         showToast(
           `${newTransactions.length} recurring transaction${newTransactions.length > 1 ? 's' : ''} processed!`,
           'success'
         );
+      } else if (updatedRecurring.length > 0 && JSON.stringify(updatedRecurring) !== JSON.stringify(data.recurringTransactions)) {
+        // Update last_processed dates even if no new transactions
+        await saveData({
+          ...data,
+          recurringTransactions: updatedRecurring
+        });
       }
+      
+      recurringProcessedRef.current = true;
     };
 
     processRecurring();
-    const interval = setInterval(processRecurring, 60 * 60 * 1000);
+    
+    // Check once per hour
+    const interval = setInterval(() => {
+      recurringProcessedRef.current = false;
+    }, 60 * 60 * 1000);
+    
     return () => clearInterval(interval);
-  }, [loading, data.recurringTransactions]);
+  }, [loading]);
 
   // Save data (to both local storage and Supabase if logged in)
   const saveData = async (newData) => {
@@ -185,10 +237,11 @@ function App() {
   };
 
   // Remove duplicate transactions
-  const handleRemoveDuplicates = () => {
+  const handleRemoveDuplicates = async () => {
     if (!confirm(`Remove ${duplicateCount} duplicate transaction${duplicateCount > 1 ? 's' : ''}? This cannot be undone.`)) return;
 
     try {
+      setSyncing(true);
       const uniqueTransactions = removeDuplicateTransactions(data.transactions);
       
       // Recalculate balance from unique transactions
@@ -196,10 +249,19 @@ function App() {
         return t.type === 'income' ? balance + t.amount : balance - t.amount;
       }, 0);
 
-      const success = saveData({
+      // Update last_processed for all recurring to today to prevent re-adding
+      const today = new Date().toISOString().split('T')[0];
+      const updatedRecurring = data.recurringTransactions.map(r => ({
+        ...r,
+        last_processed: today,
+        lastProcessed: today
+      }));
+
+      const success = await saveData({
         ...data,
         balance: recalculatedBalance,
-        transactions: uniqueTransactions
+        transactions: uniqueTransactions,
+        recurringTransactions: updatedRecurring
       });
 
       if (success) {
@@ -211,6 +273,8 @@ function App() {
     } catch (error) {
       console.error('Error removing duplicates:', error);
       showToast('Failed to remove duplicates. Please try again.', 'error');
+    } finally {
+      setSyncing(false);
     }
   };
 
@@ -267,6 +331,18 @@ function App() {
         date: transaction.date,
         timestamp: Date.now()
       };
+
+      // Check for duplicates before adding
+      const duplicateKey = `${transactionData.description}-${transactionData.category}-${transactionData.amount}-${transactionData.date}-${transactionData.type}`;
+      const isDuplicate = data.transactions.some(t => 
+        `${t.description}-${t.category}-${t.amount}-${t.date}-${t.type}` === duplicateKey
+      );
+
+      if (isDuplicate) {
+        showToast('This transaction already exists!', 'warning');
+        setSyncing(false);
+        return;
+      }
 
       // If logged in, save to Supabase first
       let savedTransaction = null;
@@ -347,10 +423,12 @@ function App() {
     try {
       setSyncing(true);
       
+      const today = new Date().toISOString().split('T')[0];
       const recurringData = {
         ...recurring,
         active: true,
-        last_processed: null
+        last_processed: today, // Set to today to prevent immediate processing
+        lastProcessed: today
       };
 
       // Save to Supabase if logged in
@@ -583,6 +661,10 @@ function App() {
       const importedData = await storageService.importData(file);
       if (!importedData.budgets) importedData.budgets = {};
       if (!importedData.recurringTransactions) importedData.recurringTransactions = [];
+      
+      // Dedupe imported data
+      importedData.transactions = removeDuplicateTransactions(importedData.transactions);
+      
       setData(importedData);
       showToast('Data imported successfully!', 'success');
       setView('dashboard');
