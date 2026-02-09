@@ -4,21 +4,18 @@ import { formatCurrency } from '../utils/currency';
 import { getCategoryIcon } from '../utils/categories';
 
 export default function SpendingChart({ transactions, currency = 'USD' }) {
-  // Get current month expenses by category
+  // Get last 30 days expenses by category
   const now = new Date();
-  const thisMonth = now.getMonth();
-  const thisYear = now.getFullYear();
+  const thirtyDaysAgo = new Date(now.getTime() - (30 * 24 * 60 * 60 * 1000));
 
-  const monthlyExpenses = transactions.filter(t => {
+  const last30DaysExpenses = transactions.filter(t => {
     const tDate = new Date(t.date);
-    return t.type === 'expense' && 
-           tDate.getMonth() === thisMonth && 
-           tDate.getFullYear() === thisYear;
+    return t.type === 'expense' && tDate >= thirtyDaysAgo && tDate <= now;
   });
 
   // Group by category
   const categoryData = {};
-  monthlyExpenses.forEach(transaction => {
+  last30DaysExpenses.forEach(transaction => {
     const category = transaction.category || 'Other';
     if (!categoryData[category]) {
       categoryData[category] = 0;
@@ -46,7 +43,7 @@ export default function SpendingChart({ transactions, currency = 'USD' }) {
             <PieChart size={48} />
           </div>
           <p style={{ color: 'var(--text-secondary)' }}>
-            No expenses this month yet.
+            No expenses in the last 30 days.
           </p>
         </div>
       </div>
@@ -57,7 +54,7 @@ export default function SpendingChart({ transactions, currency = 'USD' }) {
     <div className="card">
       <div className="flex items-center gap-3 mb-6">
         <PieChart className="text-primary" size={28} />
-        <h2 className="text-2xl font-light">Spending by Category</h2>
+        <h2 className="text-2xl font-light">Spending by Category (Last 30 Days)</h2>
       </div>
       <div className="space-y-4">
         {sortedCategories.map((item, index) => {
