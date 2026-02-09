@@ -45,7 +45,7 @@ export default function Goals({ goals, onUpdateGoal, onDeleteGoal, currency = 'U
           return (
             <div key={goal.id} className="goal-card">
               <div className="goal-header">
-                <h3 className="goal-name">{goal.name}</h3>
+                <h3 className="goal-name" style={{ color: 'var(--text-primary)' }}>{goal.name}</h3>
                 <button
                   onClick={() => onDeleteGoal(goal.id)}
                   className="goal-delete-btn"
