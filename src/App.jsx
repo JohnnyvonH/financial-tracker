@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import ErrorBoundary from './components/ErrorBoundary';
 import Header from './components/Header';
 import KPICards from './components/KPICards';
@@ -21,6 +21,7 @@ import { useAuth } from './contexts/AuthContext';
 import { storageService } from './services/storage';
 import { supabaseSync } from './services/supabaseSync';
 import { processRecurringTransactions } from './utils/recurring';
+import { removeDuplicateTransactions, countDuplicates } from './utils/deduplication';
 import { getInitialTheme, saveTheme, applyTheme } from './utils/theme';
 
 function App() {
@@ -38,6 +39,9 @@ function App() {
   const [loading, setLoading] = useState(true);
   const [syncing, setSyncing] = useState(false);
   const [toast, setToast] = useState(null);
+
+  // Count duplicates
+  const duplicateCount = useMemo(() => countDuplicates(data.transactions), [data.transactions]);
 
   // Show toast notification
   const showToast = (message, type = 'info') => {
@@ -135,7 +139,8 @@ function App() {
 
     const processRecurring = async () => {
       const { newTransactions, updatedRecurring } = processRecurringTransactions(
-        data.recurringTransactions.filter(r => r.active)
+        data.recurringTransactions.filter(r => r.active),
+        data.transactions
       );
 
       if (newTransactions.length > 0) {
@@ -176,6 +181,36 @@ function App() {
       console.error('Error saving data:', error);
       showToast('Error saving data. Please try again.', 'error');
       return false;
+    }
+  };
+
+  // Remove duplicate transactions
+  const handleRemoveDuplicates = () => {
+    if (!confirm(`Remove ${duplicateCount} duplicate transaction${duplicateCount > 1 ? 's' : ''}? This cannot be undone.`)) return;
+
+    try {
+      const uniqueTransactions = removeDuplicateTransactions(data.transactions);
+      
+      // Recalculate balance from unique transactions
+      const recalculatedBalance = uniqueTransactions.reduce((balance, t) => {
+        return t.type === 'income' ? balance + t.amount : balance - t.amount;
+      }, 0);
+
+      const success = saveData({
+        ...data,
+        balance: recalculatedBalance,
+        transactions: uniqueTransactions
+      });
+
+      if (success) {
+        showToast(
+          `✅ Removed ${duplicateCount} duplicate${duplicateCount > 1 ? 's' : ''} and recalculated balance!`,
+          'success'
+        );
+      }
+    } catch (error) {
+      console.error('Error removing duplicates:', error);
+      showToast('Failed to remove duplicates. Please try again.', 'error');
     }
   };
 
@@ -784,8 +819,10 @@ function App() {
               onExport={handleExportData}
               onImport={handleImportData}
               onClearAll={clearAllData}
+              onRemoveDuplicates={handleRemoveDuplicates}
               currency={currency}
               onCurrencyChange={handleCurrencyChange}
+              duplicateCount={duplicateCount}
             />
           )}
         </div>
