@@ -51,8 +51,8 @@ export const shouldProcessRecurring = (recurringTransaction) => {
     const lastProcessed = new Date(recurringTransaction.last_processed || recurringTransaction.lastProcessed);
     lastProcessed.setHours(0, 0, 0, 0);
     
-    // If already processed today, skip
-    if (lastProcessed.getTime() === today.getTime()) {
+    // If already processed today or in the future, skip
+    if (lastProcessed >= today) {
       return false;
     }
     
@@ -95,39 +95,44 @@ export const processRecurringTransactions = (recurringTransactions, existingTran
   today.setHours(0, 0, 0, 0);
   const todayStr = today.toISOString().split('T')[0];
   
+  // Create a map of existing transaction descriptions and dates for duplicate detection
+  const existingMap = new Map();
+  existingTransactions.forEach(t => {
+    const key = `${t.description}-${t.category}-${t.amount}-${t.date}`;
+    existingMap.set(key, true);
+  });
+  
   recurringTransactions.forEach(recurring => {
     // Skip if already processed today
     const lastProcessed = recurring.last_processed || recurring.lastProcessed;
     if (lastProcessed) {
       const lastDate = new Date(lastProcessed);
       lastDate.setHours(0, 0, 0, 0);
-      if (lastDate.getTime() === today.getTime()) {
+      if (lastDate >= today) {
         updatedRecurring.push(recurring);
         return;
       }
     }
     
     if (shouldProcessRecurring(recurring)) {
-      // Check if we already have a transaction for this recurring item today
-      const alreadyExists = existingTransactions.some(t => 
-        t.recurringId === recurring.id && 
-        t.date === todayStr
-      );
+      // Check if we already have this exact transaction today
+      const transactionKey = `${recurring.description}-${recurring.category}-${recurring.amount}-${todayStr}`;
+      const alreadyExists = existingMap.has(transactionKey);
       
       if (!alreadyExists) {
-        // Create new transaction with unique ID
-        const transactionId = `recurring-${recurring.id}-${Date.now()}`;
+        // Create new transaction
         newTransactions.push({
-          id: transactionId,
+          id: recurring.id || Date.now(), // Use Supabase ID if available
           type: recurring.type,
-          amount: recurring.amount,
+          amount: Number(recurring.amount),
           description: recurring.description,
           category: recurring.category,
           date: todayStr,
-          recurring: true,
-          recurringId: recurring.id,
           timestamp: Date.now()
         });
+        
+        // Mark as added to avoid duplicates in this processing batch
+        existingMap.set(transactionKey, true);
       }
       
       // Update last processed date
