@@ -49,8 +49,6 @@ export default function Header({ view, setView, isDarkMode, onToggleDarkMode }) 
         </nav>
 
         <div className="header-actions">
-          <DarkModeToggle isDark={isDarkMode} onToggle={onToggleDarkMode} />
-          
           <AuthButton onSignInClick={() => setView('auth')} />
           
           {actionButtons.map((button) => {
