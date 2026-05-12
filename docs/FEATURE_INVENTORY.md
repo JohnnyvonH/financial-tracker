@@ -15,6 +15,21 @@ Last updated: 2026-05-12
 - Currency and theme settings.
 - Finance Plan page for upcoming commitments, asset sales, and spreadsheet-style net worth snapshots.
 
+## Product Screenshots
+
+The current desktop screenshots are generated from demo data and are stored in `docs/screenshots/`.
+
+| Feature Area | Screenshot |
+| --- | --- |
+| Dashboard overview and insights | ![Dashboard](screenshots/dashboard.png) |
+| Current-finance snapshot | ![Current finances](screenshots/current-finances.png) |
+| Transactions ledger | ![Transactions](screenshots/transactions.png) |
+| Budgets and monthly outgoings | ![Budgets](screenshots/budgets.png) |
+| Savings goals | ![Goals](screenshots/goals.png) |
+| Planning commitments and asset sales | ![Plan](screenshots/plan.png) |
+| Reports | ![Reports](screenshots/reports.png) |
+| Settings and sync controls | ![Settings](screenshots/settings.png) |
+
 ## Finance Plan Scope
 
 The Plan page supports:

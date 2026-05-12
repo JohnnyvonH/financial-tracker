@@ -67,6 +67,25 @@
 
 ---
 
+## Product Screenshots
+
+The screenshots below use the dedicated demo account dataset so product reviews, CI checks, and documentation can show realistic finances without mixing in personal data.
+
+### Dashboard
+![Financial Tracker dashboard](docs/screenshots/dashboard.png)
+
+### Current Finances
+![Current finances snapshot](docs/screenshots/current-finances.png)
+
+### Planning And Goals
+![Plan page](docs/screenshots/plan.png)
+
+![Goals page](docs/screenshots/goals.png)
+
+More captured views are available in [`docs/screenshots`](docs/screenshots), including transactions, budgets, reports, and settings.
+
+---
+
 ## 🛠️ Tech Stack
 
 - **Frontend:** React 18, Vite
