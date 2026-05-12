@@ -1,22 +1,54 @@
 const toNumber = (value) => Number(value || 0);
+const hasValue = (value) => value !== undefined && value !== null && value !== '';
+const hasPositiveValue = (value) => hasValue(value) && toNumber(value) > 0;
 
 export function getSnapshotTotals(snapshot = {}) {
-  const availableAssets = [
-    snapshot.santander,
-    snapshot.tesco,
-    snapshot.amexCashback,
-    snapshot.moneybox,
+  const moneyboxBreakdownTotal = [
     snapshot.moneyboxStocksSharesIsa,
     snapshot.moneyboxLifetimeIsa,
     snapshot.moneyboxSimpleSaver,
     snapshot.moneyboxCashIsa,
+    snapshot.moneyboxMonthly,
   ].reduce((sum, value) => sum + toNumber(value), 0);
 
+  const moneyboxTotal = hasPositiveValue(snapshot.moneybox)
+    ? toNumber(snapshot.moneybox)
+    : moneyboxBreakdownTotal;
+
+  const calculatedTotal = [
+    snapshot.santander,
+    snapshot.tesco,
+    snapshot.amexCashback,
+    moneyboxTotal,
+    snapshot.paycheck,
+  ].reduce((sum, value) => sum + toNumber(value), 0);
+
+  const total = hasPositiveValue(snapshot.total)
+    ? toNumber(snapshot.total)
+    : calculatedTotal;
+
+  const calculatedAvailableAssets = Math.max(total - toNumber(snapshot.moneyboxLifetimeIsa), 0);
+  const availableAssets = hasPositiveValue(snapshot.totalValueAvailableAssets)
+    ? toNumber(snapshot.totalValueAvailableAssets)
+    : calculatedAvailableAssets;
+
+  const calculatedAllAssets = total + toNumber(snapshot.pension);
+  const allAssets = hasPositiveValue(snapshot.totalValueAllAssets)
+    ? toNumber(snapshot.totalValueAllAssets)
+    : calculatedAllAssets;
+
   return {
-    total: availableAssets + toNumber(snapshot.paycheck),
+    moneyboxBreakdownTotal,
+    moneyboxTotal,
+    moneyboxVariance: moneyboxTotal - moneyboxBreakdownTotal,
+    calculatedTotal,
+    total,
+    totalVariance: total - calculatedTotal,
+    calculatedAvailableAssets,
     availableAssets,
     bankNextPaycheck: toNumber(snapshot.estimatedBankNextPaycheck),
-    allAssets: availableAssets + toNumber(snapshot.pension),
+    calculatedAllAssets,
+    allAssets,
   };
 }
 

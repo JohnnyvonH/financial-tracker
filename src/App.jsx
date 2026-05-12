@@ -7,6 +7,7 @@ import TransactionForm from './components/TransactionForm';
 import GoalForm from './components/GoalForm';
 import Budget from './components/Budget';
 import FinancePlan from './components/FinancePlan';
+import FinancialSnapshot from './components/FinancialSnapshot';
 import DataManagement from './components/DataManagement';
 import RecurringTransactionForm from './components/RecurringTransactionForm';
 import RecurringTransactionList from './components/RecurringTransactionList';
@@ -890,7 +891,11 @@ function App() {
     },
     plan: {
       title: 'Plan',
-      description: 'Track upcoming commitments, asset sales, house deposit progress, and net worth snapshots.',
+      description: 'Track upcoming commitments, asset sales, and savings targets without mixing in current-position snapshots.',
+    },
+    snapshot: {
+      title: 'Financial Snapshot',
+      description: 'Capture the current account, MoneyBox, paycheck, and pension values from your workbook structure.',
     },
     reports: {
       title: 'Reports',
@@ -1008,9 +1013,15 @@ function App() {
           {view === 'plan' && (
             <FinancePlan
               planningItems={data.planningItems}
-              netWorthSnapshots={data.netWorthSnapshots}
               onAddPlanningItem={addPlanningItem}
               onDeletePlanningItem={deletePlanningItem}
+              currency={currency}
+            />
+          )}
+
+          {view === 'snapshot' && (
+            <FinancialSnapshot
+              netWorthSnapshots={data.netWorthSnapshots}
               onAddNetWorthSnapshot={addNetWorthSnapshot}
               onDeleteNetWorthSnapshot={deleteNetWorthSnapshot}
               currency={currency}

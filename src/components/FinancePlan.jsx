@@ -2,8 +2,6 @@ import React, { useMemo, useState } from 'react';
 import { Calendar, Car, Home, PiggyBank, Plus, Trash2, WalletCards } from 'lucide-react';
 import { formatCurrency } from '../utils/currency';
 
-const today = new Date().toISOString().split('T')[0];
-
 const defaultPlanningItem = {
   title: '',
   type: 'expense',
@@ -16,48 +14,7 @@ const defaultPlanningItem = {
   notes: '',
 };
 
-const defaultSnapshot = {
-  date: today,
-  santander: '',
-  tesco: '',
-  amexCashback: '',
-  moneybox: '',
-  moneyboxStocksSharesIsa: '',
-  moneyboxLifetimeIsa: '',
-  moneyboxSimpleSaver: '',
-  moneyboxCashIsa: '',
-  moneyboxMonthly: '',
-  notes: '',
-  paycheck: '',
-  estimatedBankNextPaycheck: '',
-  pension: '',
-};
-
 const numberValue = (value) => Number(value || 0);
-
-function getSnapshotTotals(snapshot = {}) {
-  const availableAssets = [
-    snapshot.santander,
-    snapshot.tesco,
-    snapshot.amexCashback,
-    snapshot.moneybox,
-    snapshot.moneyboxStocksSharesIsa,
-    snapshot.moneyboxLifetimeIsa,
-    snapshot.moneyboxSimpleSaver,
-    snapshot.moneyboxCashIsa,
-  ].reduce((sum, value) => sum + numberValue(value), 0);
-
-  const bankNextPaycheck = numberValue(snapshot.estimatedBankNextPaycheck);
-  const total = availableAssets + numberValue(snapshot.paycheck);
-  const allAssets = availableAssets + numberValue(snapshot.pension);
-
-  return {
-    total,
-    availableAssets,
-    bankNextPaycheck,
-    allAssets,
-  };
-}
 
 function PlanningItemCard({ item, currency, onDelete }) {
   const target = numberValue(item.targetAmount);
@@ -115,18 +72,11 @@ function PlanningItemCard({ item, currency, onDelete }) {
 
 export default function FinancePlan({
   planningItems,
-  netWorthSnapshots,
   onAddPlanningItem,
   onDeletePlanningItem,
-  onAddNetWorthSnapshot,
-  onDeleteNetWorthSnapshot,
   currency,
 }) {
   const [planningForm, setPlanningForm] = useState(defaultPlanningItem);
-  const [snapshotForm, setSnapshotForm] = useState(defaultSnapshot);
-
-  const latestSnapshot = netWorthSnapshots[0];
-  const latestTotals = getSnapshotTotals(latestSnapshot);
 
   const planSummary = useMemo(() => {
     return planningItems.reduce((summary, item) => {
@@ -156,21 +106,8 @@ export default function FinancePlan({
     setPlanningForm(defaultPlanningItem);
   };
 
-  const handleSnapshotSubmit = (event) => {
-    event.preventDefault();
-    onAddNetWorthSnapshot({
-      ...snapshotForm,
-      date: snapshotForm.date || today,
-    });
-    setSnapshotForm(defaultSnapshot);
-  };
-
   const updatePlanningForm = (key, value) => {
     setPlanningForm((current) => ({ ...current, [key]: value }));
-  };
-
-  const updateSnapshotForm = (key, value) => {
-    setSnapshotForm((current) => ({ ...current, [key]: value }));
   };
 
   return (
@@ -186,18 +123,18 @@ export default function FinancePlan({
             <strong>{formatCurrency(fundingGap, currency)}</strong>
           </div>
           <div>
-            <span>Available assets</span>
-            <strong>{formatCurrency(latestTotals.availableAssets, currency)}</strong>
+            <span>Saved toward plan</span>
+            <strong>{formatCurrency(planSummary.alreadySaved, currency)}</strong>
           </div>
           <div>
-            <span>All assets</span>
-            <strong>{formatCurrency(latestTotals.allAssets, currency)}</strong>
+            <span>Expected sale income</span>
+            <strong>{formatCurrency(planSummary.expectedIncome, currency)}</strong>
           </div>
         </div>
       </section>
 
-      <div className="grid-2">
-        <section className="card">
+      <div className="plan-workspace">
+        <section className="card plan-entry-card">
           <div className="section-header">
             <div>
               <h2 className="section-title">Upcoming Plan</h2>
@@ -265,41 +202,14 @@ export default function FinancePlan({
           </form>
         </section>
 
-        <section className="card">
-          <h2 className="section-title">Spreadsheet Snapshot</h2>
-          <p className="section-subtitle">A structured version of the workbook columns for account balances, MoneyBox, paycheck, and pension tracking.</p>
-          <form onSubmit={handleSnapshotSubmit} className="snapshot-form">
-            <div className="form-group">
-              <label htmlFor="snapshot-date">Date</label>
-              <input id="snapshot-date" type="date" value={snapshotForm.date} onChange={(event) => updateSnapshotForm('date', event.target.value)} />
-            </div>
-            <div className="snapshot-grid">
-              {[
-                ['santander', 'Santander'],
-                ['tesco', 'Tesco'],
-                ['amexCashback', 'Amex - Cashback'],
-                ['moneybox', 'MoneyBox'],
-                ['moneyboxStocksSharesIsa', 'MoneyBox - S&S ISA'],
-                ['moneyboxLifetimeIsa', 'MoneyBox - Lifetime ISA'],
-                ['moneyboxSimpleSaver', 'MoneyBox - Simple Saver'],
-                ['moneyboxCashIsa', 'MoneyBox - Cash ISA'],
-                ['moneyboxMonthly', 'MoneyBox Monthly'],
-                ['paycheck', 'Paycheck'],
-                ['estimatedBankNextPaycheck', 'Estimated Bank Next Paycheck'],
-                ['pension', 'Pension'],
-              ].map(([key, label]) => (
-                <div className="form-group" key={key}>
-                  <label htmlFor={`snapshot-${key}`}>{label}</label>
-                  <input id={`snapshot-${key}`} type="number" step="0.01" value={snapshotForm[key]} onChange={(event) => updateSnapshotForm(key, event.target.value)} />
-                </div>
-              ))}
-            </div>
-            <div className="form-group">
-              <label htmlFor="snapshot-notes">Notes</label>
-              <textarea id="snapshot-notes" value={snapshotForm.notes} onChange={(event) => updateSnapshotForm('notes', event.target.value)} rows="3" />
-            </div>
-            <button className="btn btn-primary" type="submit"><WalletCards size={16} />Save snapshot</button>
-          </form>
+        <section className="panel plan-guidance">
+          <h2>Plan sections</h2>
+          <p>Keep this page focused on future commitments: costs to cover, savings targets, and asset sales that change the plan.</p>
+          <ul className="rule-list">
+            <li><strong>Upcoming costs</strong><span>Anything you need cash for, such as wheel refurbishment or insurance.</span></li>
+            <li><strong>Savings targets</strong><span>House deposit milestones and other ring-fenced goals.</span></li>
+            <li><strong>Asset sales</strong><span>Expected proceeds from selling an item, such as the XK8.</span></li>
+          </ul>
         </section>
       </div>
 
@@ -332,46 +242,6 @@ export default function FinancePlan({
             <PlanningItemCard key={item.id} item={item} currency={currency} onDelete={onDeletePlanningItem} />
           ))
         )}
-      </section>
-
-      <section className="card">
-        <h2 className="section-title">Net Worth History</h2>
-        <div className="snapshot-table-wrap">
-          <table className="snapshot-table">
-            <thead>
-              <tr>
-                <th>Date</th>
-                <th>Total</th>
-                <th>Available Assets</th>
-                <th>Pension</th>
-                <th>All Assets</th>
-                <th>Notes</th>
-                <th></th>
-              </tr>
-            </thead>
-            <tbody>
-              {netWorthSnapshots.map((snapshot) => {
-                const totals = getSnapshotTotals(snapshot);
-                return (
-                  <tr key={snapshot.id}>
-                    <td>{snapshot.date}</td>
-                    <td>{formatCurrency(totals.total, currency)}</td>
-                    <td>{formatCurrency(totals.availableAssets, currency)}</td>
-                    <td>{formatCurrency(numberValue(snapshot.pension), currency)}</td>
-                    <td>{formatCurrency(totals.allAssets, currency)}</td>
-                    <td>{snapshot.notes}</td>
-                    <td>
-                      <button className="btn-icon" onClick={() => onDeleteNetWorthSnapshot(snapshot.id)} aria-label={`Delete snapshot ${snapshot.date}`}>
-                        <Trash2 size={16} />
-                      </button>
-                    </td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
-          {netWorthSnapshots.length === 0 && <p className="empty-table">No snapshots yet.</p>}
-        </div>
       </section>
     </div>
   );

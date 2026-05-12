@@ -26,6 +26,39 @@
   /* Card backgrounds */
   --card-bg: #1e293b;
   --card-bg-hover: #334155;
+  --app-bg:
+    radial-gradient(circle at top left, rgba(16, 185, 129, 0.10), transparent 34rem),
+    linear-gradient(135deg, #08111f 0%, #111827 42%, #0b1220 100%);
+  --shell-surface: rgba(8, 17, 31, 0.86);
+  --panel-surface: rgba(15, 23, 42, 0.82);
+  --panel-surface-soft: rgba(30, 41, 59, 0.46);
+  --field-surface: rgba(8, 17, 31, 0.48);
+  --focus-surface: rgba(16, 185, 129, 0.14);
+  --heading-color: #f8fafc;
+  --shadow-soft: 0 18px 40px rgba(0, 0, 0, 0.22);
+}
+
+html.light {
+  --text-primary: #0f172a;
+  --text-secondary: #334155;
+  --text-muted: #64748b;
+  --bg-primary: #ffffff;
+  --bg-secondary: #f8fafc;
+  --bg-tertiary: #e2e8f0;
+  --border: #d7dee8;
+  --border-light: #b9c5d4;
+  --card-bg: #ffffff;
+  --card-bg-hover: #f8fafc;
+  --app-bg:
+    radial-gradient(circle at top left, rgba(16, 185, 129, 0.14), transparent 34rem),
+    linear-gradient(135deg, #f7fafc 0%, #edf5f3 48%, #f8fafc 100%);
+  --shell-surface: rgba(255, 255, 255, 0.90);
+  --panel-surface: rgba(255, 255, 255, 0.88);
+  --panel-surface-soft: rgba(241, 245, 249, 0.88);
+  --field-surface: rgba(248, 250, 252, 0.88);
+  --focus-surface: rgba(16, 185, 129, 0.12);
+  --heading-color: #0f172a;
+  --shadow-soft: 0 18px 40px rgba(15, 23, 42, 0.10);
 }
 
 * {
@@ -36,7 +69,7 @@
 
 body {
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-  background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #0f172a 100%);
+  background: var(--app-bg);
   color: var(--text-primary);
   min-height: 100vh;
   line-height: 1.6;
@@ -93,6 +126,10 @@ body {
   font-size: 1.25rem;
   font-weight: 700;
   color: white;
+}
+
+html.light .sidebar-brand .header-logo-text {
+  color: var(--text-primary);
 }
 
 .header-nav {
@@ -645,7 +682,7 @@ body {
   padding: 1rem;
   border: 1px solid var(--border);
   border-radius: 0.75rem;
-  background: rgba(15, 23, 42, 0.54);
+  background: var(--field-surface);
 }
 
 .finance-hero-grid span,
@@ -691,6 +728,143 @@ body {
 
 .finance-summary-grid {
   margin-bottom: 2rem;
+}
+
+.plan-workspace,
+.snapshot-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1.25fr) minmax(320px, 0.75fr);
+  gap: 1rem;
+  align-items: start;
+  margin-bottom: 2rem;
+}
+
+.plan-entry-card,
+.snapshot-entry-card {
+  margin-bottom: 0;
+}
+
+.plan-guidance,
+.snapshot-rules {
+  position: sticky;
+  top: 1rem;
+}
+
+.snapshot-hero p:not(.eyebrow) {
+  max-width: 700px;
+  color: var(--text-secondary);
+}
+
+.snapshot-fieldset {
+  padding: 1rem;
+  margin: 0 0 1rem;
+  border: 1px solid var(--border);
+  border-radius: 0.75rem;
+  background: var(--field-surface);
+}
+
+.snapshot-fieldset legend {
+  padding: 0 0.45rem;
+  color: var(--text-primary);
+  font-size: 0.95rem;
+  font-weight: 800;
+}
+
+.snapshot-fieldset p {
+  margin-bottom: 1rem;
+  color: var(--text-secondary);
+  font-size: 0.86rem;
+}
+
+.snapshot-date-field {
+  max-width: 220px;
+}
+
+.snapshot-metric,
+.snapshot-difference {
+  min-width: 0;
+}
+
+.snapshot-metric span,
+.snapshot-difference span {
+  display: block;
+  color: var(--text-muted);
+  font-size: 0.76rem;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+.snapshot-metric strong,
+.snapshot-difference strong {
+  display: block;
+  margin-top: 0.2rem;
+  color: var(--text-primary);
+  font-size: 1.1rem;
+}
+
+.snapshot-metric p {
+  margin-top: 0.2rem;
+  color: var(--text-secondary);
+  font-size: 0.84rem;
+}
+
+.snapshot-metric-stack,
+.snapshot-difference-stack {
+  display: grid;
+  gap: 0.75rem;
+}
+
+.snapshot-difference-stack {
+  margin-top: 1rem;
+}
+
+.snapshot-difference {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 0.65rem;
+  padding: 0.75rem;
+  border: 1px solid var(--border);
+  border-radius: 0.55rem;
+  background: var(--field-surface);
+}
+
+.snapshot-difference-ok svg {
+  color: var(--success);
+}
+
+.snapshot-difference-review svg,
+.snapshot-difference-review strong {
+  color: var(--warning);
+}
+
+.rule-list {
+  display: grid;
+  gap: 0.8rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.rule-list li {
+  display: grid;
+  gap: 0.18rem;
+  padding-bottom: 0.75rem;
+  border-bottom: 1px solid rgba(148, 163, 184, 0.14);
+}
+
+.rule-list li:last-child {
+  padding-bottom: 0;
+  border-bottom: 0;
+}
+
+.rule-list strong {
+  color: var(--text-primary);
+}
+
+.rule-list span {
+  color: var(--text-secondary);
+  font-size: 0.88rem;
 }
 
 .summary-tile {
@@ -1505,9 +1679,7 @@ body {
    PRODUCT REDESIGN LAYER
    ======================================== */
 body {
-  background:
-    radial-gradient(circle at top left, rgba(16, 185, 129, 0.10), transparent 34rem),
-    linear-gradient(135deg, #08111f 0%, #111827 42%, #0b1220 100%);
+  background: var(--app-bg);
 }
 
 .app-shell {
@@ -1524,8 +1696,9 @@ body {
   flex-direction: column;
   padding: 1.25rem;
   border-right: 1px solid rgba(148, 163, 184, 0.18);
-  background: rgba(8, 17, 31, 0.86);
+  background: var(--shell-surface);
   backdrop-filter: blur(18px);
+  overflow: hidden;
 }
 
 .sidebar-brand {
@@ -1566,11 +1739,20 @@ body {
   box-shadow: inset 3px 0 0 var(--primary);
 }
 
+html.light .app-sidebar .nav-button-active {
+  color: #064e3b;
+  background: rgba(16, 185, 129, 0.16);
+}
+
 .sidebar-actions {
   display: grid;
   gap: 0.85rem;
   padding-top: 1rem;
   border-top: 1px solid rgba(148, 163, 184, 0.14);
+}
+
+.sidebar-actions .auth-button {
+  min-width: 0;
 }
 
 .quick-action-stack {
@@ -1586,14 +1768,24 @@ body {
 }
 
 .sidebar-theme-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.55rem;
+  justify-content: flex-start;
   padding: 0.7rem 0.85rem;
   border: 1px solid var(--border);
   border-radius: 0.5rem;
-  background: rgba(51, 65, 85, 0.54);
+  background: var(--field-surface);
   color: var(--text-secondary);
   font: inherit;
   font-size: 0.85rem;
+  font-weight: 700;
   cursor: pointer;
+}
+
+.sidebar-theme-toggle:hover {
+  color: var(--text-primary);
+  border-color: var(--primary);
 }
 
 .app-main {
@@ -1616,7 +1808,7 @@ body {
 .page-heading h1,
 .dashboard-hero h1 {
   margin: 0;
-  color: #f8fafc;
+  color: var(--heading-color);
   font-size: clamp(1.7rem, 2.8vw, 2.45rem);
   line-height: 1.08;
 }
@@ -1644,7 +1836,7 @@ body {
   border-radius: 0.85rem;
   background:
     linear-gradient(135deg, rgba(16, 185, 129, 0.16), rgba(6, 182, 212, 0.08)),
-    rgba(15, 23, 42, 0.78);
+    var(--panel-surface);
 }
 
 .hero-actions {
@@ -1663,8 +1855,8 @@ body {
 .panel {
   border: 1px solid rgba(148, 163, 184, 0.16);
   border-radius: 0.75rem;
-  background: rgba(15, 23, 42, 0.82);
-  box-shadow: 0 18px 40px rgba(0, 0, 0, 0.22);
+  background: var(--panel-surface);
+  box-shadow: var(--shadow-soft);
 }
 
 .metric-tile {
@@ -1780,7 +1972,7 @@ body {
   padding: 0.85rem;
   border: 1px solid rgba(148, 163, 184, 0.12);
   border-radius: 0.55rem;
-  background: rgba(30, 41, 59, 0.46);
+  background: var(--panel-surface-soft);
 }
 
 .insight-row {
@@ -1818,7 +2010,7 @@ body {
 .asset-summary div {
   padding: 0.85rem;
   border-radius: 0.55rem;
-  background: rgba(8, 17, 31, 0.48);
+  background: var(--field-surface);
 }
 
 .asset-summary strong {
@@ -1887,7 +2079,7 @@ body {
 
 .card {
   border-radius: 0.75rem;
-  background: rgba(15, 23, 42, 0.82);
+  background: var(--panel-surface);
   border-color: rgba(148, 163, 184, 0.16);
   box-shadow: 0 18px 40px rgba(0, 0, 0, 0.20);
 }
@@ -1929,6 +2121,7 @@ body {
     z-index: 100;
     height: auto;
     padding: 0.75rem;
+    overflow: visible;
   }
 
   .sidebar-brand {
@@ -1952,10 +2145,18 @@ body {
   }
 
   .sidebar-actions {
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    align-items: center;
     padding-top: 0.65rem;
   }
 
   .sidebar-theme-toggle {
+    width: auto;
+    justify-content: center;
+    padding-inline: 0.75rem;
+  }
+
+  .sidebar-theme-toggle span {
     display: none;
   }
 
@@ -2000,8 +2201,15 @@ body {
 
   .asset-summary,
   .metric-grid,
-  .timeline-row {
+  .timeline-row,
+  .plan-workspace,
+  .snapshot-layout {
     grid-template-columns: 1fr;
+  }
+
+  .plan-guidance,
+  .snapshot-rules {
+    position: static;
   }
 
   .timeline-marker {

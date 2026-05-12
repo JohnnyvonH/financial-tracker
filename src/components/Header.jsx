@@ -1,5 +1,5 @@
 import React from 'react';
-import { Home, Plus, DollarSign, TrendingUp, Settings, List, RefreshCw, BarChart3, CalendarClock, WalletCards } from 'lucide-react';
+import { Home, Plus, DollarSign, TrendingUp, Settings, List, RefreshCw, BarChart3, CalendarClock, WalletCards, Moon, Sun } from 'lucide-react';
 import AuthButton from './AuthButton';
 
 export default function Header({ view, setView, isDarkMode, onToggleDarkMode }) {
@@ -8,6 +8,7 @@ export default function Header({ view, setView, isDarkMode, onToggleDarkMode }) 
     { id: 'transactions', label: 'Transactions', icon: List },
     { id: 'budget', label: 'Budgets', icon: DollarSign },
     { id: 'plan', label: 'Plan', icon: CalendarClock },
+    { id: 'snapshot', label: 'Snapshot', icon: WalletCards },
     { id: 'reports', label: 'Reports', icon: BarChart3 },
     { id: 'settings', label: 'Settings', icon: Settings },
   ];
@@ -64,8 +65,15 @@ export default function Header({ view, setView, isDarkMode, onToggleDarkMode }) 
           );
         })}
         </div>
-        <button type="button" className="sidebar-theme-toggle" onClick={onToggleDarkMode}>
-          {isDarkMode ? 'Switch to light' : 'Switch to dark'}
+        <button
+          type="button"
+          className="sidebar-theme-toggle"
+          onClick={onToggleDarkMode}
+          aria-label={isDarkMode ? 'Switch to light mode' : 'Switch to dark mode'}
+          title={isDarkMode ? 'Switch to light mode' : 'Switch to dark mode'}
+        >
+          {isDarkMode ? <Sun size={17} /> : <Moon size={17} />}
+          <span>{isDarkMode ? 'Light mode' : 'Dark mode'}</span>
         </button>
       </div>
     </aside>

@@ -162,7 +162,7 @@ export default function Dashboard({
         </section>
 
         <section className="panel">
-          <SectionHeader title="Savings and assets" action="Open plan" onAction={() => onNavigate('plan')} />
+          <SectionHeader title="Savings and assets" action="Open snapshot" onAction={() => onNavigate('snapshot')} />
           <div className="asset-summary">
             <div>
               <span>Available assets</span>
