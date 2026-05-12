@@ -1,0 +1,63 @@
+export const demoData = {
+  balance: 1604.72,
+  transactions: [
+    { id: 'txn-001', type: 'income', amount: 3346.04, category: 'Salary', description: 'Monthly paycheck', date: '2026-04-25', timestamp: 1777075200000 },
+    { id: 'txn-002', type: 'expense', amount: 950, category: 'Housing', description: 'Rent contribution', date: '2026-05-01', timestamp: 1777593600000 },
+    { id: 'txn-003', type: 'expense', amount: 78.42, category: 'Groceries', description: 'Weekly shop', date: '2026-05-02', timestamp: 1777680000000 },
+    { id: 'txn-004', type: 'expense', amount: 42.5, category: 'Food & Dining', description: 'Dinner out', date: '2026-05-03', timestamp: 1777766400000 },
+    { id: 'txn-005', type: 'expense', amount: 65, category: 'Transportation', description: 'Fuel', date: '2026-05-04', timestamp: 1777852800000 },
+    { id: 'txn-006', type: 'expense', amount: 79.99, category: 'Technology', description: 'Phone plan', date: '2026-05-05', timestamp: 1777939200000 },
+    { id: 'txn-007', type: 'expense', amount: 21.99, category: 'Entertainment', description: 'Streaming bundle', date: '2026-05-06', timestamp: 1778025600000 },
+    { id: 'txn-008', type: 'expense', amount: 94.18, category: 'Groceries', description: 'Meal prep shop', date: '2026-05-07', timestamp: 1778112000000 },
+    { id: 'txn-009', type: 'expense', amount: 120, category: 'Transportation', description: 'Car insurance', date: '2026-05-08', timestamp: 1778198400000 },
+    { id: 'txn-010', type: 'expense', amount: 36.8, category: 'Coffee & Drinks', description: 'Coffee catch-ups', date: '2026-05-09', timestamp: 1778284800000 },
+    { id: 'txn-011', type: 'expense', amount: 145, category: 'Shopping', description: 'Work shoes', date: '2026-05-10', timestamp: 1778371200000 },
+    { id: 'txn-012', type: 'expense', amount: 165, category: 'Utilities', description: 'Council tax and utilities', date: '2026-05-11', timestamp: 1778457600000 },
+    { id: 'txn-013', type: 'income', amount: 28.44, category: 'Other Income', description: 'Cashback reward', date: '2026-05-12', timestamp: 1778544000000 },
+  ],
+  goals: [
+    { id: 'goal-house', name: 'House deposit', target: 100000, current: 32752.44, deadline: '2027-12-31', createdAt: '2026-05-01T09:00:00.000Z' },
+    { id: 'goal-emergency', name: 'Emergency fund', target: 12000, current: 6200, deadline: '2026-11-30', createdAt: '2026-05-01T09:00:00.000Z' },
+    { id: 'goal-wheels', name: 'F-Type wheel refurb fund', target: 1800, current: 650, deadline: '2026-07-15', createdAt: '2026-05-01T09:00:00.000Z' },
+    { id: 'goal-holiday', name: 'Holiday buffer', target: 3000, current: 1220, deadline: '2026-09-30', createdAt: '2026-05-01T09:00:00.000Z' },
+  ],
+  budgets: {
+    Housing: 1000,
+    Groceries: 360,
+    'Food & Dining': 220,
+    Transportation: 240,
+    Utilities: 210,
+    Entertainment: 90,
+    Technology: 100,
+    Shopping: 150,
+  },
+  recurringTransactions: [
+    { id: 'rec-income', type: 'income', amount: 3346.04, category: 'Salary', description: 'Monthly paycheck', frequency: 'monthly', startDate: '2026-01-25', active: true, lastProcessed: '2026-05-12' },
+    { id: 'rec-rent', type: 'expense', amount: 950, category: 'Housing', description: 'Rent contribution', frequency: 'monthly', startDate: '2026-01-01', active: true, lastProcessed: '2026-05-12' },
+    { id: 'rec-utils', type: 'expense', amount: 165, category: 'Utilities', description: 'Council tax and utilities', frequency: 'monthly', startDate: '2026-01-03', active: true, lastProcessed: '2026-05-12' },
+    { id: 'rec-insurance', type: 'expense', amount: 120, category: 'Transportation', description: 'Car insurance', frequency: 'monthly', startDate: '2026-01-08', active: true, lastProcessed: '2026-05-12' },
+    { id: 'rec-phone', type: 'expense', amount: 79.99, category: 'Technology', description: 'Phone plan', frequency: 'monthly', startDate: '2026-01-10', active: true, lastProcessed: '2026-05-12' },
+    { id: 'rec-streaming', type: 'expense', amount: 42.98, category: 'Entertainment', description: 'Streaming subscriptions', frequency: 'monthly', startDate: '2026-01-12', active: true, lastProcessed: '2026-05-12' },
+    { id: 'rec-groceries', type: 'expense', amount: 320, category: 'Groceries', description: 'Typical grocery spend', frequency: 'monthly', startDate: '2026-01-15', active: true, lastProcessed: '2026-05-12' },
+    { id: 'rec-dining', type: 'expense', amount: 180, category: 'Food & Dining', description: 'Dining out allowance', frequency: 'monthly', startDate: '2026-01-18', active: true, lastProcessed: '2026-05-12' },
+  ],
+  planningItems: [
+    { id: 'plan-wheels', title: 'F-Type wheels refurbished', type: 'expense', targetAmount: 1800, savedAmount: 650, expectedValue: 0, dueDate: '2026-07-15', priority: 'high', status: 'saving', notes: 'Demo commitment: quote pending, saving partially complete' },
+    { id: 'plan-xk8', title: 'Sell XK8', type: 'asset-sale', targetAmount: 0, savedAmount: 0, expectedValue: 6800, dueDate: '2026-08-20', priority: 'medium', status: 'planned', notes: 'Demo asset sale expected to improve cash position' },
+    { id: 'plan-house', title: 'House deposit top-up', type: 'saving', targetAmount: 100000, savedAmount: 32752.44, expectedValue: 0, dueDate: '2027-12-31', priority: 'high', status: 'saving', notes: 'Long-term target using available assets plus Lifetime ISA' },
+    { id: 'plan-mot', title: 'Car service and MOT', type: 'expense', targetAmount: 720, savedAmount: 220, expectedValue: 0, dueDate: '2026-06-18', priority: 'medium', status: 'planned', notes: 'Near-term known vehicle cost' },
+    { id: 'plan-survey', title: 'Home survey reserve', type: 'expense', targetAmount: 950, savedAmount: 300, expectedValue: 0, dueDate: '2026-09-10', priority: 'medium', status: 'saving', notes: 'Early house-buying cost reserve' },
+    { id: 'plan-furniture', title: 'Undated furniture wish list', type: 'expense', targetAmount: 2400, savedAmount: 0, expectedValue: 0, dueDate: '', priority: 'low', status: 'planned', notes: 'Demo undated item should not affect 90-day projected cash' },
+  ],
+  netWorthSnapshots: [
+    { id: 'snapshot-2026-05', date: '2026-05-12', santander: 3406.42, tesco: 1236.87, amexCashback: 114.83, moneybox: 31147.72, moneyboxStocksSharesIsa: 18934.37, moneyboxLifetimeIsa: 10463.01, moneyboxSimpleSaver: 500.34, moneyboxCashIsa: 1250, moneyboxMonthly: 450, notes: 'Demo current snapshot: cash, cards, MoneyBox, pension', paycheck: 3346.04, pension: 23299.96 },
+    { id: 'snapshot-2026-04', date: '2026-04-12', santander: 3120.55, tesco: 1188.92, amexCashback: 128.74, moneybox: 30480.22, moneyboxStocksSharesIsa: 18544.87, moneyboxLifetimeIsa: 10300.01, moneyboxSimpleSaver: 385.34, moneyboxCashIsa: 1250, moneyboxMonthly: 425, notes: 'Demo month before wheel refurb quote', paycheck: 3346.04, pension: 22930 },
+    { id: 'snapshot-2026-03', date: '2026-03-12', santander: 2688.72, tesco: 1125.68, amexCashback: 155.4, moneybox: 29680.8, moneyboxStocksSharesIsa: 18024.1, moneyboxLifetimeIsa: 10150.01, moneyboxSimpleSaver: 506.69, moneyboxCashIsa: 1000, moneyboxMonthly: 400, notes: 'Demo month with stronger saving progress', paycheck: 3346.04, pension: 22460 },
+    { id: 'snapshot-2026-02', date: '2026-02-12', santander: 2150.4, tesco: 980.22, amexCashback: 210.15, moneybox: 28940.18, moneyboxStocksSharesIsa: 17610.44, moneyboxLifetimeIsa: 9950.01, moneyboxSimpleSaver: 379.73, moneyboxCashIsa: 1000, moneyboxMonthly: 350, notes: 'Demo baseline after car insurance renewal', paycheck: 3346.04, pension: 21875 },
+  ],
+};
+
+export const demoSettings = {
+  currency: 'GBP',
+  theme: 'dark',
+};
