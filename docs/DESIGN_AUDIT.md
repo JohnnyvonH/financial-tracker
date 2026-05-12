@@ -6,6 +6,24 @@ Last updated: 2026-05-12
 
 The app uses a dark fintech interface with emerald, teal, cyan, red, and amber accents. This fits the financial-tracker theme better than a generic SaaS landing-page style because it keeps attention on balances, progress, and warnings.
 
+## Current Visual Baseline
+
+The current desktop design baseline is captured with the demo account in `docs/screenshots/`.
+
+### Dashboard
+
+![Dashboard](screenshots/dashboard.png)
+
+### Current Finances
+
+![Current finances](screenshots/current-finances.png)
+
+### Plan And Goals
+
+![Plan](screenshots/plan.png)
+
+![Goals](screenshots/goals.png)
+
 ## Strengths
 
 - Dense dashboard layout supports repeated financial review.

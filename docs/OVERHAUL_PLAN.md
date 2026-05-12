@@ -6,6 +6,21 @@ Last updated: 2026-05-12
 
 Make Financial Tracker feel like a smooth personal finance cockpit: fast daily entry, reliable cloud sync, clear upcoming obligations, net worth progress, and insight that helps decide what to do next.
 
+## Current Baseline Screens
+
+Use these demo-data screenshots as the comparison point for future redesign work:
+
+- Dashboard: `docs/screenshots/dashboard.png`
+- Current finances: `docs/screenshots/current-finances.png`
+- Transactions: `docs/screenshots/transactions.png`
+- Budgets: `docs/screenshots/budgets.png`
+- Goals: `docs/screenshots/goals.png`
+- Plan: `docs/screenshots/plan.png`
+- Reports: `docs/screenshots/reports.png`
+- Settings: `docs/screenshots/settings.png`
+
+![Dashboard baseline](screenshots/dashboard.png)
+
 ## Phase 1: Stabilise The Current App
 
 - Apply all Supabase migrations, including finance planning.
