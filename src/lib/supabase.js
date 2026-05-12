@@ -5,16 +5,18 @@ const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
 const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
 
 if (!supabaseUrl || !supabaseAnonKey) {
-  console.error(
+  console.warn(
     '❌ Missing Supabase environment variables!\n' +
-    'Please create .env.local and add:\n' +
+    'To enable cloud sync, create .env.local and add:\n' +
     'VITE_SUPABASE_URL=your-project-url\n' +
     'VITE_SUPABASE_ANON_KEY=your-anon-key'
   );
 }
 
-// Create Supabase client
-export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
+const configured = Boolean(supabaseUrl && supabaseAnonKey);
+
+// Create Supabase client only when configured. This keeps local-only mode usable.
+export const supabase = configured ? createClient(supabaseUrl, supabaseAnonKey, {
   auth: {
     autoRefreshToken: true,
     persistSession: true,
@@ -27,11 +29,11 @@ export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
       eventsPerSecond: 10,
     },
   },
-});
+}) : null;
 
 // Helper to check if Supabase is configured
 export const isSupabaseConfigured = () => {
-  return Boolean(supabaseUrl && supabaseAnonKey);
+  return configured;
 };
 
 // Get the correct redirect URL (includes base path for GitHub Pages)
@@ -50,6 +52,7 @@ const getRedirectUrl = () => {
 export const auth = {
   // Sign up with email/password
   signUp: async (email, password, metadata = {}) => {
+    if (!supabase) return { data: null, error: new Error('Supabase is not configured') };
     const { data, error } = await supabase.auth.signUp({
       email,
       password,
@@ -62,6 +65,7 @@ export const auth = {
 
   // Sign in with email/password
   signIn: async (email, password) => {
+    if (!supabase) return { data: null, error: new Error('Supabase is not configured') };
     const { data, error } = await supabase.auth.signInWithPassword({
       email,
       password,
@@ -71,6 +75,7 @@ export const auth = {
 
   // Sign in with OAuth (Google, GitHub)
   signInWithOAuth: async (provider) => {
+    if (!supabase) return { data: null, error: new Error('Supabase is not configured') };
     const redirectUrl = getRedirectUrl();
     console.log('OAuth redirectTo:', redirectUrl);
     
@@ -85,24 +90,28 @@ export const auth = {
 
   // Sign out
   signOut: async () => {
+    if (!supabase) return { error: null };
     const { error } = await supabase.auth.signOut();
     return { error };
   },
 
   // Get current user
   getUser: async () => {
+    if (!supabase) return { data: null, error: null };
     const { data, error } = await supabase.auth.getUser();
     return { data: data?.user, error };
   },
 
   // Get current session
   getSession: async () => {
+    if (!supabase) return { data: null, error: null };
     const { data, error } = await supabase.auth.getSession();
     return { data: data?.session, error };
   },
 
   // Reset password
   resetPassword: async (email) => {
+    if (!supabase) return { data: null, error: new Error('Supabase is not configured') };
     const { data, error } = await supabase.auth.resetPasswordForEmail(email, {
       redirectTo: `${getRedirectUrl()}/reset-password`,
     });
@@ -111,6 +120,7 @@ export const auth = {
 
   // Update password
   updatePassword: async (newPassword) => {
+    if (!supabase) return { data: null, error: new Error('Supabase is not configured') };
     const { data, error } = await supabase.auth.updateUser({
       password: newPassword,
     });
@@ -119,6 +129,9 @@ export const auth = {
 
   // Listen to auth state changes
   onAuthStateChange: (callback) => {
+    if (!supabase) {
+      return { data: { subscription: { unsubscribe: () => {} } } };
+    }
     return supabase.auth.onAuthStateChange(callback);
   },
 };

@@ -10,6 +10,7 @@ import GoalForm from './components/GoalForm';
 import Budget from './components/Budget';
 import BudgetWarnings from './components/BudgetWarnings';
 import SpendingChart from './components/SpendingChart';
+import FinancePlan from './components/FinancePlan';
 import DataManagement from './components/DataManagement';
 import RecurringTransactionForm from './components/RecurringTransactionForm';
 import RecurringTransactionList from './components/RecurringTransactionList';
@@ -31,7 +32,9 @@ function App() {
     transactions: [],
     goals: [],
     budgets: {},
-    recurringTransactions: []
+    recurringTransactions: [],
+    planningItems: [],
+    netWorthSnapshots: []
   });
   const [currency, setCurrency] = useState('USD');
   const [theme, setTheme] = useState('light');
@@ -136,6 +139,8 @@ function App() {
       const savedData = storageService.getData();
       if (!savedData.budgets) savedData.budgets = {};
       if (!savedData.recurringTransactions) savedData.recurringTransactions = [];
+      if (!savedData.planningItems) savedData.planningItems = [];
+      if (!savedData.netWorthSnapshots) savedData.netWorthSnapshots = [];
       
       // Auto-dedupe on load
       const uniqueTransactions = removeDuplicateTransactions(savedData.transactions);
@@ -640,6 +645,111 @@ function App() {
     }
   };
 
+  const addPlanningItem = async (item) => {
+    try {
+      setSyncing(true);
+      let savedItem = null;
+      if (user && isConfigured && supabaseSync.isAvailable()) {
+        savedItem = await supabaseSync.addPlanningItem(item);
+      }
+
+      const newItem = savedItem || {
+        id: Date.now(),
+        ...item,
+        createdAt: new Date().toISOString()
+      };
+
+      await saveData({
+        ...data,
+        planningItems: [newItem, ...data.planningItems]
+      });
+
+      showToast('Plan item added successfully!', 'success');
+    } catch (error) {
+      console.error('Error adding plan item:', error);
+      showToast('Failed to add plan item. Please try again.', 'error');
+    } finally {
+      setSyncing(false);
+    }
+  };
+
+  const deletePlanningItem = async (id) => {
+    if (!confirm('Delete this plan item?')) return;
+
+    try {
+      setSyncing(true);
+      if (user && isConfigured && supabaseSync.isAvailable()) {
+        await supabaseSync.deletePlanningItem(id);
+      }
+
+      await saveData({
+        ...data,
+        planningItems: data.planningItems.filter(item => item.id !== id)
+      });
+
+      showToast('Plan item deleted.', 'success');
+    } catch (error) {
+      console.error('Error deleting plan item:', error);
+      showToast('Failed to delete plan item. Please try again.', 'error');
+    } finally {
+      setSyncing(false);
+    }
+  };
+
+  const addNetWorthSnapshot = async (snapshot) => {
+    try {
+      setSyncing(true);
+      let savedSnapshot = null;
+      if (user && isConfigured && supabaseSync.isAvailable()) {
+        savedSnapshot = await supabaseSync.addNetWorthSnapshot(snapshot);
+      }
+
+      const newSnapshot = savedSnapshot || {
+        id: Date.now(),
+        ...snapshot,
+        createdAt: new Date().toISOString()
+      };
+
+      const snapshots = [newSnapshot, ...data.netWorthSnapshots]
+        .sort((a, b) => new Date(b.date) - new Date(a.date));
+
+      await saveData({
+        ...data,
+        netWorthSnapshots: snapshots
+      });
+
+      showToast('Net worth snapshot saved!', 'success');
+    } catch (error) {
+      console.error('Error adding net worth snapshot:', error);
+      showToast('Failed to save snapshot. Please try again.', 'error');
+    } finally {
+      setSyncing(false);
+    }
+  };
+
+  const deleteNetWorthSnapshot = async (id) => {
+    if (!confirm('Delete this snapshot?')) return;
+
+    try {
+      setSyncing(true);
+      if (user && isConfigured && supabaseSync.isAvailable()) {
+        await supabaseSync.deleteNetWorthSnapshot(id);
+      }
+
+      await saveData({
+        ...data,
+        netWorthSnapshots: data.netWorthSnapshots.filter(snapshot => snapshot.id !== id)
+      });
+
+      showToast('Snapshot deleted.', 'success');
+    } catch (error) {
+      console.error('Error deleting snapshot:', error);
+      showToast('Failed to delete snapshot. Please try again.', 'error');
+    } finally {
+      setSyncing(false);
+    }
+  };
+
   // Export data
   const handleExportData = () => {
     try {
@@ -661,6 +771,8 @@ function App() {
       const importedData = await storageService.importData(file);
       if (!importedData.budgets) importedData.budgets = {};
       if (!importedData.recurringTransactions) importedData.recurringTransactions = [];
+      if (!importedData.planningItems) importedData.planningItems = [];
+      if (!importedData.netWorthSnapshots) importedData.netWorthSnapshots = [];
       
       // Dedupe imported data
       importedData.transactions = removeDuplicateTransactions(importedData.transactions);
@@ -686,7 +798,9 @@ function App() {
           transactions: [],
           goals: [],
           budgets: {},
-          recurringTransactions: []
+          recurringTransactions: [],
+          planningItems: [],
+          netWorthSnapshots: []
         });
         showToast('All data cleared successfully!', 'warning');
         setView('dashboard');
@@ -885,6 +999,18 @@ function App() {
               transactions={data.transactions}
               budgets={data.budgets}
               onUpdateBudgets={updateBudgets}
+              currency={currency}
+            />
+          )}
+
+          {view === 'plan' && (
+            <FinancePlan
+              planningItems={data.planningItems}
+              netWorthSnapshots={data.netWorthSnapshots}
+              onAddPlanningItem={addPlanningItem}
+              onDeletePlanningItem={deletePlanningItem}
+              onAddNetWorthSnapshot={addNetWorthSnapshot}
+              onDeleteNetWorthSnapshot={deleteNetWorthSnapshot}
               currency={currency}
             />
           )}
