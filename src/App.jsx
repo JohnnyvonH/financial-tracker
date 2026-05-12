@@ -925,6 +925,10 @@ function App() {
       title: 'Add Recurring Item',
       description: 'Set up predictable bills, subscriptions, salary, or transfers.',
     },
+    'add-recurring-income': {
+      title: 'Add Recurring Income',
+      description: 'Add salary or other reliable income so monthly savings capacity can be calculated.',
+    },
   };
 
   if (loading) {
@@ -1069,10 +1073,11 @@ function App() {
             />
           )}
 
-          {view === 'add-recurring' && (
+          {(view === 'add-recurring' || view === 'add-recurring-income') && (
             <RecurringTransactionForm
               onSubmit={addRecurringTransaction}
               onCancel={() => setView('dashboard')}
+              initialType={view === 'add-recurring-income' ? 'income' : 'expense'}
             />
           )}
 
