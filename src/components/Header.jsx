@@ -59,6 +59,7 @@ export default function Header({ view, setView, isDarkMode, onToggleDarkMode }) 
                 key={button.id}
                 onClick={() => setView(button.id)}
                 className="btn btn-primary btn-sm"
+                aria-label={`Add ${button.label}`}
               >
                 <Icon size={16} />
                 <span className="hidden md:inline">{button.label}</span>
