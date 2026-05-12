@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { TrendingUp, TrendingDown, RefreshCw, Calendar } from 'lucide-react';
 import { EXPENSE_CATEGORIES, INCOME_CATEGORIES } from '../utils/categories';
 import { FREQUENCY_OPTIONS, calculateNextDate } from '../utils/recurring';
@@ -19,6 +19,15 @@ export default function RecurringTransactionForm({ onSubmit, onCancel, initialTy
   const [errors, setErrors] = useState({});
 
   const categories = formData.type === 'expense' ? EXPENSE_CATEGORIES : INCOME_CATEGORIES;
+
+  useEffect(() => {
+    setFormData((current) => ({
+      ...current,
+      type: initialType,
+      category: '',
+    }));
+    setErrors({});
+  }, [initialType]);
 
   const validate = () => {
     const newErrors = {};

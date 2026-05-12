@@ -6,6 +6,17 @@ const getRecurringType = (item = {}) => String(item.type || '').toLowerCase();
 
 const hasValue = (value) => value !== undefined && value !== null && value !== '';
 
+const parseDateInput = (dateString) => {
+  if (!dateString) return null;
+  const [year, month, day] = String(dateString).split('-').map(Number);
+
+  if (!year || !month || !day) {
+    return null;
+  }
+
+  return new Date(year, month - 1, day);
+};
+
 export function getMonthlyEquivalent(amount = 0, frequency = 'monthly') {
   const value = toNumber(amount);
 
@@ -149,7 +160,8 @@ export function getCommitmentProjection(planningItems = [], snapshotTotals = {},
     .filter((item) => item.status !== 'complete' && item.type !== 'saving')
     .filter((item) => {
       if (!item.dueDate) return false;
-      const dueDate = new Date(item.dueDate);
+      const dueDate = parseDateInput(item.dueDate);
+      if (!dueDate) return false;
       dueDate.setHours(0, 0, 0, 0);
       return dueDate >= now && dueDate <= horizon;
     });
