@@ -726,6 +726,10 @@ html.light .sidebar-brand .header-logo-text {
   grid-template-columns: repeat(3, minmax(0, 1fr));
 }
 
+.snapshot-fieldset:nth-of-type(3) .snapshot-grid {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
 .finance-summary-grid {
   margin-bottom: 2rem;
 }
@@ -2200,6 +2204,7 @@ html.light .app-sidebar .nav-button-active {
   .app-sidebar .nav-button {
     width: auto;
     min-width: 3rem;
+    flex: 0 0 auto;
   }
 
   .app-sidebar .nav-button span {

@@ -1,54 +1,46 @@
 const toNumber = (value) => Number(value || 0);
-const hasValue = (value) => value !== undefined && value !== null && value !== '';
-const hasPositiveValue = (value) => hasValue(value) && toNumber(value) > 0;
 
 export function getSnapshotTotals(snapshot = {}) {
+  const santander = toNumber(snapshot.santander);
+  const tesco = toNumber(snapshot.tesco);
+  const amexCashback = toNumber(snapshot.amexCashback);
+  const paycheck = toNumber(snapshot.paycheck);
+  const pension = toNumber(snapshot.pension);
+  const moneyboxMonthly = toNumber(snapshot.moneyboxMonthly);
+  const lifetimeIsa = toNumber(snapshot.moneyboxLifetimeIsa);
   const moneyboxBreakdownTotal = [
     snapshot.moneyboxStocksSharesIsa,
-    snapshot.moneyboxLifetimeIsa,
+    lifetimeIsa,
     snapshot.moneyboxSimpleSaver,
     snapshot.moneyboxCashIsa,
-    snapshot.moneyboxMonthly,
   ].reduce((sum, value) => sum + toNumber(value), 0);
 
-  const moneyboxTotal = hasPositiveValue(snapshot.moneybox)
-    ? toNumber(snapshot.moneybox)
-    : moneyboxBreakdownTotal;
-
-  const calculatedTotal = [
-    snapshot.santander,
-    snapshot.tesco,
-    snapshot.amexCashback,
-    moneyboxTotal,
-    snapshot.paycheck,
-  ].reduce((sum, value) => sum + toNumber(value), 0);
-
-  const total = hasPositiveValue(snapshot.total)
-    ? toNumber(snapshot.total)
-    : calculatedTotal;
-
-  const calculatedAvailableAssets = Math.max(total - toNumber(snapshot.moneyboxLifetimeIsa), 0);
-  const availableAssets = hasPositiveValue(snapshot.totalValueAvailableAssets)
-    ? toNumber(snapshot.totalValueAvailableAssets)
-    : calculatedAvailableAssets;
-
-  const calculatedAllAssets = total + toNumber(snapshot.pension);
-  const allAssets = hasPositiveValue(snapshot.totalValueAllAssets)
-    ? toNumber(snapshot.totalValueAllAssets)
-    : calculatedAllAssets;
+  const moneyboxTotal = moneyboxBreakdownTotal;
+  const cardLiabilities = tesco + amexCashback;
+  const cashAfterCards = santander - cardLiabilities;
+  const maxAvailableCash = cashAfterCards - moneyboxMonthly;
+  const availableMoneybox = moneyboxTotal - lifetimeIsa;
+  const availableAssets = maxAvailableCash + availableMoneybox;
+  const houseDepositAccessibleAssets = availableAssets + lifetimeIsa;
+  const allAssets = cashAfterCards + moneyboxTotal + pension;
 
   return {
+    santander,
+    cardLiabilities,
+    cashAfterCards,
+    moneyboxMonthly,
     moneyboxBreakdownTotal,
     moneyboxTotal,
-    moneyboxVariance: moneyboxTotal - moneyboxBreakdownTotal,
-    calculatedTotal,
-    total,
-    totalVariance: total - calculatedTotal,
-    calculatedAvailableAssets,
+    moneyboxVariance: toNumber(snapshot.moneybox || moneyboxBreakdownTotal) - moneyboxBreakdownTotal,
+    maxAvailableCash,
+    availableMoneybox,
+    lifetimeIsa,
     availableAssets,
-    bankNextPaycheck: toNumber(snapshot.estimatedBankNextPaycheck),
-    calculatedAllAssets,
+    houseDepositAccessibleAssets,
+    total: allAssets,
     allAssets,
+    pension,
+    paycheck,
   };
 }
 
@@ -169,11 +161,11 @@ export function getFinanceInsights({
     });
   }
 
-  if (latestTotals.availableAssets > 0 && balance > latestTotals.availableAssets) {
+  if (latestTotals.maxAvailableCash > 0 && balance > latestTotals.maxAvailableCash) {
     insights.push({
       tone: 'info',
-      title: 'Snapshot may need refreshing',
-      message: 'Your current balance is higher than the latest available-assets snapshot.',
+      title: 'Current finances may need refreshing',
+      message: 'Your current balance is higher than the latest available cash after cards and MoneyBox monthly.',
     });
   }
 

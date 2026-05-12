@@ -170,30 +170,26 @@ export default function Dashboard({
         </section>
 
         <section className="panel">
-          <SectionHeader title="Savings and assets" action="Open snapshot" onAction={() => onNavigate('snapshot')} />
+          <SectionHeader title="Current finances" action="Open current finances" onAction={() => onNavigate('snapshot')} />
           <div className="asset-summary">
+            <div>
+              <span>Max cash</span>
+              <strong>{formatCurrency(snapshotTotals.maxAvailableCash, currency)}</strong>
+            </div>
             <div>
               <span>Available assets</span>
               <strong>{formatCurrency(snapshotTotals.availableAssets, currency)}</strong>
             </div>
             <div>
-              <span>All assets</span>
+              <span>All wealth</span>
               <strong>{formatCurrency(snapshotTotals.allAssets, currency)}</strong>
-            </div>
-            <div>
-              <span>Goal progress</span>
-              <strong>{goalSummary.progress.toFixed(0)}%</strong>
             </div>
           </div>
           <div className="progress-bar progress-bar-large">
             <div className="progress-fill" style={{ width: `${goalSummary.progress}%` }} />
           </div>
           <p className="panel-note">
-            {goalSummary.remaining > 0
-              ? `${formatCurrency(goalSummary.remaining, currency)} remaining across savings goals.`
-              : data.goals.length > 0
-                ? 'All tracked goals are fully funded.'
-                : 'Add a savings goal to track progress here.'}
+            Lifetime ISA is counted separately for house-deposit access. Pension is included only in all wealth.
           </p>
         </section>
 

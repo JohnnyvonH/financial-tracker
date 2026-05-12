@@ -1,5 +1,5 @@
 import React, { useMemo, useState } from 'react';
-import { CheckCircle2, Info, Plus, Trash2, WalletCards } from 'lucide-react';
+import { CheckCircle2, Info, Plus, Trash2 } from 'lucide-react';
 import { formatCurrency } from '../utils/currency';
 import { getSnapshotTotals } from '../utils/financeSummary';
 
@@ -18,17 +18,13 @@ const defaultSnapshot = {
   moneyboxMonthly: '',
   notes: '',
   paycheck: '',
-  estimatedBankNextPaycheck: '',
   pension: '',
-  total: '',
-  totalValueAvailableAssets: '',
-  totalValueAllAssets: '',
 };
 
 const snapshotFields = [
   {
     title: 'Bank and card balances',
-    help: 'Current balances at the snapshot date.',
+    help: 'Santander is available money. Tesco and Amex are card balances owed, so they reduce your cash position.',
     fields: [
       ['santander', 'Santander'],
       ['tesco', 'Tesco'],
@@ -37,9 +33,8 @@ const snapshotFields = [
   },
   {
     title: 'MoneyBox accounts',
-    help: 'MoneyBox can be entered as a total, or checked against the account breakdown.',
+    help: 'MoneyBox total is calculated from the wealth accounts. Monthly is an outgoing amount, not an asset.',
     fields: [
-      ['moneybox', 'MoneyBox total'],
       ['moneyboxStocksSharesIsa', 'MoneyBox - S&S ISA'],
       ['moneyboxLifetimeIsa', 'MoneyBox - Lifetime ISA'],
       ['moneyboxSimpleSaver', 'MoneyBox - Simple Saver'],
@@ -49,20 +44,10 @@ const snapshotFields = [
   },
   {
     title: 'Income and long-term value',
-    help: 'Paycheck, next-paycheck estimate, and pension are kept separate so the snapshot remains auditable.',
+    help: 'Paycheck is recorded for context. Pension is long-term wealth and is excluded from available assets.',
     fields: [
       ['paycheck', 'Paycheck'],
-      ['estimatedBankNextPaycheck', 'Estimated Bank Next Paycheck'],
       ['pension', 'Pension'],
-    ],
-  },
-  {
-    title: 'Spreadsheet totals',
-    help: 'Leave blank to let the app calculate them, or enter your sheet values to preserve an existing row exactly.',
-    fields: [
-      ['total', 'Total'],
-      ['totalValueAvailableAssets', 'Total Value of Available Assets'],
-      ['totalValueAllAssets', 'Total Value of all Assets'],
     ],
   },
 ];
@@ -120,16 +105,16 @@ export default function FinancialSnapshot({
     <div className="financial-snapshot">
       <section className="finance-hero snapshot-hero">
         <div>
-          <p className="eyebrow">Financial snapshot</p>
-          <h1>Track your full position at a point in time</h1>
+          <p className="eyebrow">Current Finances</p>
+          <h1>Track your current finances at a point in time</h1>
           <p>
-            Port the workbook row into structured sections, keep the totals visible, and compare every snapshot against the same rules.
+            Record cash, card balances, MoneyBox wealth, pension, and monthly outgoings with totals calculated automatically.
           </p>
         </div>
         <div className="finance-hero-grid">
           <SnapshotMetric
-            label="Latest total"
-            value={formatCurrency(latestTotals.total, currency)}
+            label="Max available cash"
+            value={formatCurrency(latestTotals.maxAvailableCash, currency)}
             detail={latestSnapshot?.date || 'No snapshot yet'}
           />
           <SnapshotMetric
@@ -137,7 +122,7 @@ export default function FinancialSnapshot({
             value={formatCurrency(latestTotals.availableAssets, currency)}
           />
           <SnapshotMetric
-            label="All assets"
+            label="All wealth"
             value={formatCurrency(latestTotals.allAssets, currency)}
           />
         </div>
@@ -147,7 +132,7 @@ export default function FinancialSnapshot({
         <section className="card snapshot-entry-card">
           <div className="section-header">
             <div>
-              <h2 className="section-title">Add current finances</h2>
+              <h2 className="section-title">Add Current Finances</h2>
               <p className="section-subtitle">One entry equals one dated snapshot of your finances.</p>
             </div>
           </div>
@@ -186,31 +171,33 @@ export default function FinancialSnapshot({
           <section className="panel">
             <h2>Calculation rules</h2>
             <ul className="rule-list">
-              <li><strong>MoneyBox total</strong><span>Entered MoneyBox total, or the sum of S&S ISA, Lifetime ISA, Simple Saver, Cash ISA, and monthly amount.</span></li>
-              <li><strong>Total</strong><span>Entered sheet total, or Santander + Tesco + Amex Cashback + MoneyBox total + Paycheck.</span></li>
-              <li><strong>Available assets</strong><span>Entered sheet value, or Total minus Lifetime ISA.</span></li>
-              <li><strong>All assets</strong><span>Entered sheet value, or Total + Pension.</span></li>
+              <li><strong>Max available cash</strong><span>Santander minus Tesco, Amex, and MoneyBox monthly.</span></li>
+              <li><strong>MoneyBox total</strong><span>S&S ISA + Lifetime ISA + Simple Saver + Cash ISA.</span></li>
+              <li><strong>Available assets</strong><span>Max available cash + MoneyBox wealth excluding Lifetime ISA.</span></li>
+              <li><strong>House deposit access</strong><span>Available assets plus Lifetime ISA, because LISA is only treated as accessible for a house deposit.</span></li>
+              <li><strong>All wealth</strong><span>Santander minus credit cards, plus MoneyBox wealth and pension.</span></li>
             </ul>
           </section>
 
           <section className="panel">
             <h2>Draft totals</h2>
             <div className="snapshot-metric-stack">
+              <SnapshotMetric label="Credit cards owed" value={formatCurrency(draftTotals.cardLiabilities, currency)} />
+              <SnapshotMetric label="Max available cash" value={formatCurrency(draftTotals.maxAvailableCash, currency)} />
               <SnapshotMetric label="MoneyBox total" value={formatCurrency(draftTotals.moneyboxTotal, currency)} />
-              <SnapshotMetric label="Total" value={formatCurrency(draftTotals.total, currency)} />
               <SnapshotMetric label="Available assets" value={formatCurrency(draftTotals.availableAssets, currency)} />
-              <SnapshotMetric label="All assets" value={formatCurrency(draftTotals.allAssets, currency)} />
+              <SnapshotMetric label="House deposit access" value={formatCurrency(draftTotals.houseDepositAccessibleAssets, currency)} />
+              <SnapshotMetric label="All wealth" value={formatCurrency(draftTotals.allAssets, currency)} />
             </div>
             <div className="snapshot-difference-stack">
               <DifferenceBadge label="MoneyBox check" difference={draftTotals.moneyboxVariance} currency={currency} />
-              <DifferenceBadge label="Total check" difference={draftTotals.totalVariance} currency={currency} />
             </div>
           </section>
         </aside>
       </div>
 
       <section className="card">
-        <h2 className="section-title">Financial Snapshot History</h2>
+        <h2 className="section-title">Current Finances History</h2>
         <div className="snapshot-table-wrap">
           <table className="snapshot-table">
             <thead>
@@ -220,11 +207,11 @@ export default function FinancialSnapshot({
                 <th>Tesco</th>
                 <th>Amex</th>
                 <th>MoneyBox</th>
-                <th>Paycheck</th>
-                <th>Total</th>
+                <th>Max Cash</th>
                 <th>Available Assets</th>
+                <th>House Deposit Access</th>
                 <th>Pension</th>
-                <th>All Assets</th>
+                <th>All Wealth</th>
                 <th>Notes</th>
                 <th></th>
               </tr>
@@ -239,9 +226,9 @@ export default function FinancialSnapshot({
                     <td>{formatCurrency(numberValue(snapshot.tesco), currency)}</td>
                     <td>{formatCurrency(numberValue(snapshot.amexCashback), currency)}</td>
                     <td>{formatCurrency(totals.moneyboxTotal, currency)}</td>
-                    <td>{formatCurrency(numberValue(snapshot.paycheck), currency)}</td>
-                    <td>{formatCurrency(totals.total, currency)}</td>
+                    <td>{formatCurrency(totals.maxAvailableCash, currency)}</td>
                     <td>{formatCurrency(totals.availableAssets, currency)}</td>
+                    <td>{formatCurrency(totals.houseDepositAccessibleAssets, currency)}</td>
                     <td>{formatCurrency(numberValue(snapshot.pension), currency)}</td>
                     <td>{formatCurrency(totals.allAssets, currency)}</td>
                     <td>{snapshot.notes}</td>
@@ -255,7 +242,7 @@ export default function FinancialSnapshot({
               })}
             </tbody>
           </table>
-          {netWorthSnapshots.length === 0 && <p className="empty-table">No financial snapshots yet.</p>}
+          {netWorthSnapshots.length === 0 && <p className="empty-table">No current finances snapshots yet.</p>}
         </div>
       </section>
     </div>
