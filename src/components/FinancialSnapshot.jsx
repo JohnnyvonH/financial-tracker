@@ -1,58 +1,22 @@
 import React, { useMemo, useState } from 'react';
-import { CheckCircle2, Info, Plus, Trash2 } from 'lucide-react';
+import { CheckCircle2, ChevronDown, ChevronUp, Info, Plus, SlidersHorizontal, Trash2 } from 'lucide-react';
 import { formatCurrency } from '../utils/currency';
 import { getSnapshotTotals } from '../utils/financeSummary';
+import {
+  SNAPSHOT_ENTRY_TYPES,
+  applyLegacySnapshotFields,
+  buildSnapshotEntriesFromForm,
+  createEmptySnapshot,
+  createId,
+  getSnapshotEntries,
+  normaliseSnapshotSections,
+} from '../utils/snapshotConfig';
 
 const today = new Date().toISOString().split('T')[0];
 
-const defaultSnapshot = {
-  date: today,
-  santander: '',
-  tesco: '',
-  amexCashback: '',
-  moneybox: '',
-  moneyboxStocksSharesIsa: '',
-  moneyboxLifetimeIsa: '',
-  moneyboxSimpleSaver: '',
-  moneyboxCashIsa: '',
-  moneyboxMonthly: '',
-  notes: '',
-  paycheck: '',
-  pension: '',
-};
-
-const snapshotFields = [
-  {
-    title: 'Bank and card balances',
-    help: 'Santander is available money. Tesco and Amex are card balances owed, so they reduce your cash position.',
-    fields: [
-      ['santander', 'Santander'],
-      ['tesco', 'Tesco'],
-      ['amexCashback', 'Amex - Cashback'],
-    ],
-  },
-  {
-    title: 'MoneyBox accounts',
-    help: 'MoneyBox total is calculated from the wealth accounts. Monthly is an outgoing amount, not an asset.',
-    fields: [
-      ['moneyboxStocksSharesIsa', 'MoneyBox - S&S ISA'],
-      ['moneyboxLifetimeIsa', 'MoneyBox - Lifetime ISA'],
-      ['moneyboxSimpleSaver', 'MoneyBox - Simple Saver'],
-      ['moneyboxCashIsa', 'MoneyBox - Cash ISA'],
-      ['moneyboxMonthly', 'MoneyBox Monthly'],
-    ],
-  },
-  {
-    title: 'Income and long-term value',
-    help: 'Paycheck is recorded for context. Pension is long-term wealth and is excluded from available assets.',
-    fields: [
-      ['paycheck', 'Paycheck'],
-      ['pension', 'Pension'],
-    ],
-  },
-];
-
 const numberValue = (value) => Number(value || 0);
+
+const typeLabel = (value) => SNAPSHOT_ENTRY_TYPES.find((type) => type.value === value)?.label || 'Available cash';
 
 function SnapshotMetric({ label, value, detail }) {
   return (
@@ -77,28 +41,144 @@ function DifferenceBadge({ label, difference, currency }) {
   );
 }
 
+function moveItem(items, index, direction) {
+  const nextIndex = index + direction;
+  if (nextIndex < 0 || nextIndex >= items.length) return items;
+
+  const nextItems = [...items];
+  const [item] = nextItems.splice(index, 1);
+  nextItems.splice(nextIndex, 0, item);
+  return nextItems;
+}
+
 export default function FinancialSnapshot({
   netWorthSnapshots,
+  snapshotSections,
+  onUpdateSnapshotSections,
   onAddNetWorthSnapshot,
   onDeleteNetWorthSnapshot,
   currency,
 }) {
-  const [snapshotForm, setSnapshotForm] = useState(defaultSnapshot);
+  const sections = useMemo(() => normaliseSnapshotSections(snapshotSections), [snapshotSections]);
+  const [snapshotForm, setSnapshotForm] = useState(() => createEmptySnapshot(sections, today));
+  const [isManagingTemplate, setIsManagingTemplate] = useState(false);
+  const [sectionDrafts, setSectionDrafts] = useState(sections);
+
   const latestSnapshot = netWorthSnapshots[0];
   const latestTotals = getSnapshotTotals(latestSnapshot);
-  const draftTotals = useMemo(() => getSnapshotTotals(snapshotForm), [snapshotForm]);
+  const snapshotToPreview = useMemo(() => ({
+    ...snapshotForm,
+    entries: buildSnapshotEntriesFromForm(snapshotForm, sections),
+  }), [snapshotForm, sections]);
+  const draftTotals = useMemo(() => getSnapshotTotals(snapshotToPreview), [snapshotToPreview]);
+
+  const resetFormForSections = (nextSections) => {
+    setSnapshotForm(createEmptySnapshot(nextSections, snapshotForm.date || today));
+  };
 
   const updateSnapshotForm = (key, value) => {
     setSnapshotForm((current) => ({ ...current, [key]: value }));
   };
 
+  const updateEntryValue = (entryId, value) => {
+    setSnapshotForm((current) => ({
+      ...current,
+      entries: current.entries.map((entry) => (
+        entry.entryId === entryId ? { ...entry, value } : entry
+      )),
+    }));
+  };
+
   const handleSnapshotSubmit = (event) => {
     event.preventDefault();
-    onAddNetWorthSnapshot({
+    const snapshot = applyLegacySnapshotFields({
       ...snapshotForm,
       date: snapshotForm.date || today,
-    });
-    setSnapshotForm(defaultSnapshot);
+      entries: buildSnapshotEntriesFromForm(snapshotForm, sections),
+    }, sections);
+
+    onAddNetWorthSnapshot(snapshot);
+    setSnapshotForm(createEmptySnapshot(sections, today));
+  };
+
+  const openTemplateManager = () => {
+    setSectionDrafts(sections);
+    setIsManagingTemplate(true);
+  };
+
+  const saveTemplate = () => {
+    const nextSections = normaliseSnapshotSections(sectionDrafts);
+    onUpdateSnapshotSections(nextSections);
+    resetFormForSections(nextSections);
+    setIsManagingTemplate(false);
+  };
+
+  const updateSection = (sectionId, updates) => {
+    setSectionDrafts((current) => current.map((section) => (
+      section.id === sectionId ? { ...section, ...updates } : section
+    )));
+  };
+
+  const updateTemplateEntry = (sectionId, entryId, updates) => {
+    setSectionDrafts((current) => current.map((section) => {
+      if (section.id !== sectionId) return section;
+      return {
+        ...section,
+        entries: section.entries.map((entry) => (
+          entry.id === entryId ? { ...entry, ...updates } : entry
+        )),
+      };
+    }));
+  };
+
+  const addSection = () => {
+    setSectionDrafts((current) => ([
+      ...current,
+      {
+        id: createId('section'),
+        title: 'New section',
+        help: 'Describe what this group tracks.',
+        entries: [],
+      },
+    ]));
+  };
+
+  const addEntry = (sectionId) => {
+    setSectionDrafts((current) => current.map((section) => {
+      if (section.id !== sectionId) return section;
+      return {
+        ...section,
+        entries: [
+          ...section.entries,
+          { id: createId('entry'), name: 'New account', type: 'available_cash' },
+        ],
+      };
+    }));
+  };
+
+  const deleteSection = (sectionId) => {
+    setSectionDrafts((current) => current.filter((section) => section.id !== sectionId));
+  };
+
+  const deleteEntry = (sectionId, entryId) => {
+    setSectionDrafts((current) => current.map((section) => {
+      if (section.id !== sectionId) return section;
+      return {
+        ...section,
+        entries: section.entries.filter((entry) => entry.id !== entryId),
+      };
+    }));
+  };
+
+  const moveSection = (index, direction) => {
+    setSectionDrafts((current) => moveItem(current, index, direction));
+  };
+
+  const moveEntry = (sectionId, index, direction) => {
+    setSectionDrafts((current) => current.map((section) => {
+      if (section.id !== sectionId) return section;
+      return { ...section, entries: moveItem(section.entries, index, direction) };
+    }));
   };
 
   return (
@@ -108,7 +188,7 @@ export default function FinancialSnapshot({
           <p className="eyebrow">Current Finances</p>
           <h1>Track your current finances at a point in time</h1>
           <p>
-            Record cash, card balances, MoneyBox wealth, pension, and monthly outgoings with totals calculated automatically.
+            Record banks, cards, savings, investments, pensions, income context, and monthly commitments using a template you can edit.
           </p>
         </div>
         <div className="finance-hero-grid">
@@ -135,7 +215,105 @@ export default function FinancialSnapshot({
               <h2 className="section-title">Add Current Finances</h2>
               <p className="section-subtitle">One entry equals one dated snapshot of your finances.</p>
             </div>
+            <button className="btn btn-secondary" type="button" onClick={openTemplateManager}>
+              <SlidersHorizontal size={16} />Edit template
+            </button>
           </div>
+
+          {isManagingTemplate && (
+            <div className="snapshot-template-manager">
+              <div className="section-header">
+                <div>
+                  <h3>Template sections</h3>
+                  <p>Use the starter setup, or replace it with your own accounts and categories.</p>
+                </div>
+                <button className="btn btn-secondary" type="button" onClick={addSection}>
+                  <Plus size={16} />Add section
+                </button>
+              </div>
+
+              {sectionDrafts.map((section, sectionIndex) => (
+                <div className="snapshot-template-section" key={section.id}>
+                  <div className="snapshot-template-section-header">
+                    <div className="form-group">
+                      <label htmlFor={`section-title-${section.id}`}>Section name</label>
+                      <input
+                        id={`section-title-${section.id}`}
+                        value={section.title}
+                        onChange={(event) => updateSection(section.id, { title: event.target.value })}
+                      />
+                    </div>
+                    <div className="snapshot-template-actions">
+                      <button className="btn-icon" type="button" onClick={() => moveSection(sectionIndex, -1)} aria-label={`Move ${section.title} up`}>
+                        <ChevronUp size={16} />
+                      </button>
+                      <button className="btn-icon" type="button" onClick={() => moveSection(sectionIndex, 1)} aria-label={`Move ${section.title} down`}>
+                        <ChevronDown size={16} />
+                      </button>
+                      <button className="btn-icon" type="button" onClick={() => deleteSection(section.id)} aria-label={`Delete ${section.title}`}>
+                        <Trash2 size={16} />
+                      </button>
+                    </div>
+                  </div>
+                  <div className="form-group">
+                    <label htmlFor={`section-help-${section.id}`}>Section help text</label>
+                    <input
+                      id={`section-help-${section.id}`}
+                      value={section.help}
+                      onChange={(event) => updateSection(section.id, { help: event.target.value })}
+                    />
+                  </div>
+
+                  <div className="snapshot-template-entry-list">
+                    {section.entries.map((entry, entryIndex) => (
+                      <div className="snapshot-template-entry" key={entry.id}>
+                        <div className="form-group">
+                          <label htmlFor={`entry-name-${entry.id}`}>Entry name</label>
+                          <input
+                            id={`entry-name-${entry.id}`}
+                            value={entry.name}
+                            onChange={(event) => updateTemplateEntry(section.id, entry.id, { name: event.target.value })}
+                          />
+                        </div>
+                        <div className="form-group">
+                          <label htmlFor={`entry-type-${entry.id}`}>Calculation type</label>
+                          <select
+                            id={`entry-type-${entry.id}`}
+                            value={entry.type}
+                            onChange={(event) => updateTemplateEntry(section.id, entry.id, { type: event.target.value })}
+                          >
+                            {SNAPSHOT_ENTRY_TYPES.map((type) => (
+                              <option key={type.value} value={type.value}>{type.label}</option>
+                            ))}
+                          </select>
+                        </div>
+                        <div className="snapshot-template-actions snapshot-template-entry-actions">
+                          <button className="btn-icon" type="button" onClick={() => moveEntry(section.id, entryIndex, -1)} aria-label={`Move ${entry.name} up`}>
+                            <ChevronUp size={16} />
+                          </button>
+                          <button className="btn-icon" type="button" onClick={() => moveEntry(section.id, entryIndex, 1)} aria-label={`Move ${entry.name} down`}>
+                            <ChevronDown size={16} />
+                          </button>
+                          <button className="btn-icon" type="button" onClick={() => deleteEntry(section.id, entry.id)} aria-label={`Delete ${entry.name}`}>
+                            <Trash2 size={16} />
+                          </button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+
+                  <button className="btn btn-secondary" type="button" onClick={() => addEntry(section.id)}>
+                    <Plus size={16} />Add entry
+                  </button>
+                </div>
+              ))}
+
+              <div className="snapshot-template-footer">
+                <button className="btn btn-secondary" type="button" onClick={() => setIsManagingTemplate(false)}>Cancel</button>
+                <button className="btn btn-primary" type="button" onClick={saveTemplate}>Save template</button>
+              </div>
+            </div>
+          )}
 
           <form onSubmit={handleSnapshotSubmit} className="snapshot-form">
             <div className="form-group snapshot-date-field">
@@ -143,24 +321,37 @@ export default function FinancialSnapshot({
               <input id="snapshot-date" type="date" value={snapshotForm.date} onChange={(event) => updateSnapshotForm('date', event.target.value)} />
             </div>
 
-            {snapshotFields.map((section) => (
-              <fieldset className="snapshot-fieldset" key={section.title}>
+            {sections.map((section) => (
+              <fieldset className="snapshot-fieldset" key={section.id}>
                 <legend>{section.title}</legend>
-                <p>{section.help}</p>
+                {section.help && <p>{section.help}</p>}
                 <div className="snapshot-grid">
-                  {section.fields.map(([key, label]) => (
-                    <div className="form-group" key={key}>
-                      <label htmlFor={`snapshot-${key}`}>{label}</label>
-                      <input id={`snapshot-${key}`} type="number" step="0.01" value={snapshotForm[key]} onChange={(event) => updateSnapshotForm(key, event.target.value)} />
-                    </div>
-                  ))}
+                  {section.entries.map((entry) => {
+                    const formEntry = snapshotForm.entries.find((candidate) => candidate.entryId === entry.id);
+                    return (
+                      <div className="form-group" key={entry.id}>
+                        <label htmlFor={`snapshot-${entry.id}`}>
+                          {entry.name}
+                          <span>{typeLabel(entry.type)}</span>
+                        </label>
+                        <input
+                          id={`snapshot-${entry.id}`}
+                          type="number"
+                          step="0.01"
+                          value={formEntry?.value ?? ''}
+                          onChange={(event) => updateEntryValue(entry.id, event.target.value)}
+                        />
+                      </div>
+                    );
+                  })}
                 </div>
+                {section.entries.length === 0 && <p className="empty-table">No entries in this section yet.</p>}
               </fieldset>
             ))}
 
             <div className="form-group">
               <label htmlFor="snapshot-notes">Notes</label>
-              <textarea id="snapshot-notes" value={snapshotForm.notes} onChange={(event) => updateSnapshotForm('notes', event.target.value)} rows="3" placeholder="New XF and Parents £3500" />
+              <textarea id="snapshot-notes" value={snapshotForm.notes} onChange={(event) => updateSnapshotForm('notes', event.target.value)} rows="3" placeholder="Add context for this snapshot" />
             </div>
 
             <button className="btn btn-primary" type="submit"><Plus size={16} />Save financial snapshot</button>
@@ -171,26 +362,26 @@ export default function FinancialSnapshot({
           <section className="panel">
             <h2>Calculation rules</h2>
             <ul className="rule-list">
-              <li><strong>Max available cash</strong><span>Santander minus Tesco, Amex, and MoneyBox monthly.</span></li>
-              <li><strong>MoneyBox total</strong><span>S&S ISA + Lifetime ISA + Simple Saver + Cash ISA.</span></li>
-              <li><strong>Available assets</strong><span>Max available cash + MoneyBox wealth excluding Lifetime ISA.</span></li>
-              <li><strong>House deposit access</strong><span>Available assets plus Lifetime ISA, because LISA is only treated as accessible for a house deposit.</span></li>
-              <li><strong>All wealth</strong><span>Santander minus credit cards, plus MoneyBox wealth and pension.</span></li>
+              <li><strong>Max available cash</strong><span>Available cash minus liabilities and monthly outgoings.</span></li>
+              <li><strong>Savings and investments</strong><span>Savings, investments, and restricted savings are grouped for asset totals.</span></li>
+              <li><strong>Available assets</strong><span>Max available cash plus savings and investments that are not restricted.</span></li>
+              <li><strong>House deposit access</strong><span>Available assets plus restricted savings.</span></li>
+              <li><strong>All wealth</strong><span>Cash after liabilities plus savings, investments, restricted savings, and pension values.</span></li>
             </ul>
           </section>
 
           <section className="panel">
             <h2>Draft totals</h2>
             <div className="snapshot-metric-stack">
-              <SnapshotMetric label="Credit cards owed" value={formatCurrency(draftTotals.cardLiabilities, currency)} />
+              <SnapshotMetric label="Liabilities owed" value={formatCurrency(draftTotals.cardLiabilities, currency)} />
               <SnapshotMetric label="Max available cash" value={formatCurrency(draftTotals.maxAvailableCash, currency)} />
-              <SnapshotMetric label="MoneyBox total" value={formatCurrency(draftTotals.moneyboxTotal, currency)} />
+              <SnapshotMetric label="Savings and investments" value={formatCurrency(draftTotals.moneyboxTotal, currency)} />
               <SnapshotMetric label="Available assets" value={formatCurrency(draftTotals.availableAssets, currency)} />
               <SnapshotMetric label="House deposit access" value={formatCurrency(draftTotals.houseDepositAccessibleAssets, currency)} />
               <SnapshotMetric label="All wealth" value={formatCurrency(draftTotals.allAssets, currency)} />
             </div>
             <div className="snapshot-difference-stack">
-              <DifferenceBadge label="MoneyBox check" difference={draftTotals.moneyboxVariance} currency={currency} />
+              <DifferenceBadge label="Starter template check" difference={draftTotals.moneyboxVariance} currency={currency} />
             </div>
           </section>
         </aside>
@@ -203,14 +394,10 @@ export default function FinancialSnapshot({
             <thead>
               <tr>
                 <th>Date</th>
-                <th>Santander</th>
-                <th>Tesco</th>
-                <th>Amex</th>
-                <th>MoneyBox</th>
+                <th>Entries</th>
                 <th>Max Cash</th>
                 <th>Available Assets</th>
                 <th>House Deposit Access</th>
-                <th>Pension</th>
                 <th>All Wealth</th>
                 <th>Notes</th>
                 <th></th>
@@ -219,17 +406,23 @@ export default function FinancialSnapshot({
             <tbody>
               {netWorthSnapshots.map((snapshot) => {
                 const totals = getSnapshotTotals(snapshot);
+                const entries = getSnapshotEntries(snapshot, sections).filter((entry) => numberValue(entry.value) !== 0);
                 return (
                   <tr key={snapshot.id}>
                     <td>{snapshot.date}</td>
-                    <td>{formatCurrency(numberValue(snapshot.santander), currency)}</td>
-                    <td>{formatCurrency(numberValue(snapshot.tesco), currency)}</td>
-                    <td>{formatCurrency(numberValue(snapshot.amexCashback), currency)}</td>
-                    <td>{formatCurrency(totals.moneyboxTotal, currency)}</td>
+                    <td>
+                      <div className="snapshot-history-entries">
+                        {entries.map((entry) => (
+                          <span key={`${snapshot.id}-${entry.entryId || entry.id}`}>
+                            <strong>{entry.name}</strong>
+                            {formatCurrency(numberValue(entry.value), currency)}
+                          </span>
+                        ))}
+                      </div>
+                    </td>
                     <td>{formatCurrency(totals.maxAvailableCash, currency)}</td>
                     <td>{formatCurrency(totals.availableAssets, currency)}</td>
                     <td>{formatCurrency(totals.houseDepositAccessibleAssets, currency)}</td>
-                    <td>{formatCurrency(numberValue(snapshot.pension), currency)}</td>
                     <td>{formatCurrency(totals.allAssets, currency)}</td>
                     <td>{snapshot.notes}</td>
                     <td>

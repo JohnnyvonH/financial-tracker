@@ -23,6 +23,7 @@ import { processRecurringTransactions } from './utils/recurring';
 import { removeDuplicateTransactions, countDuplicates } from './utils/deduplication';
 import { getInitialTheme, saveTheme, applyTheme } from './utils/theme';
 import { getSnapshotTotals } from './utils/financeSummary';
+import { applyLegacySnapshotFields, normaliseSnapshotSections } from './utils/snapshotConfig';
 
 function App() {
   const { user, isConfigured } = useAuth();
@@ -33,6 +34,7 @@ function App() {
     budgets: {},
     recurringTransactions: [],
     planningItems: [],
+    snapshotSections: normaliseSnapshotSections(),
     netWorthSnapshots: []
   });
   const [currency, setCurrency] = useState('USD');
@@ -139,6 +141,7 @@ function App() {
       if (!savedData.budgets) savedData.budgets = {};
       if (!savedData.recurringTransactions) savedData.recurringTransactions = [];
       if (!savedData.planningItems) savedData.planningItems = [];
+      savedData.snapshotSections = normaliseSnapshotSections(savedData.snapshotSections);
       if (!savedData.netWorthSnapshots) savedData.netWorthSnapshots = [];
       
       // Auto-dedupe on load
@@ -695,17 +698,41 @@ function App() {
     }
   };
 
+  const updateSnapshotSections = async (snapshotSections) => {
+    const nextSections = normaliseSnapshotSections(snapshotSections);
+
+    try {
+      setSyncing(true);
+      if (user && isConfigured && supabaseSync.isAvailable()) {
+        await supabaseSync.updateSnapshotSections(nextSections);
+      }
+
+      await saveData({
+        ...data,
+        snapshotSections: nextSections
+      });
+
+      showToast('Current finances template updated.', 'success');
+    } catch (error) {
+      console.error('Error updating current finances template:', error);
+      showToast('Failed to update template. Please try again.', 'error');
+    } finally {
+      setSyncing(false);
+    }
+  };
+
   const addNetWorthSnapshot = async (snapshot) => {
     try {
       setSyncing(true);
+      const snapshotToSave = applyLegacySnapshotFields(snapshot, data.snapshotSections);
       let savedSnapshot = null;
       if (user && isConfigured && supabaseSync.isAvailable()) {
-        savedSnapshot = await supabaseSync.addNetWorthSnapshot(snapshot);
+        savedSnapshot = await supabaseSync.addNetWorthSnapshot(snapshotToSave);
       }
 
       const newSnapshot = savedSnapshot || {
         id: Date.now(),
-        ...snapshot,
+        ...snapshotToSave,
         createdAt: new Date().toISOString()
       };
 
@@ -773,6 +800,7 @@ function App() {
       if (!importedData.budgets) importedData.budgets = {};
       if (!importedData.recurringTransactions) importedData.recurringTransactions = [];
       if (!importedData.planningItems) importedData.planningItems = [];
+      importedData.snapshotSections = normaliseSnapshotSections(importedData.snapshotSections);
       if (!importedData.netWorthSnapshots) importedData.netWorthSnapshots = [];
       
       // Dedupe imported data
@@ -801,6 +829,7 @@ function App() {
           budgets: {},
           recurringTransactions: [],
           planningItems: [],
+          snapshotSections: normaliseSnapshotSections(),
           netWorthSnapshots: []
         });
         showToast('All data cleared successfully!', 'warning');
@@ -903,7 +932,7 @@ function App() {
     },
     snapshot: {
       title: 'Current Finances',
-      description: 'Capture cash, credit cards, MoneyBox wealth, pension, and monthly outgoings from your workbook structure.',
+      description: 'Capture a flexible snapshot of banks, cards, savings, investments, pensions, and commitments.',
     },
     reports: {
       title: 'Reports',
@@ -1043,6 +1072,8 @@ function App() {
           {view === 'snapshot' && (
             <FinancialSnapshot
               netWorthSnapshots={data.netWorthSnapshots}
+              snapshotSections={data.snapshotSections}
+              onUpdateSnapshotSections={updateSnapshotSections}
               onAddNetWorthSnapshot={addNetWorthSnapshot}
               onDeleteNetWorthSnapshot={deleteNetWorthSnapshot}
               currency={currency}

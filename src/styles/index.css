@@ -726,10 +726,6 @@ html.light .sidebar-brand .header-logo-text {
   grid-template-columns: repeat(3, minmax(0, 1fr));
 }
 
-.snapshot-fieldset:nth-of-type(3) .snapshot-grid {
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-}
-
 .finance-summary-grid {
   margin-bottom: 2rem;
 }
@@ -778,6 +774,78 @@ html.light .sidebar-brand .header-logo-text {
   margin-bottom: 1rem;
   color: var(--text-secondary);
   font-size: 0.86rem;
+}
+
+.snapshot-fieldset label span {
+  display: block;
+  margin-top: 0.15rem;
+  color: var(--text-muted);
+  font-size: 0.72rem;
+  font-weight: 700;
+}
+
+.snapshot-template-manager {
+  display: grid;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+  padding: 1rem;
+  border: 1px solid var(--border);
+  border-radius: 0.75rem;
+  background: rgba(15, 23, 42, 0.34);
+}
+
+.snapshot-template-manager h3 {
+  color: var(--text-primary);
+}
+
+.snapshot-template-manager p {
+  color: var(--text-secondary);
+  font-size: 0.88rem;
+}
+
+.snapshot-template-section {
+  display: grid;
+  gap: 0.9rem;
+  padding: 1rem;
+  border: 1px solid var(--border);
+  border-radius: 0.65rem;
+  background: var(--field-surface);
+}
+
+.snapshot-template-section-header,
+.snapshot-template-entry,
+.snapshot-template-footer {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 0.8rem;
+  align-items: end;
+}
+
+.snapshot-template-entry {
+  grid-template-columns: minmax(160px, 1fr) minmax(190px, 0.9fr) auto;
+  align-items: end;
+}
+
+.snapshot-template-entry-list {
+  display: grid;
+  gap: 0.75rem;
+}
+
+.snapshot-template-actions {
+  display: flex;
+  gap: 0.35rem;
+  align-items: center;
+  justify-content: flex-end;
+  padding-bottom: 0.1rem;
+}
+
+.snapshot-template-entry-actions {
+  padding-bottom: 0.5rem;
+}
+
+.snapshot-template-footer {
+  grid-template-columns: auto auto;
+  justify-content: end;
 }
 
 .snapshot-date-field {
@@ -984,6 +1052,25 @@ html.light .sidebar-brand .header-logo-text {
   color: var(--text-secondary);
   font-size: 0.78rem;
   text-transform: uppercase;
+}
+
+.snapshot-history-entries {
+  display: grid;
+  gap: 0.4rem;
+  min-width: 260px;
+}
+
+.snapshot-history-entries span {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  color: var(--text-secondary);
+  font-size: 0.84rem;
+}
+
+.snapshot-history-entries strong {
+  color: var(--text-primary);
+  font-weight: 700;
 }
 
 .empty-table {
@@ -1614,8 +1701,20 @@ html.light .sidebar-brand .header-logo-text {
   .finance-summary-grid,
   .form-grid,
   .snapshot-grid,
+  .snapshot-template-section-header,
+  .snapshot-template-entry,
+  .snapshot-template-footer,
   .planning-metrics {
     grid-template-columns: 1fr;
+  }
+
+  .snapshot-template-actions,
+  .snapshot-template-footer {
+    justify-content: stretch;
+  }
+
+  .snapshot-template-actions .btn-icon {
+    flex: 1;
   }
 
   .form-actions {
