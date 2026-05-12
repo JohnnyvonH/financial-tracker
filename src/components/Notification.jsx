@@ -22,7 +22,7 @@ const Notification = ({ message, type = 'info', onClose, duration = 4000 }) => {
   };
 
   return (
-    <div className={`fixed top-20 right-4 z-50 flex items-center gap-3 px-4 py-3 rounded-lg border shadow-lg animate-slide-in ${colors[type]}`}>
+    <div className={`fixed bottom-4 right-4 z-50 flex items-center gap-3 px-4 py-3 rounded-lg border shadow-lg animate-slide-in ${colors[type]}`}>
       <div className="flex-shrink-0">
         {icons[type]}
       </div>
