@@ -4,6 +4,8 @@ const isActiveRecurring = (item = {}) => item.active !== false && item.is_active
 
 const getRecurringType = (item = {}) => String(item.type || '').toLowerCase();
 
+const hasValue = (value) => value !== undefined && value !== null && value !== '';
+
 export function getMonthlyEquivalent(amount = 0, frequency = 'monthly') {
   const value = toNumber(amount);
 
@@ -32,14 +34,16 @@ export function getSnapshotTotals(snapshot = {}) {
   const pension = toNumber(snapshot.pension);
   const moneyboxMonthly = toNumber(snapshot.moneyboxMonthly);
   const lifetimeIsa = toNumber(snapshot.moneyboxLifetimeIsa);
-  const moneyboxBreakdownTotal = [
+  const moneyboxBreakdownValues = [
     snapshot.moneyboxStocksSharesIsa,
-    lifetimeIsa,
+    snapshot.moneyboxLifetimeIsa,
     snapshot.moneyboxSimpleSaver,
     snapshot.moneyboxCashIsa,
-  ].reduce((sum, value) => sum + toNumber(value), 0);
+  ];
+  const hasMoneyboxBreakdown = moneyboxBreakdownValues.some(hasValue);
+  const moneyboxBreakdownTotal = moneyboxBreakdownValues.reduce((sum, value) => sum + toNumber(value), 0);
 
-  const moneyboxTotal = moneyboxBreakdownTotal;
+  const moneyboxTotal = hasMoneyboxBreakdown ? moneyboxBreakdownTotal : toNumber(snapshot.moneybox);
   const cardLiabilities = tesco + amexCashback;
   const cashAfterCards = santander - cardLiabilities;
   const maxAvailableCash = cashAfterCards - moneyboxMonthly;
@@ -55,7 +59,7 @@ export function getSnapshotTotals(snapshot = {}) {
     moneyboxMonthly,
     moneyboxBreakdownTotal,
     moneyboxTotal,
-    moneyboxVariance: toNumber(snapshot.moneybox || moneyboxBreakdownTotal) - moneyboxBreakdownTotal,
+    moneyboxVariance: hasValue(snapshot.moneybox) ? toNumber(snapshot.moneybox) - moneyboxBreakdownTotal : 0,
     maxAvailableCash,
     availableMoneybox,
     lifetimeIsa,
@@ -144,10 +148,10 @@ export function getCommitmentProjection(planningItems = [], snapshotTotals = {},
   const commitments = planningItems
     .filter((item) => item.status !== 'complete' && item.type !== 'saving')
     .filter((item) => {
-      if (!item.dueDate) return true;
+      if (!item.dueDate) return false;
       const dueDate = new Date(item.dueDate);
       dueDate.setHours(0, 0, 0, 0);
-      return dueDate <= horizon;
+      return dueDate >= now && dueDate <= horizon;
     });
 
   const summary = commitments.reduce((result, item) => {
