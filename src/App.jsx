@@ -1,15 +1,11 @@
 import React, { useState, useEffect, useMemo, useRef } from 'react';
 import ErrorBoundary from './components/ErrorBoundary';
 import Header from './components/Header';
-import KPICards from './components/KPICards';
-import Goals from './components/Goals';
-import Transactions from './components/Transactions';
+import Dashboard from './components/Dashboard';
 import TransactionsPage from './components/TransactionsPage';
 import TransactionForm from './components/TransactionForm';
 import GoalForm from './components/GoalForm';
 import Budget from './components/Budget';
-import BudgetWarnings from './components/BudgetWarnings';
-import SpendingChart from './components/SpendingChart';
 import FinancePlan from './components/FinancePlan';
 import DataManagement from './components/DataManagement';
 import RecurringTransactionForm from './components/RecurringTransactionForm';
@@ -883,6 +879,41 @@ function App() {
   const { last30DaysIncome, last30DaysExpenses } = getLast30DaysStats();
   const currentMonthSpending = getCurrentMonthSpending();
 
+  const pageMeta = {
+    transactions: {
+      title: 'Transactions',
+      description: 'Review the ledger, find patterns, and keep every income or expense traceable.',
+    },
+    budget: {
+      title: 'Budgets',
+      description: 'Compare spending against limits and tune your categories before they drift.',
+    },
+    plan: {
+      title: 'Plan',
+      description: 'Track upcoming commitments, asset sales, house deposit progress, and net worth snapshots.',
+    },
+    reports: {
+      title: 'Reports',
+      description: 'Turn historical spending into trends, exports, and decision-ready summaries.',
+    },
+    settings: {
+      title: 'Settings',
+      description: 'Manage currency, backups, imports, and local data controls.',
+    },
+    'add-transaction': {
+      title: 'Add transaction',
+      description: 'Capture income or spend while the details are still fresh.',
+    },
+    'add-goal': {
+      title: 'Add savings goal',
+      description: 'Set a target, add a deadline, and track the next milestone.',
+    },
+    'add-recurring': {
+      title: 'Add recurring item',
+      description: 'Set up predictable bills, subscriptions, salary, or transfers.',
+    },
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -909,7 +940,7 @@ function App() {
 
   return (
     <ErrorBoundary>
-      <div className="min-h-screen">
+      <div className="app-shell">
         {toast && (
           <Toast
             message={toast.message}
@@ -934,56 +965,27 @@ function App() {
           onToggleDarkMode={handleThemeToggle}
         />
         
-        <div className="container">
-          {view === 'dashboard' && (
-            <>
-              <div className="kpi-section">
-                <KPICards
-                  balance={data.balance}
-                  monthlyIncome={monthlyIncome}
-                  monthlyExpenses={monthlyExpenses}
-                  last30DaysIncome={last30DaysIncome}
-                  last30DaysExpenses={last30DaysExpenses}
-                  currency={currency}
-                />
+        <main className="app-main">
+          {pageMeta[view] && (
+            <section className="page-heading">
+              <div>
+                <h1>{pageMeta[view].title}</h1>
+                <p>{pageMeta[view].description}</p>
               </div>
-              
-              {Object.keys(data.budgets).length > 0 && (
-                <BudgetWarnings
-                  budgets={data.budgets}
-                  currentMonthSpending={currentMonthSpending}
-                  currency={currency}
-                />
-              )}
+            </section>
+          )}
 
-              <SpendingChart
-                transactions={data.transactions}
-                currency={currency}
-              />
-
-              {data.recurringTransactions.length > 0 && (
-                <RecurringTransactionList
-                  recurringTransactions={data.recurringTransactions}
-                  onDelete={deleteRecurringTransaction}
-                  onToggleActive={toggleRecurringActive}
-                  currency={currency}
-                />
-              )}
-
-              <Goals
-                goals={data.goals}
-                onUpdateGoal={updateGoalProgress}
-                onDeleteGoal={deleteGoal}
-                currency={currency}
-              />
-              
-              <Transactions
-                transactions={data.transactions}
-                onDeleteTransaction={deleteTransaction}
-                onViewAll={() => setView('transactions')}
-                currency={currency}
-              />
-            </>
+          {view === 'dashboard' && (
+            <Dashboard
+              data={data}
+              monthlyIncome={monthlyIncome}
+              monthlyExpenses={monthlyExpenses}
+              last30DaysIncome={last30DaysIncome}
+              last30DaysExpenses={last30DaysExpenses}
+              currentMonthSpending={currentMonthSpending}
+              currency={currency}
+              onNavigate={setView}
+            />
           )}
 
           {view === 'transactions' && (
@@ -1057,7 +1059,7 @@ function App() {
               duplicateCount={duplicateCount}
             />
           )}
-        </div>
+        </main>
       </div>
     </ErrorBoundary>
   );

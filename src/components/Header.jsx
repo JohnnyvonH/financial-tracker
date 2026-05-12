@@ -1,13 +1,12 @@
 import React from 'react';
-import { Home, Plus, DollarSign, TrendingUp, Settings, List, RefreshCw, BarChart3, CalendarClock } from 'lucide-react';
-import DarkModeToggle from './DarkModeToggle';
+import { Home, Plus, DollarSign, TrendingUp, Settings, List, RefreshCw, BarChart3, CalendarClock, WalletCards } from 'lucide-react';
 import AuthButton from './AuthButton';
 
 export default function Header({ view, setView, isDarkMode, onToggleDarkMode }) {
   const navItems = [
     { id: 'dashboard', label: 'Dashboard', icon: Home },
     { id: 'transactions', label: 'Transactions', icon: List },
-    { id: 'budget', label: 'Budget', icon: DollarSign },
+    { id: 'budget', label: 'Budgets', icon: DollarSign },
     { id: 'plan', label: 'Plan', icon: CalendarClock },
     { id: 'reports', label: 'Reports', icon: BarChart3 },
     { id: 'settings', label: 'Settings', icon: Settings },
@@ -20,54 +19,55 @@ export default function Header({ view, setView, isDarkMode, onToggleDarkMode }) 
   ];
 
   return (
-    <header className="header">
-      <div className="header-container">
-        <div className="header-left">
-          <div className="header-logo">
-            <div className="header-logo-icon">
-              <DollarSign size={24} />
-            </div>
-            <span className="header-logo-text">Financial Tracker</span>
-          </div>
+    <aside className="app-sidebar">
+      <div className="sidebar-brand">
+        <div className="header-logo-icon">
+          <WalletCards size={23} />
         </div>
-
-        <nav className="header-nav">
-          {navItems.map((item) => {
-            const Icon = item.icon;
-            return (
-              <button
-                key={item.id}
-                onClick={() => setView(item.id)}
-                className={`nav-button ${
-                  view === item.id ? 'nav-button-active' : ''
-                }`}
-              >
-                <Icon size={18} />
-                <span>{item.label}</span>
-              </button>
-            );
-          })}
-        </nav>
-
-        <div className="header-actions">
-          <AuthButton onSignInClick={() => setView('auth')} />
-          
-          {actionButtons.map((button) => {
-            const Icon = button.icon;
-            return (
-              <button
-                key={button.id}
-                onClick={() => setView(button.id)}
-                className="btn btn-primary btn-sm"
-                aria-label={`Add ${button.label}`}
-              >
-                <Icon size={16} />
-                <span className="hidden md:inline">{button.label}</span>
-              </button>
-            );
-          })}
+        <div>
+          <span className="header-logo-text">Financial Tracker</span>
+          <small>{isDarkMode ? 'Dark workspace' : 'Light workspace'}</small>
         </div>
       </div>
-    </header>
+
+      <nav className="header-nav" aria-label="Primary navigation">
+        {navItems.map((item) => {
+          const Icon = item.icon;
+          return (
+            <button
+              key={item.id}
+              onClick={() => setView(item.id)}
+              className={`nav-button ${view === item.id ? 'nav-button-active' : ''}`}
+            >
+              <Icon size={18} />
+              <span>{item.label}</span>
+            </button>
+          );
+        })}
+      </nav>
+
+      <div className="sidebar-actions">
+        <AuthButton onSignInClick={() => setView('auth')} />
+        <div className="quick-action-stack">
+          {actionButtons.map((button) => {
+          const Icon = button.icon;
+          return (
+            <button
+              key={button.id}
+              onClick={() => setView(button.id)}
+              className="btn btn-primary btn-sm"
+              aria-label={`Add ${button.label}`}
+            >
+              <Icon size={16} />
+              <span>{button.label}</span>
+            </button>
+          );
+        })}
+        </div>
+        <button type="button" className="sidebar-theme-toggle" onClick={onToggleDarkMode}>
+          {isDarkMode ? 'Switch to light' : 'Switch to dark'}
+        </button>
+      </div>
+    </aside>
   );
 }
