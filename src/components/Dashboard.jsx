@@ -131,7 +131,7 @@ export default function Dashboard({
         />
         <MetricTile
           label="Cash runway"
-          value={cashRunway ? `${cashRunway.toFixed(1)} months` : 'No spend yet'}
+          value={cashRunway !== null ? `${cashRunway.toFixed(1)} months` : 'No spend yet'}
           detail="Based on this month’s expenses"
           icon={WalletCards}
           tone="info"

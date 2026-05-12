@@ -1955,13 +1955,17 @@ body {
     padding-top: 0.65rem;
   }
 
-  .sidebar-actions > :first-child,
   .sidebar-theme-toggle {
     display: none;
   }
 
   .quick-action-stack {
     grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .sidebar-actions > :first-child {
+    justify-self: start;
+    max-width: 12rem;
   }
 
   .quick-action-stack .btn {
