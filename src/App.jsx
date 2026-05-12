@@ -22,6 +22,7 @@ import { supabaseSync } from './services/supabaseSync';
 import { processRecurringTransactions } from './utils/recurring';
 import { removeDuplicateTransactions, countDuplicates } from './utils/deduplication';
 import { getInitialTheme, saveTheme, applyTheme } from './utils/theme';
+import { getSnapshotTotals } from './utils/financeSummary';
 
 function App() {
   const { user, isConfigured } = useAuth();
@@ -710,13 +711,15 @@ function App() {
 
       const snapshots = [newSnapshot, ...data.netWorthSnapshots]
         .sort((a, b) => new Date(b.date) - new Date(a.date));
+      const snapshotTotals = getSnapshotTotals(newSnapshot);
 
       await saveData({
         ...data,
+        balance: snapshotTotals.maxAvailableCash,
         netWorthSnapshots: snapshots
       });
 
-      showToast('Net worth snapshot saved!', 'success');
+      showToast('Current finances saved and balance updated!', 'success');
     } catch (error) {
       console.error('Error adding net worth snapshot:', error);
       showToast('Failed to save snapshot. Please try again.', 'error');
