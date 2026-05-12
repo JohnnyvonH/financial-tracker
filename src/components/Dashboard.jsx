@@ -96,7 +96,15 @@ export default function Dashboard({
   const topCategories = Object.entries(getCategorySpending(data.transactions, 30))
     .sort(([, a], [, b]) => b - a)
     .slice(0, 5);
-  const upcomingPlan = getUpcomingPlanningItems(data.planningItems, 5);
+  const upcomingPlan = getUpcomingPlanningItems(data.planningItems, 5)
+    .filter((item) => item.type !== 'saving');
+  const visibleGoals = [...data.goals]
+    .sort((a, b) => {
+      const aRemaining = Math.max(Number(a.target || 0) - Number(a.current || 0), 0);
+      const bRemaining = Math.max(Number(b.target || 0) - Number(b.current || 0), 0);
+      return bRemaining - aRemaining;
+    })
+    .slice(0, 4);
   const recentTransactions = data.transactions.slice(0, 6);
 
   return (
@@ -190,9 +198,9 @@ export default function Dashboard({
         </section>
 
         <section className="panel panel-wide">
-          <SectionHeader title="Upcoming commitments" action="Manage plan" onAction={() => onNavigate('plan')} />
+          <SectionHeader title="Commitments timeline" action="Manage plan" onAction={() => onNavigate('plan')} />
           {upcomingPlan.length === 0 ? (
-            <p className="empty-inline">No upcoming costs, asset sales, or savings targets yet.</p>
+            <p className="empty-inline">No dated upcoming costs or asset sales yet.</p>
           ) : (
             <div className="timeline-list">
               {upcomingPlan.map((item) => (
@@ -210,6 +218,38 @@ export default function Dashboard({
                   </strong>
                 </article>
               ))}
+            </div>
+          )}
+        </section>
+
+        <section className="panel panel-wide">
+          <SectionHeader title="Savings goals" action="Manage goals" onAction={() => onNavigate('goals')} />
+          {visibleGoals.length === 0 ? (
+            <div className="goal-preview-empty">
+              <Target size={22} />
+              <p>Add goals for your house deposit, emergency fund, car plans, or any savings target you want visible here.</p>
+              <button className="btn btn-primary" onClick={() => onNavigate('add-goal')}>Add goal</button>
+            </div>
+          ) : (
+            <div className="goal-preview-grid">
+              {visibleGoals.map((goal) => {
+                const target = Number(goal.target || 0);
+                const current = Number(goal.current || 0);
+                const progress = target > 0 ? Math.min((current / target) * 100, 100) : 0;
+                return (
+                  <article className="goal-preview-card" key={goal.id}>
+                    <div>
+                      <h3>{goal.name}</h3>
+                      <span>{formatCurrency(Math.max(target - current, 0), currency)} remaining</span>
+                    </div>
+                    <strong>{progress.toFixed(0)}%</strong>
+                    <div className="progress-bar">
+                      <div className="progress-fill" style={{ width: `${progress}%` }} />
+                    </div>
+                    <p>{formatCurrency(current, currency)} saved of {formatCurrency(target, currency)}</p>
+                  </article>
+                );
+              })}
             </div>
           )}
         </section>

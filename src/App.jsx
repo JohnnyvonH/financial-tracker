@@ -5,6 +5,7 @@ import Dashboard from './components/Dashboard';
 import TransactionsPage from './components/TransactionsPage';
 import TransactionForm from './components/TransactionForm';
 import GoalForm from './components/GoalForm';
+import Goals from './components/Goals';
 import Budget from './components/Budget';
 import FinancePlan from './components/FinancePlan';
 import FinancialSnapshot from './components/FinancialSnapshot';
@@ -891,7 +892,11 @@ function App() {
     },
     plan: {
       title: 'Plan',
-      description: 'Track upcoming commitments, asset sales, and savings targets without mixing in current-position snapshots.',
+      description: 'Track dated commitments and asset sales without mixing them into savings goals.',
+    },
+    goals: {
+      title: 'Goals',
+      description: 'Track savings targets such as house deposit, emergency fund, car plans, and long-term milestones.',
     },
     snapshot: {
       title: 'Financial Snapshot',
@@ -1015,6 +1020,15 @@ function App() {
               planningItems={data.planningItems}
               onAddPlanningItem={addPlanningItem}
               onDeletePlanningItem={deletePlanningItem}
+              currency={currency}
+            />
+          )}
+
+          {view === 'goals' && (
+            <Goals
+              goals={data.goals}
+              onUpdateGoal={updateGoalProgress}
+              onDeleteGoal={deleteGoal}
               currency={currency}
             />
           )}

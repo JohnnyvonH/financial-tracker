@@ -204,10 +204,10 @@ export default function FinancePlan({
 
         <section className="panel plan-guidance">
           <h2>Plan sections</h2>
-          <p>Keep this page focused on future commitments: costs to cover, savings targets, and asset sales that change the plan.</p>
+          <p>Keep this page focused on dated commitments: costs to cover and asset sales that change your cash plan. Savings targets now live in Goals.</p>
           <ul className="rule-list">
             <li><strong>Upcoming costs</strong><span>Anything you need cash for, such as wheel refurbishment or insurance.</span></li>
-            <li><strong>Savings targets</strong><span>House deposit milestones and other ring-fenced goals.</span></li>
+            <li><strong>Goals</strong><span>House deposits and ring-fenced savings targets are managed on the Goals page.</span></li>
             <li><strong>Asset sales</strong><span>Expected proceeds from selling an item, such as the XK8.</span></li>
           </ul>
         </section>
