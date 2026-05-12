@@ -467,6 +467,198 @@ class SupabaseSyncService {
   }
 
   // ==============================================
+  // FINANCE PLANNING
+  // ==============================================
+
+  transformPlanningItemFromSupabase(item) {
+    return {
+      id: item.id,
+      title: item.title,
+      type: item.item_type,
+      targetAmount: Number(item.target_amount || 0),
+      savedAmount: Number(item.saved_amount || 0),
+      expectedValue: Number(item.expected_value || 0),
+      dueDate: item.due_date,
+      priority: item.priority,
+      status: item.status,
+      notes: item.notes || '',
+      createdAt: item.created_at,
+    };
+  }
+
+  transformPlanningItemToSupabase(item) {
+    return {
+      title: item.title,
+      item_type: item.type || 'expense',
+      target_amount: Number(item.targetAmount || 0),
+      saved_amount: Number(item.savedAmount || 0),
+      expected_value: Number(item.expectedValue || 0),
+      due_date: item.dueDate || null,
+      priority: item.priority || 'medium',
+      status: item.status || 'planned',
+      notes: item.notes || '',
+    };
+  }
+
+  async getPlanningItems() {
+    if (!this.isAvailable()) return [];
+
+    try {
+      const { data, error } = await supabase
+        .from('planning_items')
+        .select('*')
+        .eq('user_id', this.userId)
+        .order('due_date', { ascending: true, nullsFirst: false });
+
+      if (error) throw error;
+      return (data || []).map(item => this.transformPlanningItemFromSupabase(item));
+    } catch (error) {
+      console.error('Error fetching planning items:', error);
+      return [];
+    }
+  }
+
+  async addPlanningItem(item) {
+    if (!this.isAvailable()) return null;
+
+    try {
+      const { data, error } = await supabase
+        .from('planning_items')
+        .insert({
+          user_id: this.userId,
+          ...this.transformPlanningItemToSupabase(item),
+        })
+        .select()
+        .single();
+
+      if (error) throw error;
+      return this.transformPlanningItemFromSupabase(data);
+    } catch (error) {
+      console.error('Error adding planning item:', error);
+      return null;
+    }
+  }
+
+  async deletePlanningItem(itemId) {
+    if (!this.isAvailable()) return false;
+
+    try {
+      const { error } = await supabase
+        .from('planning_items')
+        .delete()
+        .eq('id', itemId)
+        .eq('user_id', this.userId);
+
+      if (error) throw error;
+      return true;
+    } catch (error) {
+      console.error('Error deleting planning item:', error);
+      return false;
+    }
+  }
+
+  // ==============================================
+  // NET WORTH SNAPSHOTS
+  // ==============================================
+
+  transformSnapshotFromSupabase(snapshot) {
+    return {
+      id: snapshot.id,
+      date: snapshot.snapshot_date,
+      santander: Number(snapshot.santander || 0),
+      tesco: Number(snapshot.tesco || 0),
+      amexCashback: Number(snapshot.amex_cashback || 0),
+      moneybox: Number(snapshot.moneybox || 0),
+      moneyboxStocksSharesIsa: Number(snapshot.moneybox_stocks_shares_isa || 0),
+      moneyboxLifetimeIsa: Number(snapshot.moneybox_lifetime_isa || 0),
+      moneyboxSimpleSaver: Number(snapshot.moneybox_simple_saver || 0),
+      moneyboxCashIsa: Number(snapshot.moneybox_cash_isa || 0),
+      moneyboxMonthly: Number(snapshot.moneybox_monthly || 0),
+      notes: snapshot.notes || '',
+      paycheck: Number(snapshot.paycheck || 0),
+      estimatedBankNextPaycheck: Number(snapshot.estimated_bank_next_paycheck || 0),
+      pension: Number(snapshot.pension || 0),
+      createdAt: snapshot.created_at,
+    };
+  }
+
+  transformSnapshotToSupabase(snapshot) {
+    return {
+      snapshot_date: snapshot.date,
+      santander: Number(snapshot.santander || 0),
+      tesco: Number(snapshot.tesco || 0),
+      amex_cashback: Number(snapshot.amexCashback || 0),
+      moneybox: Number(snapshot.moneybox || 0),
+      moneybox_stocks_shares_isa: Number(snapshot.moneyboxStocksSharesIsa || 0),
+      moneybox_lifetime_isa: Number(snapshot.moneyboxLifetimeIsa || 0),
+      moneybox_simple_saver: Number(snapshot.moneyboxSimpleSaver || 0),
+      moneybox_cash_isa: Number(snapshot.moneyboxCashIsa || 0),
+      moneybox_monthly: Number(snapshot.moneyboxMonthly || 0),
+      notes: snapshot.notes || '',
+      paycheck: Number(snapshot.paycheck || 0),
+      estimated_bank_next_paycheck: Number(snapshot.estimatedBankNextPaycheck || 0),
+      pension: Number(snapshot.pension || 0),
+    };
+  }
+
+  async getNetWorthSnapshots() {
+    if (!this.isAvailable()) return [];
+
+    try {
+      const { data, error } = await supabase
+        .from('net_worth_snapshots')
+        .select('*')
+        .eq('user_id', this.userId)
+        .order('snapshot_date', { ascending: false });
+
+      if (error) throw error;
+      return (data || []).map(snapshot => this.transformSnapshotFromSupabase(snapshot));
+    } catch (error) {
+      console.error('Error fetching net worth snapshots:', error);
+      return [];
+    }
+  }
+
+  async addNetWorthSnapshot(snapshot) {
+    if (!this.isAvailable()) return null;
+
+    try {
+      const { data, error } = await supabase
+        .from('net_worth_snapshots')
+        .insert({
+          user_id: this.userId,
+          ...this.transformSnapshotToSupabase(snapshot),
+        })
+        .select()
+        .single();
+
+      if (error) throw error;
+      return this.transformSnapshotFromSupabase(data);
+    } catch (error) {
+      console.error('Error adding net worth snapshot:', error);
+      return null;
+    }
+  }
+
+  async deleteNetWorthSnapshot(snapshotId) {
+    if (!this.isAvailable()) return false;
+
+    try {
+      const { error } = await supabase
+        .from('net_worth_snapshots')
+        .delete()
+        .eq('id', snapshotId)
+        .eq('user_id', this.userId);
+
+      if (error) throw error;
+      return true;
+    } catch (error) {
+      console.error('Error deleting net worth snapshot:', error);
+      return false;
+    }
+  }
+
+  // ==============================================
   // DATA MIGRATION
   // ==============================================
 
@@ -524,6 +716,20 @@ class SupabaseSyncService {
         }
       }
 
+      if (localData.planningItems?.length > 0) {
+        console.log(`Migrating ${localData.planningItems.length} planning items...`);
+        for (const item of localData.planningItems) {
+          await this.addPlanningItem(item);
+        }
+      }
+
+      if (localData.netWorthSnapshots?.length > 0) {
+        console.log(`Migrating ${localData.netWorthSnapshots.length} net worth snapshots...`);
+        for (const snapshot of localData.netWorthSnapshots) {
+          await this.addNetWorthSnapshot(snapshot);
+        }
+      }
+
       // Update settings
       await this.updateUserSettings({
         balance: localData.balance || 0,
@@ -546,12 +752,22 @@ class SupabaseSyncService {
     if (!this.isAvailable()) return null;
 
     try {
-      const [settings, transactions, goals, budgets, recurringTransactions] = await Promise.all([
+      const [
+        settings,
+        transactions,
+        goals,
+        budgets,
+        recurringTransactions,
+        planningItems,
+        netWorthSnapshots,
+      ] = await Promise.all([
         this.getUserSettings(),
         this.getTransactions(),
         this.getGoals(),
         this.getBudgets(),
         this.getRecurringTransactions(),
+        this.getPlanningItems(),
+        this.getNetWorthSnapshots(),
       ]);
 
       return {
@@ -560,6 +776,8 @@ class SupabaseSyncService {
         goals: goals || [], // Goals are already transformed by getGoals()
         budgets: budgets || {},
         recurringTransactions: recurringTransactions || [],
+        planningItems: planningItems || [],
+        netWorthSnapshots: netWorthSnapshots || [],
       };
     } catch (error) {
       console.error('Error fetching all data:', error);

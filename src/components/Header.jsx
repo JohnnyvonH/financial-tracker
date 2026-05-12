@@ -1,5 +1,5 @@
 import React from 'react';
-import { Home, Plus, DollarSign, TrendingUp, Settings, List, RefreshCw, BarChart3 } from 'lucide-react';
+import { Home, Plus, DollarSign, TrendingUp, Settings, List, RefreshCw, BarChart3, CalendarClock } from 'lucide-react';
 import DarkModeToggle from './DarkModeToggle';
 import AuthButton from './AuthButton';
 
@@ -8,6 +8,7 @@ export default function Header({ view, setView, isDarkMode, onToggleDarkMode }) 
     { id: 'dashboard', label: 'Dashboard', icon: Home },
     { id: 'transactions', label: 'Transactions', icon: List },
     { id: 'budget', label: 'Budget', icon: DollarSign },
+    { id: 'plan', label: 'Plan', icon: CalendarClock },
     { id: 'reports', label: 'Reports', icon: BarChart3 },
     { id: 'settings', label: 'Settings', icon: Settings },
   ];
@@ -58,6 +59,7 @@ export default function Header({ view, setView, isDarkMode, onToggleDarkMode }) 
                 key={button.id}
                 onClick={() => setView(button.id)}
                 className="btn btn-primary btn-sm"
+                aria-label={`Add ${button.label}`}
               >
                 <Icon size={16} />
                 <span className="hidden md:inline">{button.label}</span>

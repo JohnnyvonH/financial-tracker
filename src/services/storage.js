@@ -1,26 +1,35 @@
 const STORAGE_KEY = 'finance-dashboard-data';
 const SETTINGS_KEY = 'finance-dashboard-settings';
 
+const DEFAULT_DATA = {
+  balance: 0,
+  transactions: [],
+  goals: [],
+  budgets: {},
+  recurringTransactions: [],
+  planningItems: [],
+  netWorthSnapshots: []
+};
+
+const normaliseData = (data = {}) => ({
+  ...DEFAULT_DATA,
+  ...data,
+  transactions: Array.isArray(data.transactions) ? data.transactions : [],
+  goals: Array.isArray(data.goals) ? data.goals : [],
+  budgets: data.budgets || {},
+  recurringTransactions: Array.isArray(data.recurringTransactions) ? data.recurringTransactions : [],
+  planningItems: Array.isArray(data.planningItems) ? data.planningItems : [],
+  netWorthSnapshots: Array.isArray(data.netWorthSnapshots) ? data.netWorthSnapshots : []
+});
+
 export const storageService = {
   getData: () => {
     try {
       const data = localStorage.getItem(STORAGE_KEY);
-      return data ? JSON.parse(data) : {
-        balance: 0,
-        transactions: [],
-        goals: [],
-        budgets: {},
-        recurringTransactions: []
-      };
+      return data ? normaliseData(JSON.parse(data)) : { ...DEFAULT_DATA };
     } catch (error) {
       console.error('Error loading data:', error);
-      return {
-        balance: 0,
-        transactions: [],
-        goals: [],
-        budgets: {},
-        recurringTransactions: []
-      };
+      return { ...DEFAULT_DATA };
     }
   },
 
@@ -95,16 +104,15 @@ export const storageService = {
       const reader = new FileReader();
       reader.onload = (e) => {
         try {
-          const data = JSON.parse(e.target.result);
+          let data = JSON.parse(e.target.result);
           // Validate data structure
-          if (!data.hasOwnProperty('balance') || 
+          if (!Object.prototype.hasOwnProperty.call(data, 'balance') ||
               !Array.isArray(data.transactions) || 
               !Array.isArray(data.goals)) {
             throw new Error('Invalid data format');
           }
           // Ensure all required fields exist
-          if (!data.budgets) data.budgets = {};
-          if (!data.recurringTransactions) data.recurringTransactions = [];
+          data = normaliseData(data);
           
           storageService.saveData(data);
           resolve(data);
