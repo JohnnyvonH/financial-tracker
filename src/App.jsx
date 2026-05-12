@@ -711,7 +711,7 @@ function App() {
 
       const snapshots = [newSnapshot, ...data.netWorthSnapshots]
         .sort((a, b) => new Date(b.date) - new Date(a.date));
-      const snapshotTotals = getSnapshotTotals(newSnapshot);
+      const snapshotTotals = getSnapshotTotals(snapshots[0]);
 
       await saveData({
         ...data,

@@ -110,6 +110,7 @@ export default function Dashboard({
   const topCategories = Object.entries(getCategorySpending(data.transactions, 30))
     .sort(([, a], [, b]) => b - a)
     .slice(0, 3);
+  const topCategoryMax = Math.max(...topCategories.map(([, amount]) => amount), 0);
   const upcomingPlan = getUpcomingPlanningItems(commitmentItems, 5);
   const visibleGoals = [...data.goals]
     .sort((a, b) => {
@@ -333,7 +334,7 @@ export default function Dashboard({
               {topCategories.map(([category, amount]) => {
                 const categoryInfo = getCategoryIcon(category);
                 const CategoryIcon = categoryInfo.icon;
-                const percentage = amount > 0 ? 100 : 0;
+                const percentage = topCategoryMax > 0 ? (amount / topCategoryMax) * 100 : 0;
                 return (
                   <article key={category} className="category-row">
                     <span className="category-icon" style={{ color: categoryInfo.color }}>
