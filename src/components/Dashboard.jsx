@@ -40,9 +40,16 @@ function InsightIcon({ tone }) {
   return <ListChecks size={18} />;
 }
 
-function MetricTile({ label, value, detail, icon: Icon, tone = 'neutral' }) {
+function MetricTile({ label, value, detail, actionLabel, icon: Icon, tone = 'neutral', onClick }) {
+  const Component = onClick ? 'button' : 'article';
+
   return (
-    <article className={`metric-tile metric-tile-${tone}`}>
+    <Component
+      className={`metric-tile metric-tile-${tone}${onClick ? ' metric-tile-action' : ''}`}
+      onClick={onClick}
+      type={onClick ? 'button' : undefined}
+      aria-label={onClick ? actionLabel || label : undefined}
+    >
       <div className="metric-tile-icon">
         <Icon size={20} />
       </div>
@@ -50,8 +57,9 @@ function MetricTile({ label, value, detail, icon: Icon, tone = 'neutral' }) {
         <span>{label}</span>
         <strong>{value}</strong>
         {detail && <p>{detail}</p>}
+        {actionLabel && <small>{actionLabel}</small>}
       </div>
-    </article>
+    </Component>
   );
 }
 
@@ -95,6 +103,10 @@ export default function Dashboard({
   const recurringOutgoings = Object.entries(monthlySummary.byCategory)
     .sort(([, a], [, b]) => b - a)
     .slice(0, 5);
+  const hasIncomeSource = monthlySummary.recurringIncome > 0 || monthlySummary.snapshotPaycheck > 0;
+  const savingsCapacityDetail = hasIncomeSource
+    ? `${formatCurrency(monthlySummary.income, currency)} income / ${formatCurrency(monthlySummary.outgoings, currency)} outgoings`
+    : 'Add recurring income to calculate your monthly savings rate';
   const topCategories = Object.entries(getCategorySpending(data.transactions, 30))
     .sort(([, a], [, b]) => b - a)
     .slice(0, 3);
@@ -132,10 +144,12 @@ export default function Dashboard({
         />
         <MetricTile
           label="Monthly savings capacity"
-          value={`${monthlySummary.surplus >= 0 ? '+' : '-'}${formatCurrency(Math.abs(monthlySummary.surplus), currency)}`}
-          detail={`${formatCurrency(monthlySummary.income, currency)} income / ${formatCurrency(monthlySummary.outgoings, currency)} outgoings`}
+          value={hasIncomeSource ? `${monthlySummary.surplus >= 0 ? '+' : '-'}${formatCurrency(Math.abs(monthlySummary.surplus), currency)}` : 'Needs income'}
+          detail={savingsCapacityDetail}
+          actionLabel={hasIncomeSource ? 'Review recurring income and outgoings' : 'Add recurring income'}
           icon={monthlySummary.surplus >= 0 ? TrendingUp : TrendingDown}
           tone={monthlySummary.surplus >= 0 ? 'positive' : 'danger'}
+          onClick={() => onNavigate(hasIncomeSource ? 'add-recurring' : 'add-recurring-income')}
         />
         <MetricTile
           label="Monthly outgoings"

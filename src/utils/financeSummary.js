@@ -1,5 +1,9 @@
 const toNumber = (value) => Number(value || 0);
 
+const isActiveRecurring = (item = {}) => item.active !== false && item.is_active !== false;
+
+const getRecurringType = (item = {}) => String(item.type || '').toLowerCase();
+
 export function getMonthlyEquivalent(amount = 0, frequency = 'monthly') {
   const value = toNumber(amount);
 
@@ -65,12 +69,13 @@ export function getSnapshotTotals(snapshot = {}) {
 }
 
 export function getRecurringMonthlySummary(recurringTransactions = [], latestSnapshot = {}) {
-  const activeRecurring = recurringTransactions.filter((item) => item.active !== false);
+  const activeRecurring = recurringTransactions.filter(isActiveRecurring);
   const summary = activeRecurring.reduce((result, item) => {
     const monthlyAmount = getMonthlyEquivalent(item.amount, item.frequency);
-    const category = item.category || (item.type === 'income' ? 'Other Income' : 'Other');
+    const type = getRecurringType(item);
+    const category = item.category || (type === 'income' ? 'Other Income' : 'Other');
 
-    if (item.type === 'income') {
+    if (type === 'income') {
       result.income += monthlyAmount;
     } else {
       result.expenses += monthlyAmount;

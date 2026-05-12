@@ -1,5 +1,13 @@
 import { supabase, isSupabaseConfigured } from '../lib/supabase';
 
+const normalizeRecurringTransaction = (item) => ({
+  ...item,
+  active: item.active ?? item.is_active ?? true,
+  startDate: item.startDate || item.start_date,
+  endDate: item.endDate || item.end_date,
+  lastProcessed: item.lastProcessed || item.last_processed || item.last_generated_date,
+});
+
 /**
  * Supabase Sync Service
  * Handles all database operations and syncing with Supabase
@@ -393,7 +401,7 @@ class SupabaseSyncService {
         .order('created_at', { ascending: false });
 
       if (error) throw error;
-      return data || [];
+      return (data || []).map(normalizeRecurringTransaction);
     } catch (error) {
       console.error('Error fetching recurring transactions:', error);
       return [];
@@ -417,7 +425,7 @@ class SupabaseSyncService {
         .single();
 
       if (error) throw error;
-      return data;
+      return normalizeRecurringTransaction(data);
     } catch (error) {
       console.error('Error adding recurring transaction:', error);
       return null;

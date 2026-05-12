@@ -1875,6 +1875,28 @@ html.light .app-sidebar .nav-button-active {
   padding: 1.1rem;
 }
 
+button.metric-tile {
+  width: 100%;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.metric-tile-action {
+  transition: border-color 160ms ease, transform 160ms ease, box-shadow 160ms ease;
+}
+
+.metric-tile-action:hover {
+  border-color: rgba(16, 185, 129, 0.42);
+  transform: translateY(-1px);
+}
+
+.metric-tile-action:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 3px;
+}
+
 .metric-tile-icon,
 .insight-row-icon,
 .category-icon {
@@ -1912,6 +1934,14 @@ html.light .app-sidebar .nav-button-active {
   margin-top: 0.45rem;
   color: var(--text-secondary);
   font-size: 0.86rem;
+}
+
+.metric-tile small {
+  display: inline-flex;
+  margin-top: 0.65rem;
+  color: var(--primary);
+  font-size: 0.78rem;
+  font-weight: 700;
 }
 
 .metric-tile-positive .metric-tile-icon { color: var(--success); background: rgba(16, 185, 129, 0.12); }

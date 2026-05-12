@@ -5,9 +5,9 @@ import { FREQUENCY_OPTIONS, calculateNextDate } from '../utils/recurring';
 import FormInput from './FormInput';
 import { validateAmount, validateDescription, validateCategory, validateDate } from '../utils/validation';
 
-export default function RecurringTransactionForm({ onSubmit, onCancel }) {
+export default function RecurringTransactionForm({ onSubmit, onCancel, initialType = 'expense' }) {
   const [formData, setFormData] = useState({
-    type: 'expense',
+    type: initialType,
     amount: '',
     description: '',
     category: '',
