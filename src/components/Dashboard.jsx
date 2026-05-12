@@ -16,9 +16,10 @@ import {
 import { formatCurrency } from '../utils/currency';
 import {
   getCategorySpending,
+  getCommitmentProjection,
   getFinanceInsights,
   getGoalSummary,
-  getPlanSummary,
+  getRecurringMonthlySummary,
   getSnapshotTotals,
   getUpcomingPlanningItems,
 } from '../utils/financeSummary';
@@ -70,33 +71,33 @@ function SectionHeader({ title, action, onAction }) {
 
 export default function Dashboard({
   data,
-  monthlyIncome,
-  monthlyExpenses,
-  last30DaysIncome,
-  last30DaysExpenses,
-  currentMonthSpending,
   currency,
   onNavigate,
 }) {
   const latestSnapshot = data.netWorthSnapshots[0];
   const snapshotTotals = getSnapshotTotals(latestSnapshot);
-  const planSummary = getPlanSummary(data.planningItems);
   const goalSummary = getGoalSummary(data.goals);
-  const fundingGap = Math.max(planSummary.upcomingCosts - planSummary.alreadySaved - planSummary.expectedIncome, 0);
-  const monthlySurplus = monthlyIncome - monthlyExpenses;
-  const cashRunway = monthlyExpenses > 0 ? data.balance / monthlyExpenses : null;
+  const monthlySummary = getRecurringMonthlySummary(data.recurringTransactions, latestSnapshot);
+  const commitmentItems = data.planningItems.filter((item) => item.type !== 'saving');
+  const commitmentProjection = getCommitmentProjection(commitmentItems, snapshotTotals, 90);
+  const fundingGap = Math.max(commitmentProjection.costs - commitmentProjection.assetSales, 0);
+  const cashRunway = monthlySummary.outgoings > 0
+    ? snapshotTotals.maxAvailableCash / monthlySummary.outgoings
+    : null;
   const insights = getFinanceInsights({
-    balance: data.balance,
-    monthlyIncome,
-    monthlyExpenses,
-    planningItems: data.planningItems,
+    balance: snapshotTotals.maxAvailableCash,
+    monthlyIncome: monthlySummary.income,
+    monthlyExpenses: monthlySummary.outgoings,
+    planningItems: commitmentItems,
     goals: data.goals,
     netWorthSnapshots: data.netWorthSnapshots,
   });
-  const topCategories = Object.entries(getCategorySpending(data.transactions, 30))
+  const recurringOutgoings = Object.entries(monthlySummary.byCategory)
     .sort(([, a], [, b]) => b - a)
     .slice(0, 5);
-  const commitmentItems = data.planningItems.filter((item) => item.type !== 'saving');
+  const topCategories = Object.entries(getCategorySpending(data.transactions, 30))
+    .sort(([, a], [, b]) => b - a)
+    .slice(0, 3);
   const upcomingPlan = getUpcomingPlanningItems(commitmentItems, 5);
   const visibleGoals = [...data.goals]
     .sort((a, b) => {
@@ -105,7 +106,6 @@ export default function Dashboard({
       return bRemaining - aRemaining;
     })
     .slice(0, 4);
-  const recentTransactions = data.transactions.slice(0, 6);
 
   return (
     <div className="dashboard-cockpit">
@@ -113,43 +113,74 @@ export default function Dashboard({
         <div>
           <h1>Your financial position</h1>
           <p>
-            See cash, commitments, savings progress, and the next actions that protect your goals.
+            See current cash, monthly outgoings, savings progress, and how upcoming commitments change your runway.
           </p>
         </div>
         <div className="hero-actions">
-          <button className="btn btn-primary" onClick={() => onNavigate('add-transaction')}>Add transaction</button>
-          <button className="btn" onClick={() => onNavigate('plan')}>Review plan</button>
+          <button className="btn btn-primary" onClick={() => onNavigate('snapshot')}>Update current finances</button>
+          <button className="btn" onClick={() => onNavigate('plan')}>Review commitments</button>
         </div>
       </section>
 
       <section className="metric-grid">
         <MetricTile
-          label="Current balance"
-          value={formatCurrency(data.balance, currency)}
-          detail={`${formatCurrency(last30DaysIncome, currency)} in / ${formatCurrency(last30DaysExpenses, currency)} out, last 30 days`}
+          label="Max cash now"
+          value={formatCurrency(snapshotTotals.maxAvailableCash, currency)}
+          detail="Snapshot cash after cards and MoneyBox monthly"
           icon={CircleDollarSign}
           tone="positive"
         />
         <MetricTile
-          label="Monthly surplus"
-          value={`${monthlySurplus >= 0 ? '+' : '-'}${formatCurrency(Math.abs(monthlySurplus), currency)}`}
-          detail={monthlyIncome > 0 ? `${Math.max((monthlySurplus / monthlyIncome) * 100, -999).toFixed(0)}% of income` : 'Add income to calculate rate'}
-          icon={monthlySurplus >= 0 ? TrendingUp : TrendingDown}
-          tone={monthlySurplus >= 0 ? 'positive' : 'danger'}
+          label="Monthly savings capacity"
+          value={`${monthlySummary.surplus >= 0 ? '+' : '-'}${formatCurrency(Math.abs(monthlySummary.surplus), currency)}`}
+          detail={`${formatCurrency(monthlySummary.income, currency)} income / ${formatCurrency(monthlySummary.outgoings, currency)} outgoings`}
+          icon={monthlySummary.surplus >= 0 ? TrendingUp : TrendingDown}
+          tone={monthlySummary.surplus >= 0 ? 'positive' : 'danger'}
         />
         <MetricTile
-          label="Cash runway"
-          value={cashRunway !== null ? `${cashRunway.toFixed(1)} months` : 'No spend yet'}
-          detail="Based on this month’s expenses"
+          label="Monthly outgoings"
+          value={formatCurrency(monthlySummary.outgoings, currency)}
+          detail={`${formatCurrency(monthlySummary.moneyboxMonthly, currency)} MoneyBox monthly included`}
           icon={WalletCards}
           tone="info"
         />
         <MetricTile
-          label="Plan funding gap"
+          label="Projected max cash"
+          value={formatCurrency(commitmentProjection.projectedMaxCash, currency)}
+          detail={`Next ${commitmentProjection.horizonDays} days after commitments`}
+          icon={CalendarClock}
+          tone={commitmentProjection.projectedMaxCash >= 0 ? 'positive' : 'warning'}
+        />
+      </section>
+
+      <section className="metric-grid metric-grid-secondary">
+        <MetricTile
+          label="Cash runway"
+          value={cashRunway !== null ? `${cashRunway.toFixed(1)} months` : 'No spend yet'}
+          detail="Based on monthly outgoings"
+          icon={WalletCards}
+          tone="info"
+        />
+        <MetricTile
+          label="Commitment gap"
           value={formatCurrency(fundingGap, currency)}
-          detail={`${data.planningItems.length} plan item${data.planningItems.length === 1 ? '' : 's'} tracked`}
+          detail={`${formatCurrency(commitmentProjection.costs, currency)} costs / ${formatCurrency(commitmentProjection.assetSales, currency)} sales`}
           icon={CalendarClock}
           tone={fundingGap > 0 ? 'warning' : 'positive'}
+        />
+        <MetricTile
+          label="Available assets"
+          value={formatCurrency(snapshotTotals.availableAssets, currency)}
+          detail="Excludes pension and normal LISA access"
+          icon={PiggyBank}
+          tone="positive"
+        />
+        <MetricTile
+          label="House deposit access"
+          value={formatCurrency(snapshotTotals.houseDepositAccessibleAssets, currency)}
+          detail="Available assets plus Lifetime ISA"
+          icon={Target}
+          tone="positive"
         />
       </section>
 
@@ -193,6 +224,35 @@ export default function Dashboard({
           </p>
         </section>
 
+        <section className="panel">
+          <SectionHeader title="Monthly outgoings" action="Manage recurring" onAction={() => onNavigate('add-recurring')} />
+          {recurringOutgoings.length === 0 ? (
+            <p className="empty-inline">Add recurring income and outgoings to see your paycheck impact.</p>
+          ) : (
+            <div className="category-table">
+              {recurringOutgoings.map(([category, amount]) => {
+                const categoryInfo = getCategoryIcon(category);
+                const CategoryIcon = categoryInfo.icon;
+                const percentage = monthlySummary.outgoings > 0 ? (amount / monthlySummary.outgoings) * 100 : 0;
+                return (
+                  <article key={category} className="category-row">
+                    <span className="category-icon" style={{ color: categoryInfo.color }}>
+                      <CategoryIcon size={17} />
+                    </span>
+                    <div>
+                      <strong>{category}</strong>
+                      <div className="progress-bar">
+                        <div className="progress-fill" style={{ width: `${percentage}%`, background: categoryInfo.color }} />
+                      </div>
+                    </div>
+                    <span>{formatCurrency(amount, currency)}</span>
+                  </article>
+                );
+              })}
+            </div>
+          )}
+        </section>
+
         <section className="panel panel-wide">
           <SectionHeader title="Commitments timeline" action="Manage plan" onAction={() => onNavigate('plan')} />
           {upcomingPlan.length === 0 ? (
@@ -204,7 +264,7 @@ export default function Dashboard({
                   <div className={`timeline-marker priority-${item.priority}`} />
                   <div>
                     <h3>{item.title}</h3>
-                    <p>{item.type === 'asset-sale' ? 'Asset sale' : item.type === 'saving' ? 'Savings target' : 'Upcoming cost'}</p>
+                    <p>{item.type === 'asset-sale' ? 'Asset sale' : 'Upcoming cost'}</p>
                   </div>
                   <span>{formatDate(item.dueDate)}</span>
                   <strong>
@@ -251,15 +311,15 @@ export default function Dashboard({
         </section>
 
         <section className="panel">
-          <SectionHeader title="Spending focus" action="Open budgets" onAction={() => onNavigate('budget')} />
+          <SectionHeader title="Optional transaction view" action="Open transactions" onAction={() => onNavigate('transactions')} />
           {topCategories.length === 0 ? (
-            <p className="empty-inline">No expense categories in the last 30 days.</p>
+            <p className="empty-inline">Transactions are optional detail for ad-hoc spending.</p>
           ) : (
             <div className="category-table">
               {topCategories.map(([category, amount]) => {
                 const categoryInfo = getCategoryIcon(category);
                 const CategoryIcon = categoryInfo.icon;
-                const percentage = last30DaysExpenses > 0 ? (amount / last30DaysExpenses) * 100 : 0;
+                const percentage = amount > 0 ? 100 : 0;
                 return (
                   <article key={category} className="category-row">
                     <span className="category-icon" style={{ color: categoryInfo.color }}>
@@ -279,34 +339,14 @@ export default function Dashboard({
           )}
         </section>
 
-        <section className="panel">
-          <SectionHeader title="Recent ledger" action="View all" onAction={() => onNavigate('transactions')} />
-          {recentTransactions.length === 0 ? (
-            <p className="empty-inline">No transactions yet.</p>
-          ) : (
-            <div className="ledger-list">
-              {recentTransactions.map((transaction) => (
-                <article className="ledger-row" key={transaction.id}>
-                  <div>
-                    <strong>{transaction.description || transaction.category}</strong>
-                    <span>{formatDate(transaction.date)} · {transaction.category}</span>
-                  </div>
-                  <strong className={transaction.type === 'income' ? 'amount-income' : 'amount-expense'}>
-                    {transaction.type === 'income' ? '+' : '-'}{formatCurrency(transaction.amount, currency)}
-                  </strong>
-                </article>
-              ))}
-            </div>
-          )}
-        </section>
-
         <section className="panel panel-action">
           <Landmark size={22} />
-          <h2>Build the next version of your plan</h2>
-          <p>Keep the dashboard useful by adding payday estimates, high-priority costs, asset sale values, and house deposit milestones.</p>
+          <h2>Shape the next month</h2>
+          <p>Keep the forecast useful by updating your current finances, monthly outgoings, commitments, and goals.</p>
           <div className="action-grid">
-            <button className="btn btn-primary" onClick={() => onNavigate('add-goal')}><Target size={16} />Add goal</button>
-            <button className="btn" onClick={() => onNavigate('plan')}><PiggyBank size={16} />Add plan</button>
+            <button className="btn btn-primary" onClick={() => onNavigate('snapshot')}><WalletCards size={16} />Update finances</button>
+            <button className="btn" onClick={() => onNavigate('add-recurring')}><CalendarClock size={16} />Add outgoing</button>
+            <button className="btn" onClick={() => onNavigate('plan')}><PiggyBank size={16} />Add commitment</button>
           </div>
         </section>
       </div>
