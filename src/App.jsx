@@ -899,8 +899,8 @@ function App() {
       description: 'Track savings targets such as house deposit, emergency fund, car plans, and long-term milestones.',
     },
     snapshot: {
-      title: 'Financial Snapshot',
-      description: 'Capture the current account, MoneyBox, paycheck, and pension values from your workbook structure.',
+      title: 'Current Finances',
+      description: 'Capture cash, credit cards, MoneyBox wealth, pension, and monthly outgoings from your workbook structure.',
     },
     reports: {
       title: 'Reports',
@@ -911,15 +911,15 @@ function App() {
       description: 'Manage currency, backups, imports, and local data controls.',
     },
     'add-transaction': {
-      title: 'Add transaction',
+      title: 'Add Transaction',
       description: 'Capture income or spend while the details are still fresh.',
     },
     'add-goal': {
-      title: 'Add savings goal',
+      title: 'Add Savings Goal',
       description: 'Set a target, add a deadline, and track the next milestone.',
     },
     'add-recurring': {
-      title: 'Add recurring item',
+      title: 'Add Recurring Item',
       description: 'Set up predictable bills, subscriptions, salary, or transfers.',
     },
   };

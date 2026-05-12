@@ -1,9 +1,5 @@
 import { supabase, isSupabaseConfigured } from '../lib/supabase';
 
-const optionalNumber = (value) => (
-  value === undefined || value === null || value === '' ? null : Number(value)
-);
-
 /**
  * Supabase Sync Service
  * Handles all database operations and syncing with Supabase
@@ -580,11 +576,7 @@ class SupabaseSyncService {
       moneyboxMonthly: Number(snapshot.moneybox_monthly || 0),
       notes: snapshot.notes || '',
       paycheck: Number(snapshot.paycheck || 0),
-      estimatedBankNextPaycheck: Number(snapshot.estimated_bank_next_paycheck || 0),
       pension: Number(snapshot.pension || 0),
-      total: optionalNumber(snapshot.total),
-      totalValueAvailableAssets: optionalNumber(snapshot.total_value_available_assets),
-      totalValueAllAssets: optionalNumber(snapshot.total_value_all_assets),
       createdAt: snapshot.created_at,
     };
   }
@@ -603,11 +595,7 @@ class SupabaseSyncService {
       moneybox_monthly: Number(snapshot.moneyboxMonthly || 0),
       notes: snapshot.notes || '',
       paycheck: Number(snapshot.paycheck || 0),
-      estimated_bank_next_paycheck: Number(snapshot.estimatedBankNextPaycheck || 0),
       pension: Number(snapshot.pension || 0),
-      total: optionalNumber(snapshot.total),
-      total_value_available_assets: optionalNumber(snapshot.totalValueAvailableAssets),
-      total_value_all_assets: optionalNumber(snapshot.totalValueAllAssets),
     };
   }
 
