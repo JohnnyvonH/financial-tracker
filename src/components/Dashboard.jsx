@@ -96,8 +96,8 @@ export default function Dashboard({
   const topCategories = Object.entries(getCategorySpending(data.transactions, 30))
     .sort(([, a], [, b]) => b - a)
     .slice(0, 5);
-  const upcomingPlan = getUpcomingPlanningItems(data.planningItems, 5)
-    .filter((item) => item.type !== 'saving');
+  const commitmentItems = data.planningItems.filter((item) => item.type !== 'saving');
+  const upcomingPlan = getUpcomingPlanningItems(commitmentItems, 5);
   const visibleGoals = [...data.goals]
     .sort((a, b) => {
       const aRemaining = Math.max(Number(a.target || 0) - Number(a.current || 0), 0);
