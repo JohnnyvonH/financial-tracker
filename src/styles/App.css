@@ -134,9 +134,9 @@
 .section-title {
   font-size: 1.5rem;
   font-weight: 700;
-  color: #1e293b;
+  color: var(--text-primary);
   margin-bottom: 1rem;
-  font-family: 'Crimson Text', serif;
+  font-family: inherit;
 }
 
 /* Empty State */
@@ -317,6 +317,7 @@
 .gap-4 { gap: 1rem; }
 
 .flex { display: flex; }
+.fixed { position: fixed; }
 .flex-wrap { flex-wrap: wrap; }
 .items-center { align-items: center; }
 .justify-between { justify-content: space-between; }
@@ -394,8 +395,10 @@
 
 .max-w-7xl { max-width: 80rem; }
 .max-w-2xl { max-width: 42rem; }
+.max-w-md { max-width: 28rem; }
 .max-h-96 { max-height: 24rem; }
 .min-h-screen { min-height: 100vh; }
+.min-w-80 { min-width: 20rem; }
 
 .mx-auto { margin-left: auto; margin-right: auto; }
 
@@ -406,6 +409,8 @@
 
 .sticky { position: sticky; }
 .top-0 { top: 0; }
+.top-20 { top: 5rem; }
+.right-4 { right: 1rem; }
 .z-10 { z-index: 10; }
 .z-50 { z-index: 50; }
 

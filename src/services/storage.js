@@ -48,13 +48,13 @@ export const storageService = {
       const settings = localStorage.getItem(SETTINGS_KEY);
       return settings ? JSON.parse(settings) : {
         currency: 'USD',
-        theme: 'light'
+        theme: 'dark'
       };
     } catch (error) {
       console.error('Error loading settings:', error);
       return {
         currency: 'USD',
-        theme: 'light'
+        theme: 'dark'
       };
     }
   },

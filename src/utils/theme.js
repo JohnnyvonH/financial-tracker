@@ -9,12 +9,7 @@ export const getInitialTheme = () => {
     return savedTheme;
   }
   
-  // Check system preference
-  if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
-    return 'dark';
-  }
-  
-  return 'light';
+  return 'dark';
 };
 
 export const saveTheme = (theme) => {
@@ -22,9 +17,12 @@ export const saveTheme = (theme) => {
 };
 
 export const applyTheme = (theme) => {
+  document.documentElement.classList.remove('light', 'dark');
+  document.documentElement.classList.add(theme);
+
   if (theme === 'dark') {
-    document.documentElement.classList.add('dark');
+    document.documentElement.dataset.theme = 'dark';
   } else {
-    document.documentElement.classList.remove('dark');
+    document.documentElement.dataset.theme = 'light';
   }
 };
