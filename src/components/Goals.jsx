@@ -1,6 +1,31 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { Target, X, Plus, Minus } from 'lucide-react';
 import { formatCurrency } from '../utils/currency';
+
+function GoalCurrentInput({ goal, onCommit }) {
+  const [draftValue, setDraftValue] = useState(String(goal.current ?? 0));
+
+  useEffect(() => {
+    setDraftValue(String(goal.current ?? 0));
+  }, [goal.current]);
+
+  return (
+    <input
+      id={`goal-current-${goal.id}`}
+      type="number"
+      min="0"
+      step="0.01"
+      value={draftValue}
+      onChange={(event) => setDraftValue(event.target.value)}
+      onBlur={() => onCommit(goal, draftValue)}
+      onKeyDown={(event) => {
+        if (event.key === 'Enter') {
+          event.currentTarget.blur();
+        }
+      }}
+    />
+  );
+}
 
 export default function Goals({ goals, onAddGoal, onUpdateGoal, onDeleteGoal, currency = 'USD' }) {
   const handleManualCurrentChange = (goal, value) => {
@@ -92,19 +117,7 @@ export default function Goals({ goals, onAddGoal, onUpdateGoal, onDeleteGoal, cu
 
                 <div className="goal-manual-entry">
                   <label htmlFor={`goal-current-${goal.id}`}>Current saved</label>
-                  <input
-                    id={`goal-current-${goal.id}`}
-                    type="number"
-                    min="0"
-                    step="0.01"
-                    defaultValue={goal.current}
-                    onBlur={(event) => handleManualCurrentChange(goal, event.target.value)}
-                    onKeyDown={(event) => {
-                      if (event.key === 'Enter') {
-                        event.currentTarget.blur();
-                      }
-                    }}
-                  />
+                  <GoalCurrentInput goal={goal} onCommit={handleManualCurrentChange} />
                 </div>
                 
                 <div className="goal-controls">

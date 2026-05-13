@@ -23,6 +23,15 @@ import { getInitialTheme, saveTheme, applyTheme } from './utils/theme';
 import { getSnapshotTotals } from './utils/financeSummary';
 import { applyLegacySnapshotFields, normaliseSnapshotSections } from './utils/snapshotConfig';
 
+const hasStoredCloudData = (cloudData) => (
+  cloudData.transactions.length > 0 ||
+  cloudData.goals.length > 0 ||
+  Object.keys(cloudData.budgets || {}).length > 0 ||
+  cloudData.recurringTransactions.length > 0 ||
+  cloudData.planningItems.length > 0 ||
+  cloudData.netWorthSnapshots.length > 0
+);
+
 function App() {
   const { user, isConfigured } = useAuth();
   const [data, setData] = useState({
@@ -71,7 +80,7 @@ function App() {
           if (cloudData) {
             const localData = storageService.getData();
 
-            if (cloudData.transactions.length === 0) {
+            if (!hasStoredCloudData(cloudData)) {
               // Check if this is first login - migrate local data
               if (
                 localData.transactions.length > 0 ||

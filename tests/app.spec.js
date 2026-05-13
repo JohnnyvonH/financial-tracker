@@ -133,6 +133,9 @@ test('savings goals can be updated by entering a current amount', async ({ page 
   await nav.getByRole('button', { name: 'Goals', exact: true }).click();
 
   const emergencyGoal = page.locator('.goal-card').filter({ hasText: 'Emergency fund' });
+  await emergencyGoal.getByTitle('Add 100').click();
+  await expect(emergencyGoal.getByLabel('Current saved')).toHaveValue('6300');
+
   await emergencyGoal.getByLabel('Current saved').fill('8000');
   await emergencyGoal.getByLabel('Current saved').press('Enter');
 
