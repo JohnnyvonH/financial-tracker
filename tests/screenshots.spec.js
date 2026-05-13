@@ -6,8 +6,8 @@ const screenshotDir = 'docs/screenshots';
 
 const pages = [
   ['dashboard', 'Dashboard'],
-  ['transactions', 'Transactions'],
   ['budgets', 'Budgets'],
+  ['recurring', 'Recurring'],
   ['plan', 'Plan'],
   ['goals', 'Goals'],
   ['current-finances', 'Current Finances'],

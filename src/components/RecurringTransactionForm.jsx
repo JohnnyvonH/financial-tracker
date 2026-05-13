@@ -1,33 +1,39 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { TrendingUp, TrendingDown, RefreshCw, Calendar } from 'lucide-react';
 import { EXPENSE_CATEGORIES, INCOME_CATEGORIES } from '../utils/categories';
-import { FREQUENCY_OPTIONS, calculateNextDate } from '../utils/recurring';
+import { FREQUENCY_OPTIONS } from '../utils/recurring';
 import FormInput from './FormInput';
 import { validateAmount, validateDescription, validateCategory, validateDate } from '../utils/validation';
 
-export default function RecurringTransactionForm({ onSubmit, onCancel, initialType = 'expense' }) {
-  const [formData, setFormData] = useState({
-    type: initialType,
-    amount: '',
-    description: '',
-    category: '',
-    frequency: 'monthly',
-    startDate: new Date().toISOString().split('T')[0],
-    endDate: ''
-  });
+const todayString = () => new Date().toISOString().split('T')[0];
+
+export default function RecurringTransactionForm({
+  onSubmit,
+  onCancel,
+  initialType = 'expense',
+  initialValues = null,
+  submitLabel,
+}) {
+  const defaultFormData = useMemo(() => ({
+    type: initialValues?.type || initialType,
+    amount: initialValues?.amount ? String(initialValues.amount) : '',
+    description: initialValues?.description || '',
+    category: initialValues?.category || '',
+    frequency: initialValues?.frequency || 'monthly',
+    startDate: initialValues?.startDate || initialValues?.start_date || initialValues?.nextDate || todayString(),
+    endDate: initialValues?.endDate || initialValues?.end_date || ''
+  }), [initialType, initialValues]);
+
+  const [formData, setFormData] = useState(defaultFormData);
   
   const [errors, setErrors] = useState({});
 
   const categories = formData.type === 'expense' ? EXPENSE_CATEGORIES : INCOME_CATEGORIES;
 
   useEffect(() => {
-    setFormData((current) => ({
-      ...current,
-      type: initialType,
-      category: '',
-    }));
+    setFormData(defaultFormData);
     setErrors({});
-  }, [initialType]);
+  }, [defaultFormData]);
 
   const validate = () => {
     const newErrors = {};
@@ -67,6 +73,7 @@ export default function RecurringTransactionForm({ onSubmit, onCancel, initialTy
     const nextDate = formData.startDate;
 
     onSubmit({
+      ...(initialValues ? { id: initialValues.id } : {}),
       type: formData.type,
       amount,
       description: formData.description,
@@ -75,7 +82,9 @@ export default function RecurringTransactionForm({ onSubmit, onCancel, initialTy
       startDate: formData.startDate,
       endDate: formData.endDate || null,
       nextDate,
-      active: true
+      active: initialValues?.active ?? true,
+      lastProcessed: initialValues?.lastProcessed || initialValues?.last_processed || null,
+      last_processed: initialValues?.last_processed || initialValues?.lastProcessed || null,
     });
   };
 
@@ -83,7 +92,7 @@ export default function RecurringTransactionForm({ onSubmit, onCancel, initialTy
     <div className="card">
       <div className="flex items-center gap-3 mb-6">
         <RefreshCw className="text-primary" size={28} />
-        <h2 className="text-2xl font-light">Add Recurring Transaction</h2>
+        <h2 className="text-2xl font-light">{initialValues ? 'Edit Recurring Transaction' : 'Add Recurring Transaction'}</h2>
       </div>
       
       <form onSubmit={handleSubmit}>
@@ -189,7 +198,7 @@ export default function RecurringTransactionForm({ onSubmit, onCancel, initialTy
         <div className="form-actions">
           <button type="submit" className="btn btn-primary">
             <RefreshCw size={18} />
-            Create Recurring Transaction
+            {submitLabel || (initialValues ? 'Save Recurring Transaction' : 'Create Recurring Transaction')}
           </button>
           <button type="button" onClick={onCancel} className="btn">
             Cancel

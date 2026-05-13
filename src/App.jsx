@@ -2,8 +2,6 @@ import React, { useState, useEffect, useMemo, useRef } from 'react';
 import ErrorBoundary from './components/ErrorBoundary';
 import Header from './components/Header';
 import Dashboard from './components/Dashboard';
-import TransactionsPage from './components/TransactionsPage';
-import TransactionForm from './components/TransactionForm';
 import GoalForm from './components/GoalForm';
 import Goals from './components/Goals';
 import Budget from './components/Budget';
@@ -11,7 +9,7 @@ import FinancePlan from './components/FinancePlan';
 import FinancialSnapshot from './components/FinancialSnapshot';
 import DataManagement from './components/DataManagement';
 import RecurringTransactionForm from './components/RecurringTransactionForm';
-import RecurringTransactionList from './components/RecurringTransactionList';
+import RecurringPaymentsPage from './components/RecurringPaymentsPage';
 import ReportsPage from './components/ReportsPage';
 import AuthPage from './pages/AuthPage';
 import Toast from './components/Toast';
@@ -441,7 +439,17 @@ function App() {
       // Save to Supabase if logged in
       let savedRecurring = null;
       if (user && isConfigured && supabaseSync.isAvailable()) {
-        savedRecurring = await supabaseSync.addRecurringTransaction(recurringData);
+        savedRecurring = await supabaseSync.addRecurringTransaction({
+          type: recurringData.type,
+          amount: recurringData.amount,
+          category: recurringData.category,
+          description: recurringData.description,
+          frequency: recurringData.frequency,
+          start_date: recurringData.startDate,
+          end_date: recurringData.endDate || null,
+          last_processed: recurringData.lastProcessed,
+          active: recurringData.active,
+        });
       }
 
       const newRecurring = savedRecurring || {
@@ -456,7 +464,7 @@ function App() {
       });
 
       showToast('Recurring transaction created successfully!', 'success');
-      setView('dashboard');
+      setView('recurring');
     } catch (error) {
       console.error('Error adding recurring transaction:', error);
       showToast('Failed to add recurring transaction. Please try again.', 'error');
@@ -721,6 +729,55 @@ function App() {
     }
   };
 
+  const updateRecurringTransaction = async (id, updates) => {
+    try {
+      setSyncing(true);
+
+      const existing = data.recurringTransactions.find(r => r.id === id);
+      if (!existing) {
+        showToast('Recurring transaction not found.', 'error');
+        return;
+      }
+
+      const updatedRecurring = {
+        ...existing,
+        ...updates,
+        id,
+        amount: Number(updates.amount || existing.amount),
+        nextDate: updates.nextDate || updates.startDate || existing.nextDate,
+      };
+
+      if (user && isConfigured && supabaseSync.isAvailable()) {
+        await supabaseSync.updateRecurringTransaction(id, {
+          type: updatedRecurring.type,
+          amount: updatedRecurring.amount,
+          category: updatedRecurring.category,
+          description: updatedRecurring.description,
+          frequency: updatedRecurring.frequency,
+          start_date: updatedRecurring.startDate,
+          end_date: updatedRecurring.endDate || null,
+          last_processed: updatedRecurring.lastProcessed || updatedRecurring.last_processed || null,
+          active: updatedRecurring.active,
+        });
+      }
+
+      await saveData({
+        ...data,
+        recurringTransactions: data.recurringTransactions.map(r =>
+          r.id === id ? updatedRecurring : r
+        )
+      });
+
+      showToast('Recurring transaction updated successfully!', 'success');
+      setView('recurring');
+    } catch (error) {
+      console.error('Error updating recurring transaction:', error);
+      showToast('Failed to update recurring transaction. Please try again.', 'error');
+    } finally {
+      setSyncing(false);
+    }
+  };
+
   const addNetWorthSnapshot = async (snapshot) => {
     try {
       setSyncing(true);
@@ -914,10 +971,6 @@ function App() {
   const currentMonthSpending = getCurrentMonthSpending();
 
   const pageMeta = {
-    transactions: {
-      title: 'Transactions',
-      description: 'Review the ledger, find patterns, and keep every income or expense traceable.',
-    },
     budget: {
       title: 'Budgets',
       description: 'Compare spending against limits and tune your categories before they drift.',
@@ -941,10 +994,6 @@ function App() {
     settings: {
       title: 'Settings',
       description: 'Manage currency, backups, imports, and local data controls.',
-    },
-    'add-transaction': {
-      title: 'Add Transaction',
-      description: 'Capture income or spend while the details are still fresh.',
     },
     'add-goal': {
       title: 'Add Savings Goal',
@@ -1024,21 +1073,8 @@ function App() {
           {view === 'dashboard' && (
             <Dashboard
               data={data}
-              monthlyIncome={monthlyIncome}
-              monthlyExpenses={monthlyExpenses}
-              last30DaysIncome={last30DaysIncome}
-              last30DaysExpenses={last30DaysExpenses}
-              currentMonthSpending={currentMonthSpending}
               currency={currency}
               onNavigate={setView}
-            />
-          )}
-
-          {view === 'transactions' && (
-            <TransactionsPage
-              transactions={data.transactions}
-              onDeleteTransaction={deleteTransaction}
-              currency={currency}
             />
           )}
 
@@ -1056,6 +1092,17 @@ function App() {
               planningItems={data.planningItems}
               onAddPlanningItem={addPlanningItem}
               onDeletePlanningItem={deletePlanningItem}
+              currency={currency}
+            />
+          )}
+
+          {view === 'recurring' && (
+            <RecurringPaymentsPage
+              recurringTransactions={data.recurringTransactions}
+              onAddRecurring={addRecurringTransaction}
+              onUpdateRecurring={updateRecurringTransaction}
+              onDeleteRecurring={deleteRecurringTransaction}
+              onToggleRecurring={toggleRecurringActive}
               currency={currency}
             />
           )}
@@ -1087,13 +1134,6 @@ function App() {
               budgets={data.budgets}
               currentMonthSpending={currentMonthSpending}
               currency={currency}
-            />
-          )}
-
-          {view === 'add-transaction' && (
-            <TransactionForm
-              onSubmit={addTransaction}
-              onCancel={() => setView('dashboard')}
             />
           )}
 
