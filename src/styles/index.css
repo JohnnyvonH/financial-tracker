@@ -984,6 +984,17 @@ html.light .sidebar-brand .header-logo-text {
   justify-content: flex-start;
 }
 
+.planning-card-actions,
+.planning-form-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.planning-form-actions {
+  flex-wrap: wrap;
+}
+
 .planning-icon {
   display: inline-flex;
   align-items: center;

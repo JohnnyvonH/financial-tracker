@@ -80,6 +80,31 @@ test('recurring payments can be edited from the management page', async ({ page 
   await expect(page.getByText(/49\.99/)).toBeVisible();
 });
 
+test('plan asset sales use one value and existing plans can be edited', async ({ page }) => {
+  const nav = page.getByRole('navigation', { name: 'Primary navigation' });
+  await nav.getByRole('button', { name: 'Plan', exact: true }).click();
+
+  await page.getByRole('button', { name: 'Edit Sell XK8' }).click();
+  await page.getByLabel('Value').fill('4000');
+  await page.getByRole('button', { name: 'Save changes' }).click();
+
+  const sellCard = page.locator('.planning-card').filter({ hasText: 'Sell XK8' });
+  await expect(sellCard.getByText('Net help')).toBeVisible();
+  await expect(sellCard.getByText(/4,000\.00/)).toHaveCount(2);
+  await expect(page.getByLabel('Expected sale value')).toHaveCount(0);
+});
+
+test('empty goals page has an add goal button', async ({ page }) => {
+  await seedDemoData(page, { goals: [] });
+  await page.goto('/financial-tracker/');
+
+  const nav = page.getByRole('navigation', { name: 'Primary navigation' });
+  await nav.getByRole('button', { name: 'Goals', exact: true }).click();
+  await page.getByRole('button', { name: 'Add goal', exact: true }).click();
+
+  await expect(page.getByRole('heading', { name: 'Add Savings Goal' })).toBeVisible();
+});
+
 test('financial snapshot demo values calculate current cash correctly', async ({ page }) => {
   const nav = page.getByRole('navigation', { name: 'Primary navigation' });
   await nav.getByRole('button', { name: 'Current Finances', exact: true }).click();

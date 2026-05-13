@@ -181,7 +181,7 @@ export default function Dashboard({
                   </div>
                   <b>
                     {item.type === 'asset-sale'
-                      ? formatCurrency(Number(item.expectedValue || 0), currency)
+                      ? formatCurrency(Number(item.expectedValue || item.targetAmount || 0), currency)
                       : formatCurrency(Number(item.targetAmount || 0), currency)}
                   </b>
                 </article>

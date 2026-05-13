@@ -2,7 +2,7 @@ import React from 'react';
 import { Target, X, Plus, Minus } from 'lucide-react';
 import { formatCurrency } from '../utils/currency';
 
-export default function Goals({ goals, onUpdateGoal, onDeleteGoal, currency = 'USD' }) {
+export default function Goals({ goals, onAddGoal, onUpdateGoal, onDeleteGoal, currency = 'USD' }) {
   const handleIncrement = (goalId, currentAmount, increment = 100) => {
     onUpdateGoal(goalId, currentAmount + increment);
   };
@@ -26,6 +26,10 @@ export default function Goals({ goals, onUpdateGoal, onDeleteGoal, currency = 'U
           <p className="text-slate-600">
             No goals yet. Set your first savings goal to get started!
           </p>
+          <button type="button" className="btn btn-primary mt-6" onClick={onAddGoal}>
+            <Plus size={16} />
+            Add goal
+          </button>
         </div>
       </div>
     );

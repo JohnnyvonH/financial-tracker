@@ -1,10 +1,11 @@
 import React, { useMemo, useState } from 'react';
-import { Calendar, Car, Home, PiggyBank, Plus, Trash2, WalletCards } from 'lucide-react';
+import { Calendar, Car, Home, Pencil, PiggyBank, Plus, Save, Trash2, WalletCards, X } from 'lucide-react';
 import { formatCurrency } from '../utils/currency';
 
 const defaultPlanningItem = {
   title: '',
   type: 'expense',
+  value: '',
   targetAmount: '',
   savedAmount: '',
   expectedValue: '',
@@ -16,12 +17,23 @@ const defaultPlanningItem = {
 
 const numberValue = (value) => Number(value || 0);
 
-function PlanningItemCard({ item, currency, onDelete }) {
-  const target = numberValue(item.targetAmount);
+const getPlanningValue = (item) => (
+  item.type === 'asset-sale'
+    ? numberValue(item.expectedValue || item.targetAmount)
+    : numberValue(item.targetAmount)
+);
+
+const getFormValue = (item) => (
+  item.type === 'asset-sale'
+    ? item.expectedValue || item.targetAmount || ''
+    : item.targetAmount || ''
+);
+
+function PlanningItemCard({ item, currency, onDelete, onEdit }) {
+  const value = getPlanningValue(item);
   const saved = numberValue(item.savedAmount);
-  const expectedValue = numberValue(item.expectedValue);
-  const remaining = Math.max(target - saved, 0);
-  const progress = target > 0 ? Math.min((saved / target) * 100, 100) : 0;
+  const remaining = Math.max(value - saved, 0);
+  const progress = value > 0 ? Math.min((saved / value) * 100, 100) : 0;
   const icon = item.type === 'asset-sale' ? Car : item.type === 'saving' ? Home : Calendar;
   const Icon = icon;
 
@@ -35,23 +47,30 @@ function PlanningItemCard({ item, currency, onDelete }) {
             <p>{item.type === 'asset-sale' ? 'Asset sale' : item.type === 'saving' ? 'Savings target' : 'Upcoming cost'}</p>
           </div>
         </div>
-        <button className="btn-icon" onClick={() => onDelete(item.id)} aria-label={`Delete ${item.title}`}>
-          <Trash2 size={16} />
-        </button>
+        <div className="planning-card-actions">
+          <button className="btn-icon" onClick={() => onEdit(item)} aria-label={`Edit ${item.title}`}>
+            <Pencil size={16} />
+          </button>
+          <button className="btn-icon" onClick={() => onDelete(item.id)} aria-label={`Delete ${item.title}`}>
+            <Trash2 size={16} />
+          </button>
+        </div>
       </div>
 
       <div className="planning-metrics">
         <div>
-          <span>Target</span>
-          <strong>{formatCurrency(target, currency)}</strong>
+          <span>Value</span>
+          <strong>{formatCurrency(value, currency)}</strong>
         </div>
-        <div>
-          <span>{item.type === 'asset-sale' ? 'Expected' : 'Saved'}</span>
-          <strong>{formatCurrency(item.type === 'asset-sale' ? expectedValue : saved, currency)}</strong>
-        </div>
+        {item.type !== 'asset-sale' && (
+          <div>
+            <span>Saved</span>
+            <strong>{formatCurrency(saved, currency)}</strong>
+          </div>
+        )}
         <div>
           <span>{item.type === 'asset-sale' ? 'Net help' : 'Remaining'}</span>
-          <strong>{formatCurrency(item.type === 'asset-sale' ? expectedValue - target : remaining, currency)}</strong>
+          <strong>{formatCurrency(item.type === 'asset-sale' ? value : remaining, currency)}</strong>
         </div>
       </div>
 
@@ -73,18 +92,20 @@ function PlanningItemCard({ item, currency, onDelete }) {
 export default function FinancePlan({
   planningItems,
   onAddPlanningItem,
+  onUpdatePlanningItem,
   onDeletePlanningItem,
   currency,
 }) {
   const [planningForm, setPlanningForm] = useState(defaultPlanningItem);
+  const [editingItemId, setEditingItemId] = useState(null);
 
   const planSummary = useMemo(() => {
     return planningItems.reduce((summary, item) => {
       if (item.status === 'complete') return summary;
       if (item.type === 'asset-sale') {
-        summary.expectedIncome += numberValue(item.expectedValue);
+        summary.expectedIncome += getPlanningValue(item);
       } else {
-        summary.upcomingCosts += numberValue(item.targetAmount);
+        summary.upcomingCosts += getPlanningValue(item);
         summary.alreadySaved += numberValue(item.savedAmount);
       }
       return summary;
@@ -96,18 +117,42 @@ export default function FinancePlan({
   const handlePlanningSubmit = (event) => {
     event.preventDefault();
     if (!planningForm.title.trim()) return;
-    onAddPlanningItem({
+    const value = numberValue(planningForm.value);
+    const item = {
       ...planningForm,
       title: planningForm.title.trim(),
-      targetAmount: numberValue(planningForm.targetAmount),
-      savedAmount: numberValue(planningForm.savedAmount),
-      expectedValue: numberValue(planningForm.expectedValue),
-    });
+      targetAmount: planningForm.type === 'asset-sale' ? 0 : value,
+      savedAmount: planningForm.type === 'asset-sale' ? 0 : numberValue(planningForm.savedAmount),
+      expectedValue: planningForm.type === 'asset-sale' ? value : 0,
+    };
+    delete item.value;
+
+    if (editingItemId) {
+      onUpdatePlanningItem(editingItemId, item);
+    } else {
+      onAddPlanningItem(item);
+    }
     setPlanningForm(defaultPlanningItem);
+    setEditingItemId(null);
   };
 
   const updatePlanningForm = (key, value) => {
     setPlanningForm((current) => ({ ...current, [key]: value }));
+  };
+
+  const editPlanningItem = (item) => {
+    setEditingItemId(item.id);
+    setPlanningForm({
+      ...defaultPlanningItem,
+      ...item,
+      value: getFormValue(item),
+      savedAmount: item.type === 'asset-sale' ? '' : item.savedAmount || '',
+    });
+  };
+
+  const cancelEditing = () => {
+    setEditingItemId(null);
+    setPlanningForm(defaultPlanningItem);
   };
 
   return (
@@ -137,7 +182,7 @@ export default function FinancePlan({
         <section className="card plan-entry-card">
           <div className="section-header">
             <div>
-              <h2 className="section-title">Upcoming Plan</h2>
+              <h2 className="section-title">{editingItemId ? 'Edit Plan Item' : 'Upcoming Plan'}</h2>
               <p className="section-subtitle">Track things like F-Type wheel refurb, selling the XK8, and house deposit saving.</p>
             </div>
           </div>
@@ -163,17 +208,15 @@ export default function FinancePlan({
             </div>
             <div className="form-grid">
               <div className="form-group">
-                <label htmlFor="plan-target">Cost or target</label>
-                <input id="plan-target" type="number" min="0" step="0.01" value={planningForm.targetAmount} onChange={(event) => updatePlanningForm('targetAmount', event.target.value)} />
+                <label htmlFor="plan-value">Value</label>
+                <input id="plan-value" type="number" min="0" step="0.01" value={planningForm.value || ''} onChange={(event) => updatePlanningForm('value', event.target.value)} />
               </div>
-              <div className="form-group">
-                <label htmlFor="plan-saved">Saved so far</label>
-                <input id="plan-saved" type="number" min="0" step="0.01" value={planningForm.savedAmount} onChange={(event) => updatePlanningForm('savedAmount', event.target.value)} />
-              </div>
-              <div className="form-group">
-                <label htmlFor="plan-value">Expected sale value</label>
-                <input id="plan-value" type="number" min="0" step="0.01" value={planningForm.expectedValue} onChange={(event) => updatePlanningForm('expectedValue', event.target.value)} />
-              </div>
+              {planningForm.type !== 'asset-sale' && (
+                <div className="form-group">
+                  <label htmlFor="plan-saved">Saved so far</label>
+                  <input id="plan-saved" type="number" min="0" step="0.01" value={planningForm.savedAmount} onChange={(event) => updatePlanningForm('savedAmount', event.target.value)} />
+                </div>
+              )}
             </div>
             <div className="form-grid">
               <div className="form-group">
@@ -198,7 +241,17 @@ export default function FinancePlan({
               <label htmlFor="plan-notes">Notes</label>
               <textarea id="plan-notes" value={planningForm.notes} onChange={(event) => updatePlanningForm('notes', event.target.value)} rows="3" />
             </div>
-            <button className="btn btn-primary" type="submit"><Plus size={16} />Add plan item</button>
+            <div className="planning-form-actions">
+              <button className="btn btn-primary" type="submit">
+                {editingItemId ? <Save size={16} /> : <Plus size={16} />}
+                {editingItemId ? 'Save changes' : 'Add plan item'}
+              </button>
+              {editingItemId && (
+                <button className="btn btn-secondary" type="button" onClick={cancelEditing}>
+                  <X size={16} />Cancel
+                </button>
+              )}
+            </div>
           </form>
         </section>
 
@@ -208,7 +261,7 @@ export default function FinancePlan({
           <ul className="rule-list">
             <li><strong>Upcoming costs</strong><span>Anything you need cash for, such as wheel refurbishment or insurance.</span></li>
             <li><strong>Goals</strong><span>House deposits and ring-fenced savings targets are managed on the Goals page.</span></li>
-            <li><strong>Asset sales</strong><span>Expected proceeds from selling an item, such as the XK8.</span></li>
+            <li><strong>Asset sales</strong><span>Use Value for what the item is worth once sold, such as the XK8.</span></li>
           </ul>
         </section>
       </div>
@@ -239,7 +292,7 @@ export default function FinancePlan({
           </div>
         ) : (
           planningItems.map((item) => (
-            <PlanningItemCard key={item.id} item={item} currency={currency} onDelete={onDeletePlanningItem} />
+            <PlanningItemCard key={item.id} item={item} currency={currency} onDelete={onDeletePlanningItem} onEdit={editPlanningItem} />
           ))
         )}
       </section>
