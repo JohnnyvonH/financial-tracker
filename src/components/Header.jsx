@@ -7,6 +7,7 @@ export default function Header({ view, setView, isDarkMode, onToggleDarkMode }) 
     { id: 'dashboard', label: 'Dashboard', icon: Home },
     { id: 'transactions', label: 'Transactions', icon: List },
     { id: 'budget', label: 'Budgets', icon: DollarSign },
+    { id: 'recurring', label: 'Recurring', icon: RefreshCw },
     { id: 'plan', label: 'Plan', icon: CalendarClock },
     { id: 'goals', label: 'Goals', icon: TrendingUp },
     { id: 'snapshot', label: 'Current Finances', icon: WalletCards },

@@ -36,7 +36,7 @@ test('current finances template can add a custom bank and card', async ({ page }
 });
 
 test('dashboard shows savings-focused demo summary', async ({ page }) => {
-  await expect(page.getByRole('heading', { name: 'Your financial position' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Finance command centre' })).toBeVisible();
   await expect(page.getByText('Max cash now')).toBeVisible();
   await expect(page.getByText('£1,604.72').first()).toBeVisible();
   await expect(page.getByText('Monthly savings capacity')).toBeVisible();
@@ -48,6 +48,7 @@ test('primary pages render with demo data', async ({ page }) => {
   const pages = [
     ['Transactions', 'Rent contribution'],
     ['Budgets', 'Housing'],
+    ['Recurring', 'Monthly paycheck'],
     ['Plan', 'Sell XK8'],
     ['Goals', 'Emergency fund'],
     ['Current Finances', 'MoneyBox'],
@@ -65,7 +66,19 @@ test('primary pages render with demo data', async ({ page }) => {
 
 test('monthly savings capacity card opens recurring management', async ({ page }) => {
   await page.getByRole('button', { name: 'Review recurring income and outgoings' }).click();
-  await expect(page.getByRole('heading', { name: 'Add Recurring Item' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Recurring payments' })).toBeVisible();
+});
+
+test('recurring payments can be edited from the management page', async ({ page }) => {
+  const nav = page.getByRole('navigation', { name: 'Primary navigation' });
+  await nav.getByRole('button', { name: 'Recurring', exact: true }).click();
+
+  await page.getByRole('button', { name: 'Edit Streaming subscriptions' }).click();
+  await page.getByLabel('Amount').fill('49.99');
+  await page.getByRole('button', { name: 'Save changes' }).click();
+
+  await expect(page.getByText('Streaming subscriptions')).toBeVisible();
+  await expect(page.getByText(/49\.99/)).toBeVisible();
 });
 
 test('financial snapshot demo values calculate current cash correctly', async ({ page }) => {

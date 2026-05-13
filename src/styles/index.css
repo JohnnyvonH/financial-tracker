@@ -1959,6 +1959,55 @@ html.light .app-sidebar .nav-button-active {
   gap: 1rem;
 }
 
+.workflow-strip {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 0.85rem;
+}
+
+.workflow-strip button {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 0.2rem 0.75rem;
+  align-items: center;
+  min-width: 0;
+  padding: 0.95rem;
+  border: 1px solid rgba(148, 163, 184, 0.16);
+  border-radius: 0.65rem;
+  background: var(--panel-surface);
+  color: var(--text-primary);
+  text-align: left;
+  cursor: pointer;
+}
+
+.workflow-strip button:hover,
+.workflow-strip button:focus-visible {
+  border-color: rgba(16, 185, 129, 0.46);
+  outline: none;
+}
+
+.workflow-strip svg {
+  grid-row: 1 / span 2;
+  color: var(--primary);
+}
+
+.workflow-strip span {
+  overflow: hidden;
+  color: var(--text-primary);
+  font-size: 0.9rem;
+  font-weight: 800;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.workflow-strip small {
+  overflow: hidden;
+  color: var(--text-secondary);
+  font-size: 0.78rem;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
 .metric-tile,
 .panel {
   border: 1px solid rgba(148, 163, 184, 0.16);
@@ -2286,6 +2335,109 @@ button.metric-tile {
   transform: none;
 }
 
+.recurring-workspace {
+  display: grid;
+  gap: 1.25rem;
+}
+
+.recurring-summary-grid {
+  margin-bottom: 0;
+}
+
+.recurring-list-card {
+  margin-bottom: 0;
+}
+
+.recurring-table {
+  display: grid;
+  gap: 0.65rem;
+}
+
+.recurring-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto auto;
+  gap: 1rem;
+  align-items: center;
+  padding: 0.95rem;
+  border: 1px solid rgba(148, 163, 184, 0.14);
+  border-radius: 0.65rem;
+  background: var(--panel-surface-soft);
+  color: var(--text-primary);
+}
+
+.recurring-row-paused {
+  opacity: 0.66;
+}
+
+.recurring-main {
+  display: flex;
+  align-items: center;
+  min-width: 0;
+  gap: 0.9rem;
+}
+
+.recurring-title-line {
+  display: flex;
+  align-items: center;
+  min-width: 0;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.recurring-title-line h4 {
+  margin: 0;
+  color: var(--text-primary);
+  font-size: 0.96rem;
+  font-weight: 800;
+}
+
+.recurring-row .transaction-meta,
+.recurring-row .transaction-meta span {
+  color: var(--text-secondary);
+}
+
+.status-chip {
+  display: inline-flex;
+  align-items: center;
+  min-height: 1.35rem;
+  padding: 0.15rem 0.5rem;
+  border-radius: 999px;
+  background: rgba(16, 185, 129, 0.12);
+  color: var(--primary-light);
+  font-size: 0.72rem;
+  font-weight: 800;
+}
+
+.status-chip-muted {
+  background: rgba(148, 163, 184, 0.16);
+  color: var(--text-secondary);
+}
+
+.recurring-actions {
+  display: inline-flex;
+  gap: 0.35rem;
+}
+
+.btn-icon-neutral:hover {
+  color: var(--primary);
+  background: rgba(16, 185, 129, 0.12);
+}
+
+.recurring-empty-state {
+  display: grid;
+  justify-items: center;
+  gap: 0.85rem;
+  padding: 2.5rem 1rem;
+  border: 1px dashed rgba(148, 163, 184, 0.28);
+  border-radius: 0.75rem;
+  color: var(--text-secondary);
+  text-align: center;
+}
+
+.recurring-empty-state svg {
+  color: var(--primary);
+}
+
 .section-title {
   color: var(--text-primary);
   font-family: inherit;
@@ -2297,7 +2449,8 @@ button.metric-tile {
     grid-template-columns: 230px minmax(0, 1fr);
   }
 
-  .metric-grid {
+  .metric-grid,
+  .workflow-strip {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
@@ -2397,6 +2550,8 @@ button.metric-tile {
 
   .asset-summary,
   .metric-grid,
+  .workflow-strip,
+  .recurring-row,
   .timeline-row,
   .plan-workspace,
   .snapshot-layout {

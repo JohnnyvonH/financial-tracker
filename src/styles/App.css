@@ -434,3 +434,13 @@ button {
   font-family: 'Work Sans', sans-serif;
   cursor: pointer;
 }
+
+.recurring-row .transaction-details h4,
+.recurring-title-line h4 {
+  color: var(--text-primary);
+}
+
+.recurring-row .transaction-meta,
+.recurring-row .transaction-meta span {
+  color: var(--text-secondary);
+}

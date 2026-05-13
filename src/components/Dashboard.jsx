@@ -124,15 +124,38 @@ export default function Dashboard({
     <div className="dashboard-cockpit">
       <section className="dashboard-hero">
         <div>
-          <h1>Your financial position</h1>
+          <h1>Finance command centre</h1>
           <p>
-            See current cash, monthly outgoings, savings progress, and how upcoming commitments change your runway.
+            Start with current finances, keep recurring payments accurate, then use the plan to see what the next few months really look like.
           </p>
         </div>
         <div className="hero-actions">
           <button className="btn btn-primary" onClick={() => onNavigate('snapshot')}>Update current finances</button>
-          <button className="btn" onClick={() => onNavigate('plan')}>Review commitments</button>
+          <button className="btn" onClick={() => onNavigate('recurring')}>Manage recurring</button>
         </div>
+      </section>
+
+      <section className="workflow-strip" aria-label="Finance tracking workflow">
+        <button type="button" onClick={() => onNavigate('snapshot')}>
+          <WalletCards size={18} />
+          <span>1. Current finances</span>
+          <small>Cash, cards, savings, pension</small>
+        </button>
+        <button type="button" onClick={() => onNavigate('recurring')}>
+          <CalendarClock size={18} />
+          <span>2. Recurring payments</span>
+          <small>Salary, bills, subscriptions</small>
+        </button>
+        <button type="button" onClick={() => onNavigate('plan')}>
+          <PiggyBank size={18} />
+          <span>3. Upcoming plan</span>
+          <small>Commitments and asset sales</small>
+        </button>
+        <button type="button" onClick={() => onNavigate('transactions')}>
+          <ListChecks size={18} />
+          <span>4. Transactions</span>
+          <small>Ad-hoc ledger detail</small>
+        </button>
       </section>
 
       <section className="metric-grid">
@@ -150,7 +173,7 @@ export default function Dashboard({
           actionLabel={hasIncomeSource ? 'Review recurring income and outgoings' : 'Add recurring income'}
           icon={monthlySummary.surplus >= 0 ? TrendingUp : TrendingDown}
           tone={monthlySummary.surplus >= 0 ? 'positive' : 'danger'}
-          onClick={() => onNavigate(hasIncomeSource ? 'add-recurring' : 'add-recurring-income')}
+          onClick={() => onNavigate(hasIncomeSource ? 'recurring' : 'add-recurring-income')}
         />
         <MetricTile
           label="Monthly outgoings"
@@ -168,7 +191,7 @@ export default function Dashboard({
         />
       </section>
 
-      <section className="metric-grid metric-grid-secondary">
+      <section className="metric-grid metric-grid-secondary dashboard-support-grid">
         <MetricTile
           label="Cash runway"
           value={cashRunway !== null ? `${cashRunway.toFixed(1)} months` : 'No spend yet'}
@@ -240,7 +263,7 @@ export default function Dashboard({
         </section>
 
         <section className="panel">
-          <SectionHeader title="Monthly outgoings" action="Manage recurring" onAction={() => onNavigate('add-recurring')} />
+          <SectionHeader title="Monthly outgoings" action="Manage recurring" onAction={() => onNavigate('recurring')} />
           {recurringOutgoings.length === 0 ? (
             <p className="empty-inline">Add recurring income and outgoings to see your paycheck impact.</p>
           ) : (
@@ -360,7 +383,7 @@ export default function Dashboard({
           <p>Keep the forecast useful by updating your current finances, monthly outgoings, commitments, and goals.</p>
           <div className="action-grid">
             <button className="btn btn-primary" onClick={() => onNavigate('snapshot')}><WalletCards size={16} />Update finances</button>
-            <button className="btn" onClick={() => onNavigate('add-recurring')}><CalendarClock size={16} />Add outgoing</button>
+            <button className="btn" onClick={() => onNavigate('recurring')}><CalendarClock size={16} />Manage recurring</button>
             <button className="btn" onClick={() => onNavigate('plan')}><PiggyBank size={16} />Add commitment</button>
           </div>
         </section>

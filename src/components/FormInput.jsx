@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useId } from 'react';
 import { AlertCircle } from 'lucide-react';
 
 const FormInput = ({ 
@@ -10,10 +10,13 @@ const FormInput = ({
   icon: Icon,
   ...props 
 }) => {
+  const generatedId = useId();
+  const inputId = props.id || `field-${generatedId}`;
+
   return (
     <div className="form-group">
       {label && (
-        <label className="flex items-center gap-2">
+        <label className="flex items-center gap-2" htmlFor={inputId}>
           {Icon && <Icon size={16} />}
           {label}
           {required && <span className="text-red-500">*</span>}
@@ -21,6 +24,7 @@ const FormInput = ({
       )}
       <div className="relative">
         <input
+          id={inputId}
           type={type}
           className={`w-full ${error ? 'border-red-500 focus:border-red-500' : ''}`}
           {...props}

@@ -11,7 +11,7 @@ import FinancePlan from './components/FinancePlan';
 import FinancialSnapshot from './components/FinancialSnapshot';
 import DataManagement from './components/DataManagement';
 import RecurringTransactionForm from './components/RecurringTransactionForm';
-import RecurringTransactionList from './components/RecurringTransactionList';
+import RecurringPaymentsPage from './components/RecurringPaymentsPage';
 import ReportsPage from './components/ReportsPage';
 import AuthPage from './pages/AuthPage';
 import Toast from './components/Toast';
@@ -441,7 +441,17 @@ function App() {
       // Save to Supabase if logged in
       let savedRecurring = null;
       if (user && isConfigured && supabaseSync.isAvailable()) {
-        savedRecurring = await supabaseSync.addRecurringTransaction(recurringData);
+        savedRecurring = await supabaseSync.addRecurringTransaction({
+          type: recurringData.type,
+          amount: recurringData.amount,
+          category: recurringData.category,
+          description: recurringData.description,
+          frequency: recurringData.frequency,
+          start_date: recurringData.startDate,
+          end_date: recurringData.endDate || null,
+          last_processed: recurringData.lastProcessed,
+          active: recurringData.active,
+        });
       }
 
       const newRecurring = savedRecurring || {
@@ -456,7 +466,7 @@ function App() {
       });
 
       showToast('Recurring transaction created successfully!', 'success');
-      setView('dashboard');
+      setView('recurring');
     } catch (error) {
       console.error('Error adding recurring transaction:', error);
       showToast('Failed to add recurring transaction. Please try again.', 'error');
@@ -716,6 +726,55 @@ function App() {
     } catch (error) {
       console.error('Error updating current finances template:', error);
       showToast('Failed to update template. Please try again.', 'error');
+    } finally {
+      setSyncing(false);
+    }
+  };
+
+  const updateRecurringTransaction = async (id, updates) => {
+    try {
+      setSyncing(true);
+
+      const existing = data.recurringTransactions.find(r => r.id === id);
+      if (!existing) {
+        showToast('Recurring transaction not found.', 'error');
+        return;
+      }
+
+      const updatedRecurring = {
+        ...existing,
+        ...updates,
+        id,
+        amount: Number(updates.amount || existing.amount),
+        nextDate: updates.nextDate || updates.startDate || existing.nextDate,
+      };
+
+      if (user && isConfigured && supabaseSync.isAvailable()) {
+        await supabaseSync.updateRecurringTransaction(id, {
+          type: updatedRecurring.type,
+          amount: updatedRecurring.amount,
+          category: updatedRecurring.category,
+          description: updatedRecurring.description,
+          frequency: updatedRecurring.frequency,
+          start_date: updatedRecurring.startDate,
+          end_date: updatedRecurring.endDate || null,
+          last_processed: updatedRecurring.lastProcessed || updatedRecurring.last_processed || null,
+          active: updatedRecurring.active,
+        });
+      }
+
+      await saveData({
+        ...data,
+        recurringTransactions: data.recurringTransactions.map(r =>
+          r.id === id ? updatedRecurring : r
+        )
+      });
+
+      showToast('Recurring transaction updated successfully!', 'success');
+      setView('recurring');
+    } catch (error) {
+      console.error('Error updating recurring transaction:', error);
+      showToast('Failed to update recurring transaction. Please try again.', 'error');
     } finally {
       setSyncing(false);
     }
@@ -1056,6 +1115,17 @@ function App() {
               planningItems={data.planningItems}
               onAddPlanningItem={addPlanningItem}
               onDeletePlanningItem={deletePlanningItem}
+              currency={currency}
+            />
+          )}
+
+          {view === 'recurring' && (
+            <RecurringPaymentsPage
+              recurringTransactions={data.recurringTransactions}
+              onAddRecurring={addRecurringTransaction}
+              onUpdateRecurring={updateRecurringTransaction}
+              onDeleteRecurring={deleteRecurringTransaction}
+              onToggleRecurring={toggleRecurringActive}
               currency={currency}
             />
           )}

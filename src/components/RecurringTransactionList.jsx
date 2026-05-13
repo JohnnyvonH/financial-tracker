@@ -1,92 +1,82 @@
 import React from 'react';
-import { RefreshCw, Calendar, Tag, X, TrendingUp, TrendingDown, AlertCircle } from 'lucide-react';
+import { RefreshCw, Calendar, Tag, X, AlertCircle, Edit3, Pause, Play } from 'lucide-react';
 import { formatCurrency } from '../utils/currency';
 import { getCategoryIcon } from '../utils/categories';
 import { getFrequencyLabel } from '../utils/recurring';
 
-export default function RecurringTransactionList({ 
-  recurringTransactions, 
-  onDelete, 
+export default function RecurringTransactionList({
+  recurringTransactions,
+  onDelete,
   onToggleActive,
-  currency = 'USD' 
+  onEdit,
+  currency = 'USD',
 }) {
+  const formatDate = (dateString) => {
+    if (!dateString) return 'Not scheduled';
+    return new Date(dateString).toLocaleDateString('en-GB', {
+      month: 'short',
+      day: 'numeric',
+      year: 'numeric',
+    });
+  };
+
   if (recurringTransactions.length === 0) {
     return (
       <div className="card">
         <h2 className="text-2xl font-light mb-6">Recurring Transactions</h2>
-        <div className="flex flex-col items-center justify-center py-12 text-center">
-          <div className="text-slate-400 mb-4">
-            <RefreshCw size={48} />
-          </div>
-          <p className="text-slate-600">
-            No recurring transactions yet. Set up automatic income or expenses!
-          </p>
+        <div className="recurring-empty-state">
+          <RefreshCw size={42} />
+          <p>No recurring income or payments yet. Add salary, bills, subscriptions, and transfers here so the dashboard can forecast the month.</p>
         </div>
       </div>
     );
   }
 
-  const formatDate = (dateString) => {
-    return new Date(dateString).toLocaleDateString('en-US', {
-      month: 'short',
-      day: 'numeric',
-      year: 'numeric'
-    });
-  };
-
   return (
-    <div className="card">
+    <div className="card recurring-list-card">
       <div className="flex items-center justify-between mb-6">
         <div className="flex items-center gap-3">
           <RefreshCw className="text-primary" size={28} />
           <h2 className="text-2xl font-light">Recurring Transactions</h2>
         </div>
         <span className="text-sm text-slate-600">
-          {recurringTransactions.length} active
+          {recurringTransactions.filter((item) => item.active !== false).length} active
         </span>
       </div>
 
-      <div className="space-y-3">
-        {recurringTransactions.map((recurring, index) => {
+      <div className="recurring-table">
+        {recurringTransactions.map((recurring) => {
           const categoryInfo = getCategoryIcon(recurring.category);
           const CategoryIcon = categoryInfo.icon;
-          const isExpiringSoon = recurring.endDate && 
+          const nextDate = recurring.nextDate || recurring.startDate || recurring.start_date;
+          const isExpiringSoon = recurring.endDate &&
             new Date(recurring.endDate) <= new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
 
           return (
-            <div
+            <article
               key={recurring.id}
-              className={`transaction-item animate-slide-in ${
-                !recurring.active ? 'opacity-50' : ''
-              }`}
-              style={{ animationDelay: `${index * 0.05}s` }}
+              className={`recurring-row ${recurring.active === false ? 'recurring-row-paused' : ''}`}
             >
-              <div className="transaction-left">
+              <div className="recurring-main">
                 <div
                   className="transaction-icon"
-                  style={{ 
+                  style={{
                     backgroundColor: `${categoryInfo.color}20`,
-                    color: categoryInfo.color
+                    color: categoryInfo.color,
                   }}
                 >
                   <CategoryIcon size={20} />
                 </div>
                 <div className="transaction-details">
-                  <div className="flex items-center gap-2">
+                  <div className="recurring-title-line">
                     <h4>{recurring.description}</h4>
-                    <span className="text-xs bg-primary/10 text-primary px-2 py-0.5 rounded-full font-medium">
-                      {getFrequencyLabel(recurring.frequency)}
-                    </span>
-                    {!recurring.active && (
-                      <span className="text-xs bg-slate-200 text-slate-600 px-2 py-0.5 rounded-full">
-                        Paused
-                      </span>
-                    )}
+                    <span className="status-chip">{getFrequencyLabel(recurring.frequency)}</span>
+                    {recurring.active === false && <span className="status-chip status-chip-muted">Paused</span>}
                   </div>
                   <div className="transaction-meta">
                     <span>
                       <Calendar size={12} />
-                      Next: {formatDate(recurring.nextDate)}
+                      Next: {formatDate(nextDate)}
                     </span>
                     <span>
                       <Tag size={12} />
@@ -101,37 +91,43 @@ export default function RecurringTransactionList({
                   </div>
                 </div>
               </div>
-              <div className="transaction-right">
-                <span
-                  className={`transaction-amount ${
-                    recurring.type === 'income' ? 'amount-income' : 'amount-expense'
-                  }`}
+
+              <span
+                className={`transaction-amount ${
+                  recurring.type === 'income' ? 'amount-income' : 'amount-expense'
+                }`}
+              >
+                {recurring.type === 'income' ? '+' : '-'}
+                {formatCurrency(recurring.amount, currency)}
+              </span>
+
+              <div className="recurring-actions">
+                <button
+                  onClick={() => onToggleActive(recurring.id)}
+                  className="btn-icon btn-icon-neutral"
+                  title={recurring.active === false ? 'Resume' : 'Pause'}
+                  aria-label={recurring.active === false ? `Resume ${recurring.description}` : `Pause ${recurring.description}`}
                 >
-                  {recurring.type === 'income' ? '+' : '-'}
-                  {formatCurrency(recurring.amount, currency)}
-                </span>
-                <div className="flex gap-2">
-                  <button
-                    onClick={() => onToggleActive(recurring.id)}
-                    className="btn-icon"
-                    title={recurring.active ? 'Pause' : 'Resume'}
-                  >
-                    {recurring.active ? (
-                      <span className="text-amber-600">⏸</span>
-                    ) : (
-                      <span className="text-green-600">▶</span>
-                    )}
-                  </button>
-                  <button
-                    onClick={() => onDelete(recurring.id)}
-                    className="btn-icon"
-                    title="Delete recurring transaction"
-                  >
-                    <X />
-                  </button>
-                </div>
+                  {recurring.active === false ? <Play size={17} /> : <Pause size={17} />}
+                </button>
+                <button
+                  onClick={() => onEdit(recurring)}
+                  className="btn-icon btn-icon-neutral"
+                  title="Edit recurring transaction"
+                  aria-label={`Edit ${recurring.description}`}
+                >
+                  <Edit3 size={17} />
+                </button>
+                <button
+                  onClick={() => onDelete(recurring.id)}
+                  className="btn-icon"
+                  title="Delete recurring transaction"
+                  aria-label={`Delete ${recurring.description}`}
+                >
+                  <X size={17} />
+                </button>
               </div>
-            </div>
+            </article>
           );
         })}
       </div>

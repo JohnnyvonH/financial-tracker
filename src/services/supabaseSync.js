@@ -7,6 +7,7 @@ const normalizeRecurringTransaction = (item) => ({
   startDate: item.startDate || item.start_date,
   endDate: item.endDate || item.end_date,
   lastProcessed: item.lastProcessed || item.last_processed || item.last_generated_date,
+  nextDate: item.nextDate || item.next_date || item.startDate || item.start_date,
 });
 
 /**
