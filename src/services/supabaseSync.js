@@ -1,4 +1,5 @@
 import { supabase, isSupabaseConfigured } from '../lib/supabase';
+import { applyLegacySnapshotFields, normaliseSnapshotSections } from '../utils/snapshotConfig';
 
 const normalizeRecurringTransaction = (item) => ({
   ...item,
@@ -112,6 +113,14 @@ class SupabaseSyncService {
       console.error('Error updating user settings:', error);
       return false;
     }
+  }
+
+  async updateSnapshotSections(snapshotSections) {
+    if (!this.isAvailable()) return false;
+
+    return this.updateUserSettings({
+      snapshot_template: normaliseSnapshotSections(snapshotSections),
+    });
   }
 
   // ==============================================
@@ -585,25 +594,29 @@ class SupabaseSyncService {
       notes: snapshot.notes || '',
       paycheck: Number(snapshot.paycheck || 0),
       pension: Number(snapshot.pension || 0),
+      entries: snapshot.snapshot_entries || snapshot.entries || [],
       createdAt: snapshot.created_at,
     };
   }
 
   transformSnapshotToSupabase(snapshot) {
+    const normalisedSnapshot = applyLegacySnapshotFields(snapshot);
+
     return {
-      snapshot_date: snapshot.date,
-      santander: Number(snapshot.santander || 0),
-      tesco: Number(snapshot.tesco || 0),
-      amex_cashback: Number(snapshot.amexCashback || 0),
-      moneybox: Number(snapshot.moneybox || 0),
-      moneybox_stocks_shares_isa: Number(snapshot.moneyboxStocksSharesIsa || 0),
-      moneybox_lifetime_isa: Number(snapshot.moneyboxLifetimeIsa || 0),
-      moneybox_simple_saver: Number(snapshot.moneyboxSimpleSaver || 0),
-      moneybox_cash_isa: Number(snapshot.moneyboxCashIsa || 0),
-      moneybox_monthly: Number(snapshot.moneyboxMonthly || 0),
-      notes: snapshot.notes || '',
-      paycheck: Number(snapshot.paycheck || 0),
-      pension: Number(snapshot.pension || 0),
+      snapshot_date: normalisedSnapshot.date,
+      santander: Number(normalisedSnapshot.santander || 0),
+      tesco: Number(normalisedSnapshot.tesco || 0),
+      amex_cashback: Number(normalisedSnapshot.amexCashback || 0),
+      moneybox: Number(normalisedSnapshot.moneybox || 0),
+      moneybox_stocks_shares_isa: Number(normalisedSnapshot.moneyboxStocksSharesIsa || 0),
+      moneybox_lifetime_isa: Number(normalisedSnapshot.moneyboxLifetimeIsa || 0),
+      moneybox_simple_saver: Number(normalisedSnapshot.moneyboxSimpleSaver || 0),
+      moneybox_cash_isa: Number(normalisedSnapshot.moneyboxCashIsa || 0),
+      moneybox_monthly: Number(normalisedSnapshot.moneyboxMonthly || 0),
+      snapshot_entries: normalisedSnapshot.entries || [],
+      notes: normalisedSnapshot.notes || '',
+      paycheck: Number(normalisedSnapshot.paycheck || 0),
+      pension: Number(normalisedSnapshot.pension || 0),
     };
   }
 
@@ -783,6 +796,7 @@ class SupabaseSyncService {
         budgets: budgets || {},
         recurringTransactions: recurringTransactions || [],
         planningItems: planningItems || [],
+        snapshotSections: normaliseSnapshotSections(settings?.snapshot_template),
         netWorthSnapshots: netWorthSnapshots || [],
       };
     } catch (error) {

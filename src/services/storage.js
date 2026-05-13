@@ -1,3 +1,5 @@
+import { normaliseSnapshotSections } from '../utils/snapshotConfig';
+
 const STORAGE_KEY = 'finance-dashboard-data';
 const SETTINGS_KEY = 'finance-dashboard-settings';
 
@@ -8,6 +10,7 @@ const DEFAULT_DATA = {
   budgets: {},
   recurringTransactions: [],
   planningItems: [],
+  snapshotSections: normaliseSnapshotSections(),
   netWorthSnapshots: []
 };
 
@@ -19,6 +22,7 @@ const normaliseData = (data = {}) => ({
   budgets: data.budgets || {},
   recurringTransactions: Array.isArray(data.recurringTransactions) ? data.recurringTransactions : [],
   planningItems: Array.isArray(data.planningItems) ? data.planningItems : [],
+  snapshotSections: normaliseSnapshotSections(data.snapshotSections),
   netWorthSnapshots: Array.isArray(data.netWorthSnapshots) ? data.netWorthSnapshots : []
 });
 

@@ -1,3 +1,5 @@
+import { DEFAULT_SNAPSHOT_SECTIONS, getSnapshotEntries } from './snapshotConfig';
+
 const toNumber = (value) => Number(value || 0);
 
 const isActiveRecurring = (item = {}) => item.active !== false && item.is_active !== false;
@@ -38,13 +40,21 @@ export function getMonthlyEquivalent(amount = 0, frequency = 'monthly') {
 }
 
 export function getSnapshotTotals(snapshot = {}) {
-  const santander = toNumber(snapshot.santander);
-  const tesco = toNumber(snapshot.tesco);
-  const amexCashback = toNumber(snapshot.amexCashback);
-  const paycheck = toNumber(snapshot.paycheck);
-  const pension = toNumber(snapshot.pension);
-  const moneyboxMonthly = toNumber(snapshot.moneyboxMonthly);
-  const lifetimeIsa = toNumber(snapshot.moneyboxLifetimeIsa);
+  const entries = getSnapshotEntries(snapshot, DEFAULT_SNAPSHOT_SECTIONS);
+  const sumByType = (types) => entries
+    .filter((entry) => types.includes(entry.type))
+    .reduce((sum, entry) => sum + toNumber(entry.value), 0);
+
+  const availableCash = sumByType(['available_cash']);
+  const cardLiabilities = sumByType(['liability']);
+  const moneyboxMonthly = sumByType(['monthly_outgoing']);
+  const savings = sumByType(['savings']);
+  const restrictedSavings = sumByType(['restricted_savings']);
+  const investments = sumByType(['investment']);
+  const pension = sumByType(['pension']);
+  const paycheck = sumByType(['income_context']);
+  const santander = toNumber(snapshot.santander || availableCash);
+  const lifetimeIsa = toNumber(snapshot.moneyboxLifetimeIsa || restrictedSavings);
   const moneyboxBreakdownValues = [
     snapshot.moneyboxStocksSharesIsa,
     snapshot.moneyboxLifetimeIsa,
@@ -55,13 +65,14 @@ export function getSnapshotTotals(snapshot = {}) {
   const moneyboxBreakdownTotal = moneyboxBreakdownValues.reduce((sum, value) => sum + toNumber(value), 0);
 
   const moneyboxTotal = hasMoneyboxBreakdown ? moneyboxBreakdownTotal : toNumber(snapshot.moneybox);
-  const cardLiabilities = tesco + amexCashback;
-  const cashAfterCards = santander - cardLiabilities;
+  const savingsAndInvestments = savings + restrictedSavings + investments;
+  const assetAccountTotal = savingsAndInvestments || moneyboxTotal;
+  const cashAfterCards = availableCash - cardLiabilities;
   const maxAvailableCash = cashAfterCards - moneyboxMonthly;
-  const availableMoneybox = moneyboxTotal - lifetimeIsa;
-  const availableAssets = maxAvailableCash + availableMoneybox;
-  const houseDepositAccessibleAssets = availableAssets + lifetimeIsa;
-  const allAssets = cashAfterCards + moneyboxTotal + pension;
+  const availableMoneybox = assetAccountTotal - lifetimeIsa;
+  const availableAssets = maxAvailableCash + savings + investments;
+  const houseDepositAccessibleAssets = availableAssets + restrictedSavings;
+  const allAssets = cashAfterCards + assetAccountTotal + pension;
 
   return {
     santander,
@@ -69,11 +80,11 @@ export function getSnapshotTotals(snapshot = {}) {
     cashAfterCards,
     moneyboxMonthly,
     moneyboxBreakdownTotal,
-    moneyboxTotal,
+    moneyboxTotal: assetAccountTotal,
     moneyboxVariance: hasValue(snapshot.moneybox) ? toNumber(snapshot.moneybox) - moneyboxBreakdownTotal : 0,
     maxAvailableCash,
     availableMoneybox,
-    lifetimeIsa,
+    lifetimeIsa: restrictedSavings || lifetimeIsa,
     availableAssets,
     houseDepositAccessibleAssets,
     total: allAssets,

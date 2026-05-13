@@ -32,6 +32,7 @@ CREATE TABLE IF NOT EXISTS public.user_settings (
   notifications_enabled BOOLEAN DEFAULT TRUE,
   email_alerts BOOLEAN DEFAULT TRUE,
   budget_alert_threshold INTEGER DEFAULT 80, -- Alert at 80% of budget
+  snapshot_template JSONB,
   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
   updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
   UNIQUE(user_id)
