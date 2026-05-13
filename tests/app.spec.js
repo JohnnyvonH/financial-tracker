@@ -69,6 +69,7 @@ test('dashboard softens funding gap when monthly capacity covers it', async ({ p
 
 test('primary pages render with demo data', async ({ page }) => {
   const pages = [
+    ['Transactions', 'Monthly paycheck'],
     ['Budgets', 'Housing'],
     ['Recurring', 'Monthly paycheck'],
     ['Plan', 'Sell XK8'],
@@ -84,6 +85,13 @@ test('primary pages render with demo data', async ({ page }) => {
     await nav.getByRole('button', { name: navName, exact: true }).click();
     await expect(page.getByText(expectedText).first()).toBeVisible();
   }
+});
+
+test('transaction entry is reachable from quick actions', async ({ page }) => {
+  await page.getByRole('button', { name: 'Add Transaction' }).click();
+
+  await expect(page.locator('h1', { hasText: 'Add Transaction' })).toBeVisible();
+  await expect(page.getByPlaceholder('0.00')).toBeVisible();
 });
 
 test('monthly savings capacity card opens recurring management', async ({ page }) => {

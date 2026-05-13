@@ -775,9 +775,30 @@ class SupabaseSyncService {
 
     try {
       // Check if user already has data in Supabase
-      const existingTransactions = await this.getTransactions();
+      const [
+        existingTransactions,
+        existingGoals,
+        existingBudgets,
+        existingRecurringTransactions,
+        existingPlanningItems,
+        existingNetWorthSnapshots,
+      ] = await Promise.all([
+        this.getTransactions(),
+        this.getGoals(),
+        this.getBudgets(),
+        this.getRecurringTransactions(),
+        this.getPlanningItems(),
+        this.getNetWorthSnapshots(),
+      ]);
       
-      if (existingTransactions.length > 0) {
+      if (
+        existingTransactions.length > 0 ||
+        existingGoals.length > 0 ||
+        Object.keys(existingBudgets || {}).length > 0 ||
+        existingRecurringTransactions.length > 0 ||
+        existingPlanningItems.length > 0 ||
+        existingNetWorthSnapshots.length > 0
+      ) {
         console.log('ℹ️ User already has data in Supabase. Skipping migration.');
         return true;
       }
@@ -838,6 +859,7 @@ class SupabaseSyncService {
         balance: localData.balance || 0,
         currency: localStorage.getItem('currency') || 'USD',
         theme: localStorage.getItem('theme') || 'dark',
+        snapshot_template: normaliseSnapshotSections(localData.snapshotSections),
       });
 
       console.log('✅ Data migration completed successfully!');
