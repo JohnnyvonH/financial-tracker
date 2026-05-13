@@ -36,11 +36,11 @@ test('current finances template can add a custom bank and card', async ({ page }
 });
 
 test('dashboard shows savings-focused demo summary', async ({ page }) => {
-  await expect(page.getByRole('heading', { name: 'Finance command centre' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: "Today's money picture" })).toBeVisible();
   await expect(page.getByText('Max cash now')).toBeVisible();
   await expect(page.getByText('£1,604.72').first()).toBeVisible();
-  await expect(page.getByText('Monthly savings capacity')).toBeVisible();
-  await expect(page.getByRole('heading', { name: 'House deposit' })).toBeVisible();
+  await expect(page.getByText('Monthly capacity')).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Needs attention' })).toBeVisible();
   await expect(page.getByText('F-Type wheels refurbished')).toBeVisible();
 });
 
@@ -65,7 +65,7 @@ test('primary pages render with demo data', async ({ page }) => {
 });
 
 test('monthly savings capacity card opens recurring management', async ({ page }) => {
-  await page.getByRole('button', { name: 'Review recurring income and outgoings' }).click();
+  await page.getByRole('button', { name: /Recurring payments/ }).click();
   await expect(page.getByRole('heading', { name: 'Recurring payments' })).toBeVisible();
 });
 
