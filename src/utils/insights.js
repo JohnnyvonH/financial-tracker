@@ -64,6 +64,7 @@ export function generateInsights(transactions, budgets) {
   // INSIGHT 2: Budget warnings
   Object.entries(budgets).forEach(([category, budget]) => {
     const spent = thisMonthSpending[category] || 0;
+    if (!budget || budget <= 0) return;
     const percentage = (spent / budget) * 100;
     
     if (percentage >= 90 && percentage < 100) {
@@ -86,7 +87,7 @@ export function generateInsights(transactions, budgets) {
   const possibleSubscriptions = thisMonthTransactions.filter(t => 
     t.type === 'expense' && 
     subscriptionKeywords.some(keyword => 
-      t.description.toLowerCase().includes(keyword)
+      (t.description || '').toLowerCase().includes(keyword)
     )
   );
 
