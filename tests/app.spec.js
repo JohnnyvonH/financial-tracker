@@ -75,7 +75,7 @@ test('primary pages render with demo data', async ({ page }) => {
     ['Plan', 'Sell XK8'],
     ['Goals', 'Emergency fund'],
     ['Current Finances', 'MoneyBox'],
-    ['Reports', 'Financial Reports'],
+    ['Reports', 'Monthly reports'],
     ['Settings', 'Data Management'],
   ];
 

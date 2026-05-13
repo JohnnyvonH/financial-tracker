@@ -958,84 +958,14 @@ function App() {
     }
   };
 
-  // Calculate monthly statistics
-  const getMonthlyStats = () => {
-    const now = new Date();
-    const thisMonth = now.getMonth();
-    const thisYear = now.getFullYear();
-
-    const monthlyTransactions = data.transactions.filter(t => {
-      const tDate = new Date(t.date);
-      return tDate.getMonth() === thisMonth && tDate.getFullYear() === thisYear;
-    });
-
-    const monthlyIncome = monthlyTransactions
-      .filter(t => t.type === 'income')
-      .reduce((sum, t) => sum + t.amount, 0);
-
-    const monthlyExpenses = monthlyTransactions
-      .filter(t => t.type === 'expense')
-      .reduce((sum, t) => sum + t.amount, 0);
-
-    return { monthlyIncome, monthlyExpenses };
-  };
-
-  // Calculate last 30 days statistics
-  const getLast30DaysStats = () => {
-    const now = new Date();
-    const thirtyDaysAgo = new Date(now.getTime() - (30 * 24 * 60 * 60 * 1000));
-
-    const last30DaysTransactions = data.transactions.filter(t => {
-      const tDate = new Date(t.date);
-      return tDate >= thirtyDaysAgo && tDate <= now;
-    });
-
-    const last30DaysIncome = last30DaysTransactions
-      .filter(t => t.type === 'income')
-      .reduce((sum, t) => sum + t.amount, 0);
-
-    const last30DaysExpenses = last30DaysTransactions
-      .filter(t => t.type === 'expense')
-      .reduce((sum, t) => sum + t.amount, 0);
-
-    return { last30DaysIncome, last30DaysExpenses };
-  };
-
-  // Get current month spending by category
-  const getCurrentMonthSpending = () => {
-    const now = new Date();
-    const thisMonth = now.getMonth();
-    const thisYear = now.getFullYear();
-
-    const categorySpending = {};
-    
-    data.transactions
-      .filter(t => {
-        const tDate = new Date(t.date);
-        return t.type === 'expense' && 
-               tDate.getMonth() === thisMonth && 
-               tDate.getFullYear() === thisYear;
-      })
-      .forEach(transaction => {
-        const category = transaction.category || 'Other';
-        categorySpending[category] = (categorySpending[category] || 0) + transaction.amount;
-      });
-
-    return categorySpending;
-  };
-
-  const { monthlyIncome, monthlyExpenses } = getMonthlyStats();
-  const { last30DaysIncome, last30DaysExpenses } = getLast30DaysStats();
-  const currentMonthSpending = getCurrentMonthSpending();
-
   const pageMeta = {
     transactions: {
       title: 'Transactions',
       description: 'Review one-off income and expenses alongside recurring activity.',
     },
     budget: {
-      title: 'Budgets',
-      description: 'Compare spending against limits and tune your categories before they drift.',
+      title: 'Monthly Budget',
+      description: 'Plan around dependable income, known outgoings, and the capacity left each month.',
     },
     plan: {
       title: 'Plan',
@@ -1051,7 +981,7 @@ function App() {
     },
     reports: {
       title: 'Reports',
-      description: 'Turn historical spending into trends, exports, and decision-ready summaries.',
+      description: 'Review monthly income, outgoings, savings context, and current-month activity.',
     },
     settings: {
       title: 'Settings',
@@ -1146,10 +1076,11 @@ function App() {
 
           {view === 'budget' && (
             <Budget
-              transactions={data.transactions}
+              recurringTransactions={data.recurringTransactions}
+              latestSnapshot={data.netWorthSnapshots[0]}
               budgets={data.budgets}
-              onUpdateBudgets={updateBudgets}
               currency={currency}
+              onNavigate={setView}
             />
           )}
 
@@ -1207,8 +1138,9 @@ function App() {
             <ReportsPage
               transactions={data.transactions}
               goals={data.goals}
-              budgets={data.budgets}
-              currentMonthSpending={currentMonthSpending}
+              recurringTransactions={data.recurringTransactions}
+              planningItems={data.planningItems}
+              latestSnapshot={data.netWorthSnapshots[0]}
               currency={currency}
             />
           )}
