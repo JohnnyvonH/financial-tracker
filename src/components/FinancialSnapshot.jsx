@@ -63,6 +63,7 @@ export default function FinancialSnapshot({
   const [snapshotForm, setSnapshotForm] = useState(() => createEmptySnapshot(sections, today));
   const [isManagingTemplate, setIsManagingTemplate] = useState(false);
   const [sectionDrafts, setSectionDrafts] = useState(sections);
+  const [isSavingTemplate, setIsSavingTemplate] = useState(false);
 
   const latestSnapshot = netWorthSnapshots[0];
   const latestTotals = getSnapshotTotals(latestSnapshot);
@@ -106,9 +107,16 @@ export default function FinancialSnapshot({
     setIsManagingTemplate(true);
   };
 
-  const saveTemplate = () => {
+  const saveTemplate = async () => {
     const nextSections = normaliseSnapshotSections(sectionDrafts);
-    onUpdateSnapshotSections(nextSections);
+    setIsSavingTemplate(true);
+    const saved = await onUpdateSnapshotSections(nextSections);
+    setIsSavingTemplate(false);
+
+    if (!saved) {
+      return;
+    }
+
     resetFormForSections(nextSections);
     setIsManagingTemplate(false);
   };
@@ -310,7 +318,9 @@ export default function FinancialSnapshot({
 
               <div className="snapshot-template-footer">
                 <button className="btn btn-secondary" type="button" onClick={() => setIsManagingTemplate(false)}>Cancel</button>
-                <button className="btn btn-primary" type="button" onClick={saveTemplate}>Save template</button>
+                <button className="btn btn-primary" type="button" onClick={saveTemplate} disabled={isSavingTemplate}>
+                  {isSavingTemplate ? 'Saving...' : 'Save template'}
+                </button>
               </div>
             </div>
           )}

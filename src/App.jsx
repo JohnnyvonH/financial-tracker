@@ -2,6 +2,8 @@ import React, { useState, useEffect, useMemo, useRef } from 'react';
 import ErrorBoundary from './components/ErrorBoundary';
 import Header from './components/Header';
 import Dashboard from './components/Dashboard';
+import TransactionForm from './components/TransactionForm';
+import TransactionsPage from './components/TransactionsPage';
 import GoalForm from './components/GoalForm';
 import Goals from './components/Goals';
 import Budget from './components/Budget';
@@ -359,7 +361,7 @@ function App() {
       if (isDuplicate) {
         showToast('This transaction already exists!', 'warning');
         setSyncing(false);
-        return;
+        return false;
       }
 
       // If logged in, save to Supabase first
@@ -391,9 +393,11 @@ function App() {
         );
         setView('dashboard');
       }
+      return true;
     } catch (error) {
       console.error('Error adding transaction:', error);
       showToast('Failed to add transaction. Please try again.', 'error');
+      return false;
     } finally {
       setSyncing(false);
     }
@@ -478,9 +482,11 @@ function App() {
 
       showToast('Recurring transaction created successfully!', 'success');
       setView('recurring');
+      return true;
     } catch (error) {
       console.error('Error adding recurring transaction:', error);
       showToast('Failed to add recurring transaction. Please try again.', 'error');
+      return false;
     } finally {
       setSyncing(false);
     }
@@ -751,18 +757,26 @@ function App() {
     try {
       setSyncing(true);
       if (user && isConfigured && supabaseSync.isAvailable()) {
-        await supabaseSync.updateSnapshotSections(nextSections);
+        const synced = await supabaseSync.updateSnapshotSections(nextSections);
+        if (!synced) {
+          throw new Error('Cloud template save failed');
+        }
       }
 
-      await saveData({
+      const saved = await saveData({
         ...data,
         snapshotSections: nextSections
       });
+      if (!saved) {
+        throw new Error('Local template save failed');
+      }
 
       showToast('Current finances template updated.', 'success');
+      return true;
     } catch (error) {
       console.error('Error updating current finances template:', error);
       showToast('Failed to update template. Please try again.', 'error');
+      return false;
     } finally {
       setSyncing(false);
     }
@@ -775,7 +789,7 @@ function App() {
       const existing = data.recurringTransactions.find(r => r.id === id);
       if (!existing) {
         showToast('Recurring transaction not found.', 'error');
-        return;
+        return false;
       }
 
       const updatedRecurring = {
@@ -809,9 +823,11 @@ function App() {
 
       showToast('Recurring transaction updated successfully!', 'success');
       setView('recurring');
+      return true;
     } catch (error) {
       console.error('Error updating recurring transaction:', error);
       showToast('Failed to update recurring transaction. Please try again.', 'error');
+      return false;
     } finally {
       setSyncing(false);
     }
@@ -1013,6 +1029,10 @@ function App() {
   const currentMonthSpending = getCurrentMonthSpending();
 
   const pageMeta = {
+    transactions: {
+      title: 'Transactions',
+      description: 'Review one-off income and expenses alongside recurring activity.',
+    },
     budget: {
       title: 'Budgets',
       description: 'Compare spending against limits and tune your categories before they drift.',
@@ -1040,6 +1060,10 @@ function App() {
     'add-goal': {
       title: 'Add Savings Goal',
       description: 'Set a target, add a deadline, and track the next milestone.',
+    },
+    'add-transaction': {
+      title: 'Add Transaction',
+      description: 'Record one-off income or spending that is not part of your recurring plan.',
     },
     'add-recurring': {
       title: 'Add Recurring Item',
@@ -1129,6 +1153,14 @@ function App() {
             />
           )}
 
+          {view === 'transactions' && (
+            <TransactionsPage
+              transactions={data.transactions}
+              onDeleteTransaction={deleteTransaction}
+              currency={currency}
+            />
+          )}
+
           {view === 'plan' && (
             <FinancePlan
               planningItems={data.planningItems}
@@ -1185,6 +1217,13 @@ function App() {
             <GoalForm
               onSubmit={addGoal}
               onCancel={() => setView('dashboard')}
+            />
+          )}
+
+          {view === 'add-transaction' && (
+            <TransactionForm
+              onSubmit={addTransaction}
+              onCancel={() => setView('transactions')}
             />
           )}
 

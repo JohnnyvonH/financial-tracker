@@ -56,10 +56,12 @@ export default function RecurringPaymentsPage({
   const monthlyNet = summary.income - summary.outgoings;
 
   const handleSubmit = async (values) => {
-    if (editingRecurring) {
-      await onUpdateRecurring(editingRecurring.id, values);
-    } else {
-      await onAddRecurring(values);
+    const saved = editingRecurring
+      ? await onUpdateRecurring(editingRecurring.id, values)
+      : await onAddRecurring(values);
+
+    if (!saved) {
+      return;
     }
 
     setShowForm(false);
