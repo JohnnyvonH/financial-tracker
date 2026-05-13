@@ -44,6 +44,29 @@ test('dashboard shows savings-focused demo summary', async ({ page }) => {
   await expect(page.getByText('F-Type wheels refurbished')).toBeVisible();
 });
 
+test('dashboard softens funding gap when monthly capacity covers it', async ({ page }) => {
+  await seedDemoData(page, {
+    planningItems: [
+      {
+        id: 'plan-covered',
+        title: 'Covered service bill',
+        type: 'expense',
+        targetAmount: 500,
+        savedAmount: 0,
+        expectedValue: 0,
+        dueDate: '2026-06-15',
+        priority: 'medium',
+        status: 'planned',
+        notes: '',
+      },
+    ],
+  });
+  await page.goto('/financial-tracker/');
+
+  await expect(page.getByRole('heading', { name: 'Plan fits this month' })).toBeVisible();
+  await expect(page.getByText(/fits within your monthly capacity/)).toBeVisible();
+});
+
 test('primary pages render with demo data', async ({ page }) => {
   const pages = [
     ['Budgets', 'Housing'],

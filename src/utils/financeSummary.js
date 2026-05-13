@@ -265,10 +265,14 @@ export function getFinanceInsights({
   const insights = [];
 
   if (fundingGap > 0) {
+    const coveredByMonthlyCapacity = surplus >= fundingGap;
+
     insights.push({
-      tone: 'warning',
-      title: 'Funding gap to plan for',
-      message: `${fundingGap.toFixed(0)} still needs to be covered across upcoming commitments after saved funds and expected sales.`,
+      tone: coveredByMonthlyCapacity ? 'positive' : 'warning',
+      title: coveredByMonthlyCapacity ? 'Plan fits this month' : 'Funding gap to plan for',
+      message: coveredByMonthlyCapacity
+        ? `${fundingGap.toFixed(0)} still needs covering, but it fits within your monthly capacity of ${surplus.toFixed(0)}.`
+        : `${fundingGap.toFixed(0)} still needs to be covered across upcoming commitments after saved funds and expected sales.`,
     });
   } else if (planningItems.length > 0) {
     insights.push({
