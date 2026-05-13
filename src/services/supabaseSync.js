@@ -10,6 +10,53 @@ const normalizeRecurringTransaction = (item) => ({
   nextDate: item.nextDate || item.next_date || item.startDate || item.start_date,
 });
 
+const hasOwn = (object, key) => Object.prototype.hasOwnProperty.call(object, key);
+
+const addIfPresent = (payload, key, value) => {
+  if (value !== undefined) {
+    payload[key] = value;
+  }
+};
+
+const buildRecurringPayload = (item = {}, variant = 'active') => {
+  const payload = {};
+
+  addIfPresent(payload, 'type', item.type);
+  addIfPresent(payload, 'amount', item.amount !== undefined ? Number(item.amount) : undefined);
+  addIfPresent(payload, 'category', item.category);
+  if (hasOwn(item, 'description')) {
+    addIfPresent(payload, 'description', item.description || '');
+  }
+  addIfPresent(payload, 'frequency', item.frequency);
+  addIfPresent(payload, 'start_date', item.start_date || item.startDate || item.nextDate);
+
+  if (variant === 'is_active') {
+    if (hasOwn(item, 'end_date') || hasOwn(item, 'endDate')) {
+      addIfPresent(payload, 'end_date', hasOwn(item, 'end_date') ? item.end_date : item.endDate || null);
+    }
+    if (hasOwn(item, 'last_generated_date') || hasOwn(item, 'last_processed') || hasOwn(item, 'lastProcessed')) {
+      addIfPresent(payload, 'last_generated_date', item.last_generated_date || item.last_processed || item.lastProcessed || null);
+    }
+    if (hasOwn(item, 'is_active') || hasOwn(item, 'active')) {
+      payload.is_active = item.is_active ?? item.active ?? true;
+    }
+  } else {
+    if (hasOwn(item, 'last_processed') || hasOwn(item, 'lastProcessed') || hasOwn(item, 'last_generated_date')) {
+      addIfPresent(payload, 'last_processed', item.last_processed || item.lastProcessed || item.last_generated_date || null);
+    }
+    if (hasOwn(item, 'active') || hasOwn(item, 'is_active')) {
+      payload.active = item.active ?? item.is_active ?? true;
+    }
+  }
+
+  return payload;
+};
+
+const isMissingColumnError = (error) => (
+  error?.code === 'PGRST204' ||
+  /column .* does not exist|schema cache|Could not find .* column/i.test(error?.message || '')
+);
+
 /**
  * Supabase Sync Service
  * Handles all database operations and syncing with Supabase
@@ -424,22 +471,30 @@ class SupabaseSyncService {
   async addRecurringTransaction(recurring) {
     if (!this.isAvailable()) return null;
 
-    try {
-      const { data, error } = await supabase
-        .from('recurring_transactions')
-        .insert({
-          user_id: this.userId,
-          ...recurring,
-        })
-        .select()
-        .single();
+    for (const variant of ['is_active', 'active']) {
+      try {
+        const { data, error } = await supabase
+          .from('recurring_transactions')
+          .insert({
+            user_id: this.userId,
+            ...buildRecurringPayload(recurring, variant),
+          })
+          .select()
+          .single();
 
-      if (error) throw error;
-      return normalizeRecurringTransaction(data);
-    } catch (error) {
-      console.error('Error adding recurring transaction:', error);
-      return null;
+        if (error) throw error;
+        return normalizeRecurringTransaction(data);
+      } catch (error) {
+        if (variant === 'is_active' && isMissingColumnError(error)) {
+          continue;
+        }
+
+        console.error('Error adding recurring transaction:', error);
+        return null;
+      }
     }
+
+    return null;
   }
 
   /**
@@ -448,19 +503,27 @@ class SupabaseSyncService {
   async updateRecurringTransaction(recurringId, updates) {
     if (!this.isAvailable()) return false;
 
-    try {
-      const { error } = await supabase
-        .from('recurring_transactions')
-        .update(updates)
-        .eq('id', recurringId)
-        .eq('user_id', this.userId);
+    for (const variant of ['is_active', 'active']) {
+      try {
+        const { error } = await supabase
+          .from('recurring_transactions')
+          .update(buildRecurringPayload(updates, variant))
+          .eq('id', recurringId)
+          .eq('user_id', this.userId);
 
-      if (error) throw error;
-      return true;
-    } catch (error) {
-      console.error('Error updating recurring transaction:', error);
-      return false;
+        if (error) throw error;
+        return true;
+      } catch (error) {
+        if (variant === 'is_active' && isMissingColumnError(error)) {
+          continue;
+        }
+
+        console.error('Error updating recurring transaction:', error);
+        return false;
+      }
     }
+
+    return false;
   }
 
   /**

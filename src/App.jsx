@@ -69,11 +69,15 @@ function App() {
           const cloudData = await supabaseSync.fetchAllData();
           
           if (cloudData) {
-            // Check if this is first login - migrate local data
+            const localData = storageService.getData();
+
             if (cloudData.transactions.length === 0) {
-              const localData = storageService.getData();
-              
-              if (localData.transactions.length > 0 || localData.goals.length > 0) {
+              // Check if this is first login - migrate local data
+              if (
+                localData.transactions.length > 0 ||
+                localData.goals.length > 0 ||
+                localData.recurringTransactions.length > 0
+              ) {
                 showToast('Migrating your local data to cloud...', 'info');
                 const migrated = await supabaseSync.migrateLocalData(localData);
                 
