@@ -2,8 +2,6 @@ import React, { useState, useEffect, useMemo, useRef } from 'react';
 import ErrorBoundary from './components/ErrorBoundary';
 import Header from './components/Header';
 import Dashboard from './components/Dashboard';
-import TransactionsPage from './components/TransactionsPage';
-import TransactionForm from './components/TransactionForm';
 import GoalForm from './components/GoalForm';
 import Goals from './components/Goals';
 import Budget from './components/Budget';
@@ -973,10 +971,6 @@ function App() {
   const currentMonthSpending = getCurrentMonthSpending();
 
   const pageMeta = {
-    transactions: {
-      title: 'Transactions',
-      description: 'Review the ledger, find patterns, and keep every income or expense traceable.',
-    },
     budget: {
       title: 'Budgets',
       description: 'Compare spending against limits and tune your categories before they drift.',
@@ -1000,10 +994,6 @@ function App() {
     settings: {
       title: 'Settings',
       description: 'Manage currency, backups, imports, and local data controls.',
-    },
-    'add-transaction': {
-      title: 'Add Transaction',
-      description: 'Capture income or spend while the details are still fresh.',
     },
     'add-goal': {
       title: 'Add Savings Goal',
@@ -1083,21 +1073,8 @@ function App() {
           {view === 'dashboard' && (
             <Dashboard
               data={data}
-              monthlyIncome={monthlyIncome}
-              monthlyExpenses={monthlyExpenses}
-              last30DaysIncome={last30DaysIncome}
-              last30DaysExpenses={last30DaysExpenses}
-              currentMonthSpending={currentMonthSpending}
               currency={currency}
               onNavigate={setView}
-            />
-          )}
-
-          {view === 'transactions' && (
-            <TransactionsPage
-              transactions={data.transactions}
-              onDeleteTransaction={deleteTransaction}
-              currency={currency}
             />
           )}
 
@@ -1157,13 +1134,6 @@ function App() {
               budgets={data.budgets}
               currentMonthSpending={currentMonthSpending}
               currency={currency}
-            />
-          )}
-
-          {view === 'add-transaction' && (
-            <TransactionForm
-              onSubmit={addTransaction}
-              onCancel={() => setView('dashboard')}
             />
           )}
 

@@ -46,7 +46,6 @@ test('dashboard shows savings-focused demo summary', async ({ page }) => {
 
 test('primary pages render with demo data', async ({ page }) => {
   const pages = [
-    ['Transactions', 'Rent contribution'],
     ['Budgets', 'Housing'],
     ['Recurring', 'Monthly paycheck'],
     ['Plan', 'Sell XK8'],

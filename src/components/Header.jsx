@@ -1,11 +1,10 @@
 import React from 'react';
-import { Home, Plus, DollarSign, TrendingUp, Settings, List, RefreshCw, BarChart3, CalendarClock, WalletCards, Moon, Sun } from 'lucide-react';
+import { Home, DollarSign, TrendingUp, Settings, RefreshCw, BarChart3, CalendarClock, WalletCards, Moon, Sun } from 'lucide-react';
 import AuthButton from './AuthButton';
 
 export default function Header({ view, setView, isDarkMode, onToggleDarkMode }) {
   const navItems = [
     { id: 'dashboard', label: 'Dashboard', icon: Home },
-    { id: 'transactions', label: 'Transactions', icon: List },
     { id: 'budget', label: 'Budgets', icon: DollarSign },
     { id: 'recurring', label: 'Recurring', icon: RefreshCw },
     { id: 'plan', label: 'Plan', icon: CalendarClock },
@@ -16,7 +15,7 @@ export default function Header({ view, setView, isDarkMode, onToggleDarkMode }) 
   ];
 
   const actionButtons = [
-    { id: 'add-transaction', label: 'Transaction', icon: Plus },
+    { id: 'snapshot', label: 'Current', icon: WalletCards },
     { id: 'add-goal', label: 'Goal', icon: TrendingUp },
     { id: 'add-recurring', label: 'Recurring', icon: RefreshCw },
   ];
