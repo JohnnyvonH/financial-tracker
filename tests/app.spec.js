@@ -128,6 +128,18 @@ test('empty goals page has an add goal button', async ({ page }) => {
   await expect(page.getByRole('heading', { name: 'Add Savings Goal' })).toBeVisible();
 });
 
+test('savings goals can be updated by entering a current amount', async ({ page }) => {
+  const nav = page.getByRole('navigation', { name: 'Primary navigation' });
+  await nav.getByRole('button', { name: 'Goals', exact: true }).click();
+
+  const emergencyGoal = page.locator('.goal-card').filter({ hasText: 'Emergency fund' });
+  await emergencyGoal.getByLabel('Current saved').fill('8000');
+  await emergencyGoal.getByLabel('Current saved').press('Enter');
+
+  await expect(emergencyGoal.getByText(/8,000\.00/)).toBeVisible();
+  await expect(emergencyGoal.getByText(/4,000\.00 remaining/)).toBeVisible();
+});
+
 test('financial snapshot demo values calculate current cash correctly', async ({ page }) => {
   const nav = page.getByRole('navigation', { name: 'Primary navigation' });
   await nav.getByRole('button', { name: 'Current Finances', exact: true }).click();

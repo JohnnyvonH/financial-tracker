@@ -3,6 +3,16 @@ import { Target, X, Plus, Minus } from 'lucide-react';
 import { formatCurrency } from '../utils/currency';
 
 export default function Goals({ goals, onAddGoal, onUpdateGoal, onDeleteGoal, currency = 'USD' }) {
+  const handleManualCurrentChange = (goal, value) => {
+    const nextCurrent = Math.max(0, Number(value || 0));
+
+    if (Number.isNaN(nextCurrent) || nextCurrent === goal.current) {
+      return;
+    }
+
+    onUpdateGoal(goal.id, nextCurrent);
+  };
+
   const handleIncrement = (goalId, currentAmount, increment = 100) => {
     onUpdateGoal(goalId, currentAmount + increment);
   };
@@ -78,6 +88,23 @@ export default function Goals({ goals, onAddGoal, onUpdateGoal, onDeleteGoal, cu
                   <span className="goal-remaining">
                     {formatCurrency(Math.max(0, goal.target - goal.current), currency)} remaining
                   </span>
+                </div>
+
+                <div className="goal-manual-entry">
+                  <label htmlFor={`goal-current-${goal.id}`}>Current saved</label>
+                  <input
+                    id={`goal-current-${goal.id}`}
+                    type="number"
+                    min="0"
+                    step="0.01"
+                    defaultValue={goal.current}
+                    onBlur={(event) => handleManualCurrentChange(goal, event.target.value)}
+                    onKeyDown={(event) => {
+                      if (event.key === 'Enter') {
+                        event.currentTarget.blur();
+                      }
+                    }}
+                  />
                 </div>
                 
                 <div className="goal-controls">
