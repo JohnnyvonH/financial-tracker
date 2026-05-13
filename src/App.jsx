@@ -683,6 +683,32 @@ function App() {
     }
   };
 
+  const updatePlanningItem = async (id, updates) => {
+    try {
+      setSyncing(true);
+      let savedItem = null;
+      if (user && isConfigured && supabaseSync.isAvailable()) {
+        savedItem = await supabaseSync.updatePlanningItem(id, updates);
+      }
+
+      await saveData({
+        ...data,
+        planningItems: data.planningItems.map(item => (
+          item.id === id
+            ? { ...item, ...updates, ...(savedItem || {}), id }
+            : item
+        ))
+      });
+
+      showToast('Plan item updated successfully!', 'success');
+    } catch (error) {
+      console.error('Error updating plan item:', error);
+      showToast('Failed to update plan item. Please try again.', 'error');
+    } finally {
+      setSyncing(false);
+    }
+  };
+
   const deletePlanningItem = async (id) => {
     if (!confirm('Delete this plan item?')) return;
 
@@ -1091,6 +1117,7 @@ function App() {
             <FinancePlan
               planningItems={data.planningItems}
               onAddPlanningItem={addPlanningItem}
+              onUpdatePlanningItem={updatePlanningItem}
               onDeletePlanningItem={deletePlanningItem}
               currency={currency}
             />
@@ -1110,6 +1137,7 @@ function App() {
           {view === 'goals' && (
             <Goals
               goals={data.goals}
+              onAddGoal={() => setView('add-goal')}
               onUpdateGoal={updateGoalProgress}
               onDeleteGoal={deleteGoal}
               currency={currency}

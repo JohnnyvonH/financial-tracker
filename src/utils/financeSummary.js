@@ -8,6 +8,12 @@ const getRecurringType = (item = {}) => String(item.type || '').toLowerCase();
 
 const hasValue = (value) => value !== undefined && value !== null && value !== '';
 
+const getPlanningValue = (item = {}) => (
+  item.type === 'asset-sale'
+    ? toNumber(item.expectedValue || item.targetAmount)
+    : toNumber(item.targetAmount)
+);
+
 const parseDateInput = (dateString) => {
   if (!dateString) return null;
   const [year, month, day] = String(dateString).split('-').map(Number);
@@ -144,9 +150,9 @@ export function getPlanSummary(planningItems = []) {
     }
 
     if (item.type === 'asset-sale') {
-      summary.expectedIncome += toNumber(item.expectedValue);
+      summary.expectedIncome += getPlanningValue(item);
     } else {
-      summary.upcomingCosts += toNumber(item.targetAmount);
+      summary.upcomingCosts += getPlanningValue(item);
       summary.alreadySaved += toNumber(item.savedAmount);
     }
 
@@ -179,9 +185,9 @@ export function getCommitmentProjection(planningItems = [], snapshotTotals = {},
 
   const summary = commitments.reduce((result, item) => {
     if (item.type === 'asset-sale') {
-      result.assetSales += toNumber(item.expectedValue);
+      result.assetSales += getPlanningValue(item);
     } else {
-      result.costs += Math.max(toNumber(item.targetAmount) - toNumber(item.savedAmount), 0);
+      result.costs += Math.max(getPlanningValue(item) - toNumber(item.savedAmount), 0);
     }
     return result;
   }, { costs: 0, assetSales: 0 });

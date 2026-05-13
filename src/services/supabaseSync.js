@@ -557,6 +557,26 @@ class SupabaseSyncService {
     }
   }
 
+  async updatePlanningItem(itemId, item) {
+    if (!this.isAvailable()) return null;
+
+    try {
+      const { data, error } = await supabase
+        .from('planning_items')
+        .update(this.transformPlanningItemToSupabase(item))
+        .eq('id', itemId)
+        .eq('user_id', this.userId)
+        .select()
+        .single();
+
+      if (error) throw error;
+      return this.transformPlanningItemFromSupabase(data);
+    } catch (error) {
+      console.error('Error updating planning item:', error);
+      return null;
+    }
+  }
+
   async deletePlanningItem(itemId) {
     if (!this.isAvailable()) return false;
 
