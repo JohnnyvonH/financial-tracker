@@ -815,6 +815,9 @@ function App() {
       let savedSnapshot = null;
       if (user && isConfigured && supabaseSync.isAvailable()) {
         savedSnapshot = await supabaseSync.addNetWorthSnapshot(snapshotToSave);
+        if (!savedSnapshot) {
+          throw new Error('Cloud snapshot save failed');
+        }
       }
 
       const newSnapshot = savedSnapshot || {
