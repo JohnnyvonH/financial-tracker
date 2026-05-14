@@ -1,7 +1,8 @@
-import React, { useMemo, useState } from 'react';
-import { CheckCircle2, ChevronDown, ChevronUp, Info, Plus, SlidersHorizontal, Trash2 } from 'lucide-react';
+import React, { useMemo, useRef, useState } from 'react';
+import { CheckCircle2, ChevronDown, ChevronUp, Info, Plus, SlidersHorizontal, Trash2, Upload } from 'lucide-react';
 import { formatCurrency } from '../utils/currency';
 import { getSnapshotTotals } from '../utils/financeSummary';
+import { parseSnapshotCSV } from '../utils/snapshotImport';
 import {
   SNAPSHOT_ENTRY_TYPES,
   applyLegacySnapshotFields,
@@ -56,6 +57,7 @@ export default function FinancialSnapshot({
   snapshotSections,
   onUpdateSnapshotSections,
   onAddNetWorthSnapshot,
+  onImportNetWorthSnapshots,
   onDeleteNetWorthSnapshot,
   currency,
 }) {
@@ -64,6 +66,10 @@ export default function FinancialSnapshot({
   const [isManagingTemplate, setIsManagingTemplate] = useState(false);
   const [sectionDrafts, setSectionDrafts] = useState(sections);
   const [isSavingTemplate, setIsSavingTemplate] = useState(false);
+  const [importPreview, setImportPreview] = useState(null);
+  const [importErrors, setImportErrors] = useState([]);
+  const [isImporting, setIsImporting] = useState(false);
+  const importInputRef = useRef(null);
 
   const latestSnapshot = netWorthSnapshots[0];
   const latestTotals = getSnapshotTotals(latestSnapshot);
@@ -100,6 +106,51 @@ export default function FinancialSnapshot({
 
     onAddNetWorthSnapshot(snapshot);
     setSnapshotForm(createEmptySnapshot(sections, today));
+  };
+
+  const handleImportFile = (event) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = () => {
+      try {
+        const result = parseSnapshotCSV(reader.result, sections);
+        const existingDates = new Set(netWorthSnapshots.map((snapshot) => snapshot.date));
+        const duplicateCount = result.snapshots.filter((snapshot) => existingDates.has(snapshot.date)).length;
+
+        setImportPreview({
+          fileName: file.name,
+          snapshots: result.snapshots,
+          duplicateCount,
+        });
+        setImportErrors(result.errors);
+      } catch (error) {
+        setImportPreview(null);
+        setImportErrors([error.message]);
+      } finally {
+        event.target.value = '';
+      }
+    };
+    reader.onerror = () => {
+      setImportPreview(null);
+      setImportErrors(['Could not read the selected file.']);
+      event.target.value = '';
+    };
+    reader.readAsText(file);
+  };
+
+  const importSnapshots = async () => {
+    if (!importPreview?.snapshots.length) return;
+
+    setIsImporting(true);
+    const imported = await onImportNetWorthSnapshots(importPreview.snapshots);
+    setIsImporting(false);
+
+    if (imported) {
+      setImportPreview(null);
+      setImportErrors([]);
+    }
   };
 
   const openTemplateManager = () => {
@@ -369,6 +420,52 @@ export default function FinancialSnapshot({
         </section>
 
         <aside className="snapshot-rules">
+          <section className="panel snapshot-import-panel">
+            <h2>Import snapshots</h2>
+            <p>Upload a CSV with a Date column and account columns matching your template or starter workbook headers.</p>
+            <input
+              ref={importInputRef}
+              type="file"
+              accept=".csv,text/csv"
+              className="hidden"
+              onChange={handleImportFile}
+            />
+            <button className="btn btn-secondary" type="button" onClick={() => importInputRef.current?.click()}>
+              <Upload size={16} />Import CSV
+            </button>
+
+            {importPreview && (
+              <div className="snapshot-import-preview">
+                <strong>{importPreview.snapshots.length} row{importPreview.snapshots.length === 1 ? '' : 's'} ready</strong>
+                <span>{importPreview.fileName}</span>
+                {importPreview.duplicateCount > 0 && (
+                  <p>{importPreview.duplicateCount} existing date{importPreview.duplicateCount === 1 ? '' : 's'} will be replaced.</p>
+                )}
+                <div className="snapshot-import-dates">
+                  {importPreview.snapshots.slice(0, 4).map((snapshot) => (
+                    <span key={snapshot.id}>{snapshot.date}</span>
+                  ))}
+                </div>
+                <div className="planning-form-actions">
+                  <button className="btn btn-primary" type="button" onClick={importSnapshots} disabled={isImporting}>
+                    {isImporting ? 'Importing...' : 'Save imported snapshots'}
+                  </button>
+                  <button className="btn btn-secondary" type="button" onClick={() => setImportPreview(null)}>
+                    Cancel
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {importErrors.length > 0 && (
+              <div className="snapshot-import-errors">
+                {importErrors.map((error) => (
+                  <p key={error}>{error}</p>
+                ))}
+              </div>
+            )}
+          </section>
+
           <section className="panel">
             <h2>Calculation rules</h2>
             <ul className="rule-list">

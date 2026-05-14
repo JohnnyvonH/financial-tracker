@@ -1,4 +1,5 @@
 import { expect, test } from '@playwright/test';
+import path from 'node:path';
 import { seedDemoData } from './helpers/seedDemoData.js';
 
 test.beforeEach(async ({ page }) => {
@@ -44,6 +45,25 @@ test('current finances template can add a custom bank and card', async ({ page }
   await expect(page.getByText('Chase current account', { exact: true }).first()).toBeVisible();
   await expect(page.getByText('Barclaycard', { exact: true }).first()).toBeVisible();
   await expect(page.getByText('750.00').first()).toBeVisible();
+});
+
+test('current finances can import snapshot history from CSV', async ({ page }) => {
+  const nav = page.getByRole('navigation', { name: 'Primary navigation' });
+  await nav.getByRole('button', { name: 'Current Finances', exact: true }).click();
+
+  const fileChooserPromise = page.waitForEvent('filechooser');
+  await page.getByRole('button', { name: 'Import CSV' }).click();
+  const fileChooser = await fileChooserPromise;
+  await fileChooser.setFiles(path.resolve('tests/fixtures/current-finances-import.csv'));
+
+  await expect(page.getByText('2 rows ready')).toBeVisible();
+  await expect(page.getByText('2026-06-12')).toBeVisible();
+
+  await page.getByRole('button', { name: 'Save imported snapshots' }).click();
+
+  await expect(page.getByText('Imported July snapshot')).toBeVisible();
+  await expect(page.getByText('Imported June snapshot')).toBeVisible();
+  await expect(page.getByRole('cell', { name: '2026-07-12', exact: true })).toBeVisible();
 });
 
 test('dashboard shows savings-focused demo summary', async ({ page }) => {
