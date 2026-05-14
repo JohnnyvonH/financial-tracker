@@ -11,6 +11,7 @@ import {
 } from 'lucide-react';
 import { formatCurrency } from '../utils/currency';
 import { exportGoalsToCSV, exportMonthlyFlowToCSV, exportToCSV } from '../utils/export';
+import NetWorthTrendChart from './NetWorthTrendChart';
 import {
   getCommitmentProjection,
   getGoalSummary,
@@ -41,6 +42,7 @@ export default function ReportsPage({
   goals = [],
   recurringTransactions = [],
   planningItems = [],
+  netWorthSnapshots = [],
   latestSnapshot,
   currency = 'USD',
 }) {
@@ -222,6 +224,8 @@ export default function ReportsPage({
           </div>
         </section>
       </section>
+
+      <NetWorthTrendChart snapshots={netWorthSnapshots} currency={currency} />
 
       <section className="grid grid-2 gap-6">
         <section className="card">
