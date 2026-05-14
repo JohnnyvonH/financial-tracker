@@ -1,7 +1,7 @@
 {
   "name": "financial-tracker",
   "private": true,
-  "version": "1.0.0",
+  "version": "1.1.0",
   "type": "module",
   "homepage": "https://github.com/JohnnyvonH/financial-tracker",
   "scripts": {
@@ -9,7 +9,7 @@
     "build": "vite build",
     "preview": "vite preview",
     "lint": "eslint . --ext js,jsx --report-unused-disable-directives --max-warnings 0",
-    "test:unit": "vitest run tests/finance-utils.test.js",
+    "test:unit": "vitest run",
     "test:e2e": "playwright test",
     "screenshots": "playwright test tests/screenshots.spec.js --project=chromium",
     "predeploy": "npm run build",

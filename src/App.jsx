@@ -485,9 +485,11 @@ function App() {
       });
 
       showToast('Budgets updated successfully!', 'success');
+      return true;
     } catch (error) {
       console.error('Error updating budgets:', error);
       showToast('Failed to update budgets. Please try again.', 'error');
+      return false;
     } finally {
       setSyncing(false);
     }

@@ -113,7 +113,7 @@ export default function Budget({
       [category]: amount,
     });
 
-    if (saved !== false) {
+    if (saved === true) {
       setLimitCategory('');
       setLimitAmount('');
     }
