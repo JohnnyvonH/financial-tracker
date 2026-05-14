@@ -16,6 +16,10 @@ test('reports show net worth trend from current finance snapshots', async ({ pag
   await expect(page.getByText('Latest available assets')).toBeVisible();
   await expect(page.getByText('House deposit access').first()).toBeVisible();
   await expect(page.getByRole('img', { name: 'Net worth trend chart' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Planning exposure' })).toBeVisible();
+  await expect(page.getByText('Upcoming costs after saved funds')).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Month-over-month check' })).toBeVisible();
+  await expect(page.getByText('Expense change')).toBeVisible();
 });
 
 test('current finances template can add a custom bank and card', async ({ page }) => {

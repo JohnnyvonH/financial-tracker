@@ -19,6 +19,7 @@ import {
   getRecurringMonthlySummary,
   getSnapshotTotals,
 } from '../utils/financeSummary';
+import { getMonthlyTransactionComparison, getPlanningReportSummary } from '../utils/reporting';
 
 const isActiveRecurring = (item) => item.active !== false && item.is_active !== false;
 
@@ -34,6 +35,19 @@ function ReportMetric({ label, value, detail, icon: Icon, tone = 'info' }) {
         {detail && <p>{detail}</p>}
       </div>
     </article>
+  );
+}
+
+function DeltaValue({ value, currency, inverse = false }) {
+  const isPositive = value >= 0;
+  const positiveTone = inverse ? 'danger' : 'positive';
+  const negativeTone = inverse ? 'positive' : 'danger';
+  const tone = isPositive ? positiveTone : negativeTone;
+
+  return (
+    <strong className={`report-delta report-delta-${tone}`}>
+      {isPositive ? '+' : '-'}{formatCurrency(Math.abs(value), currency)}
+    </strong>
   );
 }
 
@@ -53,6 +67,8 @@ export default function ReportsPage({
   const activeRecurring = recurringTransactions.filter(isActiveRecurring);
   const snapshotTotals = getSnapshotTotals(latestSnapshot);
   const goalSummary = getGoalSummary(goals);
+  const planningSummary = getPlanningReportSummary(planningItems);
+  const transactionComparison = getMonthlyTransactionComparison(transactions);
   const commitmentProjection = getCommitmentProjection(planningItems.filter((item) => item.type !== 'saving'), snapshotTotals, 90);
   const surplusTone = monthlySummary.surplus >= 0 ? 'positive' : 'danger';
   const topOutgoings = activeRecurring
@@ -226,6 +242,56 @@ export default function ReportsPage({
       </section>
 
       <NetWorthTrendChart snapshots={netWorthSnapshots} currency={currency} />
+
+      <section className="grid grid-2 gap-6 report-analysis-grid">
+        <section className="card">
+          <h3 className="text-xl font-semibold mb-4" style={{ color: 'var(--text-primary)' }}>Planning exposure</h3>
+          <div className="report-analysis-list">
+            <article>
+              <span>Upcoming costs after saved funds</span>
+              <strong>{formatCurrency(planningSummary.upcomingCosts, currency)}</strong>
+            </article>
+            <article>
+              <span>Expected asset sales</span>
+              <strong>{formatCurrency(planningSummary.expectedAssetSales, currency)}</strong>
+            </article>
+            <article>
+              <span>Open savings target gap</span>
+              <strong>{formatCurrency(planningSummary.savingsTargets, currency)}</strong>
+            </article>
+            <article>
+              <span>High priority items</span>
+              <strong>{planningSummary.highPriority}</strong>
+            </article>
+          </div>
+          <p className="report-analysis-note">
+            {planningSummary.undated > 0
+              ? `${planningSummary.undated} open item${planningSummary.undated === 1 ? '' : 's'} still need a date for projection accuracy.`
+              : 'All open planning items are dated.'}
+          </p>
+        </section>
+
+        <section className="card">
+          <h3 className="text-xl font-semibold mb-4" style={{ color: 'var(--text-primary)' }}>Month-over-month check</h3>
+          <div className="report-comparison-grid">
+            <article>
+              <span>Income change</span>
+              <DeltaValue value={transactionComparison.deltas.income} currency={currency} />
+            </article>
+            <article>
+              <span>Expense change</span>
+              <DeltaValue value={transactionComparison.deltas.expenses} currency={currency} inverse />
+            </article>
+            <article>
+              <span>Net movement</span>
+              <DeltaValue value={transactionComparison.deltas.net} currency={currency} />
+            </article>
+          </div>
+          <p className="report-analysis-note">
+            {transactionComparison.current.count} current-month transaction{transactionComparison.current.count === 1 ? '' : 's'} versus {transactionComparison.previous.count} last month.
+          </p>
+        </section>
+      </section>
 
       <section className="grid grid-2 gap-6">
         <section className="card">
