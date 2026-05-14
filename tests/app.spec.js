@@ -18,10 +18,10 @@ test('reports show net worth trend from current finance snapshots', async ({ pag
   await expect(page.getByRole('img', { name: 'Net worth trend chart' })).toBeVisible();
   await expect(page.getByRole('heading', { name: 'Planning exposure' })).toBeVisible();
   await expect(page.getByText('Upcoming costs after saved funds')).toBeVisible();
-  await expect(page.getByRole('heading', { name: 'Month-over-month check' })).toBeVisible();
-  await expect(page.getByText('Expense change')).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Monthly planning basis' })).toBeVisible();
+  await expect(page.getByText('Recurring income', { exact: true })).toBeVisible();
   await expect(page.getByRole('heading', { name: 'Insight radar' })).toBeVisible();
-  await expect(page.getByText('Housing budget pressure')).toBeVisible();
+  await expect(page.getByText('Upcoming plan is funded')).toBeVisible();
 });
 
 test('current finances template can add a custom bank and card', async ({ page }) => {
@@ -106,7 +106,6 @@ test('dashboard softens funding gap when monthly capacity covers it', async ({ p
 
 test('primary pages render with demo data', async ({ page }) => {
   const pages = [
-    ['Transactions', 'Monthly paycheck'],
     ['Budgets', 'Housing'],
     ['Recurring', 'Monthly paycheck'],
     ['Plan', 'Sell XK8'],
@@ -132,13 +131,6 @@ test('destructive settings actions use app confirmation dialog', async ({ page }
   await expect(page.getByRole('dialog', { name: 'Clear all local data?' })).toBeVisible();
   await page.getByRole('button', { name: 'Cancel' }).click();
   await expect(page.getByRole('dialog', { name: 'Clear all local data?' })).toHaveCount(0);
-});
-
-test('transaction entry is reachable from quick actions', async ({ page }) => {
-  await page.getByRole('button', { name: 'Add Transaction' }).click();
-
-  await expect(page.locator('h1', { hasText: 'Add Transaction' })).toBeVisible();
-  await expect(page.getByPlaceholder('0.00')).toBeVisible();
 });
 
 test('monthly savings capacity card opens recurring management', async ({ page }) => {

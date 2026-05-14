@@ -13,7 +13,7 @@ import {
   WalletCards,
 } from 'lucide-react';
 import { formatCurrency } from '../utils/currency';
-import { exportGoalsToCSV, exportMonthlyFlowToCSV, exportToCSV } from '../utils/export';
+import { exportGoalsToCSV, exportMonthlyFlowToCSV } from '../utils/export';
 import NetWorthTrendChart from './NetWorthTrendChart';
 import {
   getCommitmentProjection,
@@ -23,7 +23,7 @@ import {
   getRecurringMonthlySummary,
   getSnapshotTotals,
 } from '../utils/financeSummary';
-import { getMonthlyTransactionComparison, getPlanningReportSummary } from '../utils/reporting';
+import { getPlanningReportSummary } from '../utils/reporting';
 
 const isActiveRecurring = (item) => item.active !== false && item.is_active !== false;
 
@@ -42,19 +42,6 @@ function ReportMetric({ label, value, detail, icon: Icon, tone = 'info' }) {
   );
 }
 
-function DeltaValue({ value, currency, inverse = false }) {
-  const isPositive = value >= 0;
-  const positiveTone = inverse ? 'danger' : 'positive';
-  const negativeTone = inverse ? 'positive' : 'danger';
-  const tone = isPositive ? positiveTone : negativeTone;
-
-  return (
-    <strong className={`report-delta report-delta-${tone}`}>
-      {isPositive ? '+' : '-'}{formatCurrency(Math.abs(value), currency)}
-    </strong>
-  );
-}
-
 function InsightIcon({ tone }) {
   if (tone === 'positive') return <CheckCircle2 size={18} />;
   if (tone === 'warning' || tone === 'danger') return <AlertTriangle size={18} />;
@@ -62,9 +49,7 @@ function InsightIcon({ tone }) {
 }
 
 export default function ReportsPage({
-  transactions = [],
   goals = [],
-  budgets = {},
   recurringTransactions = [],
   planningItems = [],
   netWorthSnapshots = [],
@@ -79,14 +64,11 @@ export default function ReportsPage({
   const snapshotTotals = getSnapshotTotals(latestSnapshot);
   const goalSummary = getGoalSummary(goals);
   const planningSummary = getPlanningReportSummary(planningItems);
-  const transactionComparison = getMonthlyTransactionComparison(transactions);
   const commitmentProjection = getCommitmentProjection(planningItems.filter((item) => item.type !== 'saving'), snapshotTotals, 90);
   const insights = getFinanceInsights({
     balance: snapshotTotals.maxAvailableCash,
     monthlyIncome: monthlySummary.income,
     monthlyExpenses: monthlySummary.outgoings,
-    budgets,
-    transactions,
     planningItems: planningItems.filter((item) => item.type !== 'saving'),
     goals,
     netWorthSnapshots,
@@ -101,23 +83,6 @@ export default function ReportsPage({
     .sort((a, b) => b.monthlyAmount - a.monthlyAmount)
     .slice(0, 8);
 
-  const recentTransactions = transactions.filter((transaction) => {
-    const date = new Date(transaction.date);
-    const now = new Date();
-    const start = new Date(now.getFullYear(), now.getMonth(), 1);
-    return date >= start && date <= now;
-  });
-
-  const recentTransactionTotals = recentTransactions.reduce((summary, transaction) => {
-    if (transaction.type === 'income') {
-      summary.income += Number(transaction.amount || 0);
-    } else {
-      summary.expenses += Number(transaction.amount || 0);
-    }
-
-    return summary;
-  }, { income: 0, expenses: 0 });
-
   const handleExport = (type) => {
     const timestamp = new Date().toISOString().split('T')[0];
 
@@ -127,10 +92,6 @@ export default function ReportsPage({
         latestSnapshot,
         monthlySummary,
       }, `monthly-flow-${timestamp}.csv`);
-    }
-
-    if (type === 'transactions') {
-      return exportToCSV(recentTransactions, `current-month-transactions-${timestamp}.csv`);
     }
 
     if (type === 'goals') {
@@ -162,15 +123,6 @@ export default function ReportsPage({
             >
               <Download size={16} />
               Export Monthly Flow CSV
-            </button>
-            <button
-              type="button"
-              onClick={() => handleExport('transactions')}
-              className="btn text-sm"
-              disabled={recentTransactions.length === 0}
-            >
-              <Download size={16} />
-              Export Current Month CSV
             </button>
             <button
               type="button"
@@ -293,23 +245,23 @@ export default function ReportsPage({
         </section>
 
         <section className="card">
-          <h3 className="text-xl font-semibold mb-4" style={{ color: 'var(--text-primary)' }}>Month-over-month check</h3>
+          <h3 className="text-xl font-semibold mb-4" style={{ color: 'var(--text-primary)' }}>Monthly planning basis</h3>
           <div className="report-comparison-grid">
             <article>
-              <span>Income change</span>
-              <DeltaValue value={transactionComparison.deltas.income} currency={currency} />
+              <span>Recurring income</span>
+              <strong>{formatCurrency(monthlySummary.recurringIncome, currency)}</strong>
             </article>
             <article>
-              <span>Expense change</span>
-              <DeltaValue value={transactionComparison.deltas.expenses} currency={currency} inverse />
+              <span>Recurring outgoings</span>
+              <strong>{formatCurrency(monthlySummary.recurringExpenses, currency)}</strong>
             </article>
             <article>
-              <span>Net movement</span>
-              <DeltaValue value={transactionComparison.deltas.net} currency={currency} />
+              <span>Snapshot commitments</span>
+              <strong>{formatCurrency(monthlySummary.moneyboxMonthly, currency)}</strong>
             </article>
           </div>
           <p className="report-analysis-note">
-            {transactionComparison.current.count} current-month transaction{transactionComparison.current.count === 1 ? '' : 's'} versus {transactionComparison.previous.count} last month.
+            Reports now use recurring payments and current-finance snapshots as the monthly planning baseline.
           </p>
         </section>
       </section>
@@ -350,26 +302,6 @@ export default function ReportsPage({
           )}
         </section>
 
-        <section className="card">
-          <h3 className="text-xl font-semibold mb-4" style={{ color: 'var(--text-primary)' }}>Current-month transaction check</h3>
-          <div className="grid grid-2 gap-6">
-            <div>
-              <div className="text-sm mb-1" style={{ color: 'var(--text-secondary)' }}>Income logged</div>
-              <div className="text-xl font-bold" style={{ color: 'var(--success)' }}>
-                {formatCurrency(recentTransactionTotals.income, currency)}
-              </div>
-            </div>
-            <div>
-              <div className="text-sm mb-1" style={{ color: 'var(--text-secondary)' }}>Expenses logged</div>
-              <div className="text-xl font-bold" style={{ color: 'var(--danger)' }}>
-                {formatCurrency(recentTransactionTotals.expenses, currency)}
-              </div>
-            </div>
-          </div>
-          <p className="mt-4" style={{ color: 'var(--text-secondary)' }}>
-            {recentTransactions.length} transaction{recentTransactions.length === 1 ? '' : 's'} logged this month.
-          </p>
-        </section>
       </section>
     </div>
   );

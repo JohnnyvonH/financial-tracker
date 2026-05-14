@@ -27,7 +27,7 @@ The current desktop design baseline is captured with the demo account in `docs/s
 ## Strengths
 
 - Dense dashboard layout supports repeated financial review.
-- Navigation is direct: dashboard, transactions, budget, plan, reports, settings.
+- Navigation is direct: dashboard, recurring payments, budget, plan, reports, current finances, goals, and settings.
 - Color semantics are understandable: green for positive, red for spending or deletion, amber for warnings.
 - Cards and tables make financial data scannable.
 - Mobile rules already collapse key grids.
@@ -43,7 +43,7 @@ The current desktop design baseline is captured with the demo account in `docs/s
 ## Overhaul Direction
 
 - Keep the dark professional financial theme, but make it calmer and more ledger-like.
-- Use compact tables for transactions, snapshots, and recurring obligations.
+- Use compact tables for snapshots and recurring obligations.
 - Promote planning insights into the dashboard once Plan data exists.
 - Prefer segmented controls, icon buttons, and compact forms over large decorative panels.
 - Add a Vercel deployment path with preview environments for design review.

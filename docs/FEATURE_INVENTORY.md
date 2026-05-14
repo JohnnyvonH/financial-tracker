@@ -4,8 +4,7 @@ Last updated: 2026-05-12
 
 ## Implemented
 
-- Dashboard KPIs for balance, monthly income, monthly expenses, and recent activity.
-- Transaction entry, duplicate prevention, transaction list, and deletion.
+- Dashboard KPIs for balance, monthly income, monthly expenses, and upcoming activity.
 - Budgets by category with warning states.
 - Savings goals with progress controls.
 - Recurring transactions with generated entries.
@@ -23,7 +22,6 @@ The current desktop screenshots are generated from demo data and are stored in `
 | --- | --- |
 | Dashboard overview and insights | ![Dashboard](screenshots/dashboard.png) |
 | Current-finance snapshot | ![Current finances](screenshots/current-finances.png) |
-| Transactions ledger | ![Transactions](screenshots/transactions.png) |
 | Budgets and monthly outgoings | ![Budgets](screenshots/budgets.png) |
 | Savings goals | ![Goals](screenshots/goals.png) |
 | Planning commitments and asset sales | ![Plan](screenshots/plan.png) |

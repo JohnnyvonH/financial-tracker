@@ -12,7 +12,6 @@ Use these demo-data screenshots as the comparison point for future redesign work
 
 - Dashboard: `docs/screenshots/dashboard.png`
 - Current finances: `docs/screenshots/current-finances.png`
-- Transactions: `docs/screenshots/transactions.png`
 - Budgets: `docs/screenshots/budgets.png`
 - Goals: `docs/screenshots/goals.png`
 - Plan: `docs/screenshots/plan.png`
@@ -27,12 +26,11 @@ Use these demo-data screenshots as the comparison point for future redesign work
 - Move deployment from GitHub Pages to Vercel.
 - Configure `VITE_SUPABASE_URL` and `VITE_SUPABASE_ANON_KEY` in Vercel project settings.
 - Add Vercel preview deployments for every PR.
-- Add smoke tests for app boot, transaction entry, plan item entry, and snapshot entry.
+- Add smoke tests for app boot, recurring item entry, plan item entry, and snapshot entry.
 
 ## Phase 2: Reshape The Product
 
 - Dashboard: show cash position, upcoming costs, next paycheck estimate, savings runway, and warnings.
-- Transactions: keep as the source ledger with stronger filters.
 - Plan: become the planning workspace for upcoming commitments, asset sales, and goals.
 - Net Worth: split snapshots into a dedicated trend view once charts are added.
 - Reports: combine spending history with planning and net worth trends.
@@ -51,7 +49,7 @@ Use these demo-data screenshots as the comparison point for future redesign work
 - Show house deposit progress and required monthly saving.
 - Flag when upcoming costs exceed available cash plus expected asset sales.
 - Compare latest net worth snapshot with previous snapshot.
-- Detect recurring spending drift from transaction history.
+- Detect recurring spending drift from recurring outgoings and snapshot history.
 
 ## Phase 5: Workbook Port
 

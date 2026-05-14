@@ -252,8 +252,6 @@ export function getFinanceInsights({
   balance = 0,
   monthlyIncome = 0,
   monthlyExpenses = 0,
-  budgets = {},
-  transactions = [],
   planningItems = [],
   goals = [],
   netWorthSnapshots = [],
@@ -266,18 +264,6 @@ export function getFinanceInsights({
   const latestTotals = getSnapshotTotals(latestSnapshot);
   const previousSnapshot = netWorthSnapshots[1];
   const previousTotals = getSnapshotTotals(previousSnapshot);
-  const currentMonthTransactions = transactions.filter((transaction) => {
-    const date = parseDateInput(transaction.date);
-    const now = new Date();
-    return date && date.getMonth() === now.getMonth() && date.getFullYear() === now.getFullYear();
-  });
-  const spendingByCategory = currentMonthTransactions
-    .filter((transaction) => transaction.type === 'expense')
-    .reduce((summary, transaction) => {
-      const category = transaction.category || 'Other';
-      summary[category] = (summary[category] || 0) + toNumber(transaction.amount);
-      return summary;
-    }, {});
   const insights = [];
 
   if (fundingGap > 0) {
@@ -306,21 +292,6 @@ export function getFinanceInsights({
       message: `${Math.abs(savingsRate).toFixed(0)}% ${surplus >= 0 ? 'left after spending' : 'overspend versus income'} in the current month.`,
     });
   }
-
-  Object.entries(budgets).forEach(([category, budget]) => {
-    const spent = spendingByCategory[category] || 0;
-    const limit = toNumber(budget);
-    if (limit <= 0 || spent <= 0) return;
-
-    const usage = (spent / limit) * 100;
-    if (usage >= 90) {
-      insights.push({
-        tone: usage >= 100 ? 'danger' : 'warning',
-        title: `${category} budget pressure`,
-        message: `${usage.toFixed(0)}% of this month's ${category} budget is already used.`,
-      });
-    }
-  });
 
   if (goalsSummary.remaining > 0) {
     insights.push({
@@ -366,7 +337,7 @@ export function getFinanceInsights({
     insights.push({
       tone: 'info',
       title: 'Add your first data points',
-      message: 'Add transactions, goals, and plan items to unlock useful guidance.',
+      message: 'Add goals, recurring payments, current-finance snapshots, and plan items to unlock useful guidance.',
     });
   }
 

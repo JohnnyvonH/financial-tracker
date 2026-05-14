@@ -6,7 +6,7 @@ This guide tracks the screenshots and demo data used to review Financial Tracker
 
 ## Demo Account
 
-Screenshots and end-to-end checks should use the dedicated demo account, not the personal account. The demo account is seeded with realistic transactions, recurring income and outgoings, goals, planning items, and current-finance snapshots.
+Screenshots and end-to-end checks should use the dedicated demo account, not the personal account. The demo account is seeded with realistic recurring income and outgoings, goals, planning items, and current-finance snapshots.
 
 The personal account can remain empty or contain live personal data without affecting these assets.
 
@@ -18,7 +18,6 @@ The current generated screenshots live in `docs/screenshots/`.
 | --- | --- | --- |
 | Dashboard | `docs/screenshots/dashboard.png` | Main finance cockpit, KPIs, insights, commitments, and recent activity. |
 | Current Finances | `docs/screenshots/current-finances.png` | Point-in-time account snapshot and available/unavailable asset breakdown. |
-| Transactions | `docs/screenshots/transactions.png` | Ledger-style income and expense review. |
 | Budgets | `docs/screenshots/budgets.png` | Monthly outgoings and category controls. |
 | Goals | `docs/screenshots/goals.png` | Savings progress, target dates, and priority tracking. |
 | Plan | `docs/screenshots/plan.png` | Commitments, asset sales, and forward-looking planning. |
@@ -42,10 +41,6 @@ The current generated screenshots live in `docs/screenshots/`.
 ### Goals
 
 ![Goals](screenshots/goals.png)
-
-### Transactions
-
-![Transactions](screenshots/transactions.png)
 
 ### Budgets
 
@@ -73,7 +68,7 @@ The script starts from the local demo fixture used by Playwright, captures the p
 
 - [x] Screenshots use demo data only.
 - [x] Personal cloud data is not required for documentation.
-- [x] Dashboard, current finances, transactions, budgets, goals, plan, reports, and settings are covered.
+- [x] Dashboard, current finances, budgets, goals, plan, reports, recurring payments, and settings are covered.
 - [x] Images are committed under `docs/screenshots/`.
 - [x] README includes the key product screenshots.
 

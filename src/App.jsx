@@ -1,9 +1,7 @@
-import React, { useState, useEffect, useMemo, useRef } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import ErrorBoundary from './components/ErrorBoundary';
 import Header from './components/Header';
 import Dashboard from './components/Dashboard';
-import TransactionForm from './components/TransactionForm';
-import TransactionsPage from './components/TransactionsPage';
 import GoalForm from './components/GoalForm';
 import Goals from './components/Goals';
 import Budget from './components/Budget';
@@ -20,8 +18,7 @@ import ConfirmDialog from './components/ConfirmDialog';
 import { useAuth } from './contexts/AuthContext';
 import { storageService } from './services/storage';
 import { supabaseSync } from './services/supabaseSync';
-import { processRecurringTransactions } from './utils/recurring';
-import { removeDuplicateTransactions, countDuplicates } from './utils/deduplication';
+import { removeDuplicateTransactions } from './utils/deduplication';
 import { getInitialTheme, saveTheme, applyTheme } from './utils/theme';
 import { getSnapshotTotals } from './utils/financeSummary';
 import { applyLegacySnapshotFields, normaliseSnapshotSections } from './utils/snapshotConfig';
@@ -54,11 +51,7 @@ function App() {
   const [syncing, setSyncing] = useState(false);
   const [toast, setToast] = useState(null);
   const [confirmation, setConfirmation] = useState(null);
-  const recurringProcessedRef = useRef(false);
   const confirmationResolverRef = useRef(null);
-
-  // Count duplicates
-  const duplicateCount = useMemo(() => countDuplicates(data.transactions), [data.transactions]);
 
   // Show toast notification
   const showToast = (message, type = 'info') => {
@@ -82,7 +75,6 @@ function App() {
   useEffect(() => {
     const initializeData = async () => {
       setLoading(true);
-      recurringProcessedRef.current = false;
       
       try {
         // If user is logged in and Supabase is configured, use cloud data
@@ -194,61 +186,6 @@ function App() {
     initializeData();
   }, [user, isConfigured]);
 
-  // Process recurring transactions - ONLY ONCE per session
-  useEffect(() => {
-    if (loading || data.recurringTransactions.length === 0 || recurringProcessedRef.current) {
-      return;
-    }
-
-    const processRecurring = async () => {
-      console.log('🔄 Processing recurring transactions...');
-      const { newTransactions, updatedRecurring } = processRecurringTransactions(
-        data.recurringTransactions.filter(r => r.active),
-        data.transactions
-      );
-
-      if (newTransactions.length > 0) {
-        console.log('💰 Adding', newTransactions.length, 'recurring transactions');
-        
-        // Calculate new balance
-        let newBalance = data.balance;
-        newTransactions.forEach(t => {
-          newBalance = t.type === 'income' ? newBalance + t.amount : newBalance - t.amount;
-        });
-
-        // Save all at once
-        await saveData({
-          ...data,
-          balance: newBalance,
-          transactions: [...newTransactions, ...data.transactions],
-          recurringTransactions: updatedRecurring
-        });
-
-        showToast(
-          `${newTransactions.length} recurring transaction${newTransactions.length > 1 ? 's' : ''} processed!`,
-          'success'
-        );
-      } else if (updatedRecurring.length > 0 && JSON.stringify(updatedRecurring) !== JSON.stringify(data.recurringTransactions)) {
-        // Update last_processed dates even if no new transactions
-        await saveData({
-          ...data,
-          recurringTransactions: updatedRecurring
-        });
-      }
-      
-      recurringProcessedRef.current = true;
-    };
-
-    processRecurring();
-    
-    // Check once per hour
-    const interval = setInterval(() => {
-      recurringProcessedRef.current = false;
-    }, 60 * 60 * 1000);
-    
-    return () => clearInterval(interval);
-  }, [loading]);
-
   // Save data (to both local storage and Supabase if logged in)
   const saveData = async (newData) => {
     try {
@@ -269,53 +206,6 @@ function App() {
       console.error('Error saving data:', error);
       showToast('Error saving data. Please try again.', 'error');
       return false;
-    }
-  };
-
-  // Remove duplicate transactions
-  const handleRemoveDuplicates = async () => {
-    const confirmed = await requestConfirmation({
-      title: 'Remove duplicate transactions?',
-      message: `Remove ${duplicateCount} duplicate transaction${duplicateCount > 1 ? 's' : ''}? This cannot be undone.`,
-      confirmLabel: 'Remove duplicates',
-    });
-    if (!confirmed) return;
-
-    try {
-      setSyncing(true);
-      const uniqueTransactions = removeDuplicateTransactions(data.transactions);
-      
-      // Recalculate balance from unique transactions
-      const recalculatedBalance = uniqueTransactions.reduce((balance, t) => {
-        return t.type === 'income' ? balance + t.amount : balance - t.amount;
-      }, 0);
-
-      // Update last_processed for all recurring to today to prevent re-adding
-      const today = new Date().toISOString().split('T')[0];
-      const updatedRecurring = data.recurringTransactions.map(r => ({
-        ...r,
-        last_processed: today,
-        lastProcessed: today
-      }));
-
-      const success = await saveData({
-        ...data,
-        balance: recalculatedBalance,
-        transactions: uniqueTransactions,
-        recurringTransactions: updatedRecurring
-      });
-
-      if (success) {
-        showToast(
-          `✅ Removed ${duplicateCount} duplicate${duplicateCount > 1 ? 's' : ''} and recalculated balance!`,
-          'success'
-        );
-      }
-    } catch (error) {
-      console.error('Error removing duplicates:', error);
-      showToast('Failed to remove duplicates. Please try again.', 'error');
-    } finally {
-      setSyncing(false);
     }
   };
 
@@ -357,113 +247,6 @@ function App() {
     }
     
     showToast(`Switched to ${newTheme} mode`, 'info');
-  };
-
-  // Add transaction
-  const addTransaction = async (transaction, showToastMsg = true) => {
-    try {
-      setSyncing(true);
-      
-      const transactionData = {
-        type: transaction.type,
-        amount: transaction.amount,
-        category: transaction.category,
-        description: transaction.description || '',
-        date: transaction.date,
-        timestamp: Date.now()
-      };
-
-      // Check for duplicates before adding
-      const duplicateKey = `${transactionData.description}-${transactionData.category}-${transactionData.amount}-${transactionData.date}-${transactionData.type}`;
-      const isDuplicate = data.transactions.some(t => 
-        `${t.description}-${t.category}-${t.amount}-${t.date}-${t.type}` === duplicateKey
-      );
-
-      if (isDuplicate) {
-        showToast('This transaction already exists!', 'warning');
-        setSyncing(false);
-        return false;
-      }
-
-      // If logged in, save to Supabase first
-      let savedTransaction = null;
-      if (user && isConfigured && supabaseSync.isAvailable()) {
-        savedTransaction = await supabaseSync.addTransaction(transactionData);
-      }
-
-      // Use Supabase ID if available, otherwise generate local ID
-      const newTransaction = savedTransaction || {
-        id: Date.now(),
-        ...transactionData
-      };
-
-      const newBalance = transaction.type === 'income'
-        ? data.balance + transaction.amount
-        : data.balance - transaction.amount;
-
-      await saveData({
-        ...data,
-        balance: newBalance,
-        transactions: [newTransaction, ...data.transactions]
-      });
-
-      if (showToastMsg) {
-        showToast(
-          `${transaction.type === 'income' ? 'Income' : 'Expense'} added successfully!`,
-          'success'
-        );
-        setView('dashboard');
-      }
-      return true;
-    } catch (error) {
-      console.error('Error adding transaction:', error);
-      showToast('Failed to add transaction. Please try again.', 'error');
-      return false;
-    } finally {
-      setSyncing(false);
-    }
-  };
-
-  // Delete transaction
-  const deleteTransaction = async (id) => {
-    const confirmed = await requestConfirmation({
-      title: 'Delete transaction?',
-      message: 'This transaction will be removed and your balance will be recalculated.',
-      confirmLabel: 'Delete transaction',
-    });
-    if (!confirmed) return;
-
-    try {
-      setSyncing(true);
-      
-      const transaction = data.transactions.find(t => t.id === id);
-      if (!transaction) {
-        showToast('Transaction not found.', 'error');
-        return;
-      }
-
-      // Delete from Supabase if logged in
-      if (user && isConfigured && supabaseSync.isAvailable()) {
-        await supabaseSync.deleteTransaction(id);
-      }
-
-      const newBalance = transaction.type === 'income'
-        ? data.balance - transaction.amount
-        : data.balance + transaction.amount;
-
-      await saveData({
-        ...data,
-        balance: newBalance,
-        transactions: data.transactions.filter(t => t.id !== id)
-      });
-
-      showToast('Transaction deleted successfully!', 'success');
-    } catch (error) {
-      console.error('Error deleting transaction:', error);
-      showToast('Failed to delete transaction. Please try again.', 'error');
-    } finally {
-      setSyncing(false);
-    }
   };
 
   // Add recurring transaction
@@ -1040,7 +823,7 @@ function App() {
   const clearAllData = async () => {
     const confirmed = await requestConfirmation({
       title: 'Clear all local data?',
-      message: 'This permanently removes transactions, goals, budgets, plans, recurring items, and snapshots from local storage.',
+      message: 'This permanently removes goals, budgets, plans, recurring items, snapshots, and local backup data.',
       confirmLabel: 'Clear all data',
     });
     if (!confirmed) return;
@@ -1070,10 +853,6 @@ function App() {
   };
 
   const pageMeta = {
-    transactions: {
-      title: 'Transactions',
-      description: 'Review one-off income and expenses alongside recurring activity.',
-    },
     budget: {
       title: 'Monthly Budget',
       description: 'Plan around dependable income, known outgoings, and the capacity left each month.',
@@ -1092,7 +871,7 @@ function App() {
     },
     reports: {
       title: 'Reports',
-      description: 'Review monthly income, outgoings, savings context, and current-month activity.',
+      description: 'Review monthly income, outgoings, savings context, planning exposure, and net worth trends.',
     },
     settings: {
       title: 'Settings',
@@ -1101,10 +880,6 @@ function App() {
     'add-goal': {
       title: 'Add Savings Goal',
       description: 'Set a target, add a deadline, and track the next milestone.',
-    },
-    'add-transaction': {
-      title: 'Add Transaction',
-      description: 'Record one-off income or spending that is not part of your recurring plan.',
     },
     'add-recurring': {
       title: 'Add Recurring Item',
@@ -1211,14 +986,6 @@ function App() {
             />
           )}
 
-          {view === 'transactions' && (
-            <TransactionsPage
-              transactions={data.transactions}
-              onDeleteTransaction={deleteTransaction}
-              currency={currency}
-            />
-          )}
-
           {view === 'plan' && (
             <FinancePlan
               planningItems={data.planningItems}
@@ -1266,9 +1033,7 @@ function App() {
 
           {view === 'reports' && (
             <ReportsPage
-              transactions={data.transactions}
               goals={data.goals}
-              budgets={data.budgets}
               recurringTransactions={data.recurringTransactions}
               planningItems={data.planningItems}
               netWorthSnapshots={data.netWorthSnapshots}
@@ -1281,13 +1046,6 @@ function App() {
             <GoalForm
               onSubmit={addGoal}
               onCancel={() => setView('dashboard')}
-            />
-          )}
-
-          {view === 'add-transaction' && (
-            <TransactionForm
-              onSubmit={addTransaction}
-              onCancel={() => setView('transactions')}
             />
           )}
 
@@ -1304,10 +1062,8 @@ function App() {
               onExport={handleExportData}
               onImport={handleImportData}
               onClearAll={clearAllData}
-              onRemoveDuplicates={handleRemoveDuplicates}
               currency={currency}
               onCurrencyChange={handleCurrencyChange}
-              duplicateCount={duplicateCount}
             />
           )}
         </main>
