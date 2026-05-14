@@ -24,10 +24,23 @@ import {
 
 const formatDate = (dateString) => {
   if (!dateString) return 'No date';
-  return new Date(dateString).toLocaleDateString('en-GB', {
+  const [year, month, day] = String(dateString).split('-').map(Number);
+  const date = year && month && day ? new Date(year, month - 1, day) : new Date(dateString);
+  return date.toLocaleDateString('en-GB', {
     day: 'numeric',
     month: 'short',
   });
+};
+
+const getDaysOld = (dateString) => {
+  if (!dateString) return null;
+  const [year, month, day] = String(dateString).split('-').map(Number);
+  if (!year || !month || !day) return null;
+  const date = new Date(year, month - 1, day);
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  date.setHours(0, 0, 0, 0);
+  return Math.floor((today - date) / (24 * 60 * 60 * 1000));
 };
 
 function InsightIcon({ tone }) {
@@ -62,6 +75,37 @@ function ActionCard({ icon: Icon, title, detail, onClick, primary = false }) {
   );
 }
 
+function SetupHealthPanel({ checks, onNavigate }) {
+  return (
+    <section className="panel setup-health-panel" aria-label="Setup health">
+      <div className="dashboard-section-header">
+        <div>
+          <h2>Setup health</h2>
+          <p>Forecast quality checks based on the data currently saved.</p>
+        </div>
+        <ListChecks size={20} />
+      </div>
+      <div className="setup-health-list">
+        {checks.map((check) => (
+          <article key={check.label} className={`setup-health-row setup-health-${check.tone}`}>
+            <div className="setup-health-icon">
+              {check.tone === 'positive' ? <CheckCircle2 size={17} /> : <AlertTriangle size={17} />}
+            </div>
+            <div>
+              <h3>{check.label}</h3>
+              <p>{check.detail}</p>
+            </div>
+            <button type="button" className="text-action" onClick={() => onNavigate(check.view)}>
+              {check.action}
+              <ArrowRight size={14} />
+            </button>
+          </article>
+        ))}
+      </div>
+    </section>
+  );
+}
+
 export default function Dashboard({
   data,
   currency,
@@ -87,10 +131,90 @@ export default function Dashboard({
   const upcomingPlan = getUpcomingPlanningItems(commitmentItems, 3);
   const hasIncomeSource = monthlySummary.recurringIncome > 0 || monthlySummary.snapshotPaycheck > 0;
   const latestSnapshotDate = latestSnapshot?.date ? formatDate(latestSnapshot.date) : 'No snapshot yet';
+  const latestSnapshotAge = getDaysOld(latestSnapshot?.date);
   const projectedTone = commitmentProjection.projectedMaxCash >= 0 ? 'positive' : 'warning';
   const surplusTone = monthlySummary.surplus >= 0 ? 'positive' : 'danger';
   const runwayLabel = cashRunway !== null ? `${cashRunway.toFixed(1)} months` : 'Unknown';
   const savingsProgress = goalSummary.target > 0 ? `${goalSummary.progress.toFixed(0)}%` : 'No goals';
+  const healthChecks = [
+    latestSnapshot
+      ? {
+          label: 'Current finances',
+          detail: latestSnapshotAge !== null && latestSnapshotAge > 21
+            ? `Latest snapshot is ${latestSnapshotAge} days old.`
+            : `Snapshot saved for ${latestSnapshotDate}.`,
+          tone: latestSnapshotAge !== null && latestSnapshotAge > 21 ? 'warning' : 'positive',
+          action: 'Update',
+          view: 'snapshot',
+        }
+      : {
+          label: 'Current finances',
+          detail: 'Add a snapshot before relying on forecasts.',
+          tone: 'warning',
+          action: 'Add snapshot',
+          view: 'snapshot',
+        },
+    hasIncomeSource
+      ? {
+          label: 'Monthly income',
+          detail: 'Income source is available for capacity calculations.',
+          tone: 'positive',
+          action: 'Review',
+          view: 'recurring',
+        }
+      : {
+          label: 'Monthly income',
+          detail: 'Add salary or regular income to calculate capacity.',
+          tone: 'warning',
+          action: 'Add income',
+          view: 'recurring',
+        },
+    monthlySummary.outgoings > 0
+      ? {
+          label: 'Known outgoings',
+          detail: 'Recurring bills and commitments are included.',
+          tone: 'positive',
+          action: 'Review',
+          view: 'budget',
+        }
+      : {
+          label: 'Known outgoings',
+          detail: 'Add regular bills or transfers for a useful monthly budget.',
+          tone: 'warning',
+          action: 'Add outgoings',
+          view: 'recurring',
+        },
+    data.goals.length > 0
+      ? {
+          label: 'Savings goals',
+          detail: `${data.goals.length} goal${data.goals.length === 1 ? '' : 's'} tracked.`,
+          tone: 'positive',
+          action: 'Review',
+          view: 'goals',
+        }
+      : {
+          label: 'Savings goals',
+          detail: 'Add goals to make surplus decisions easier.',
+          tone: 'warning',
+          action: 'Add goals',
+          view: 'goals',
+        },
+    data.planningItems.length > 0
+      ? {
+          label: 'Plan items',
+          detail: `${data.planningItems.length} plan item${data.planningItems.length === 1 ? '' : 's'} tracked.`,
+          tone: 'positive',
+          action: 'Review',
+          view: 'plan',
+        }
+      : {
+          label: 'Plan items',
+          detail: 'Add upcoming costs or asset sales to improve projections.',
+          tone: 'warning',
+          action: 'Add plan',
+          view: 'plan',
+        },
+  ];
 
   return (
     <div className="dashboard-home">
@@ -208,6 +332,8 @@ export default function Dashboard({
           <strong>{savingsProgress}</strong>
         </article>
       </section>
+
+      <SetupHealthPanel checks={healthChecks} onNavigate={onNavigate} />
 
       <section className="dashboard-actions-panel">
         <div>

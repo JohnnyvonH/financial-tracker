@@ -79,6 +79,8 @@ test('dashboard shows savings-focused demo summary', async ({ page }) => {
   await expect(page.getByText('Monthly capacity')).toBeVisible();
   await expect(page.getByRole('heading', { name: 'Needs attention' })).toBeVisible();
   await expect(page.getByText('F-Type wheels refurbished')).toBeVisible();
+  await expect(page.getByRole('region', { name: 'Setup health' })).toContainText('Current finances');
+  await expect(page.getByRole('region', { name: 'Setup health' })).toContainText('Savings goals');
 });
 
 test('dashboard softens funding gap when monthly capacity covers it', async ({ page }) => {
@@ -102,6 +104,21 @@ test('dashboard softens funding gap when monthly capacity covers it', async ({ p
 
   await expect(page.getByRole('heading', { name: 'Plan fits this month' })).toBeVisible();
   await expect(page.getByText(/fits within your monthly capacity/)).toBeVisible();
+});
+
+test('dashboard health flags missing setup data', async ({ page }) => {
+  await seedDemoData(page, {
+    netWorthSnapshots: [],
+    recurringTransactions: [],
+    goals: [],
+    planningItems: [],
+  });
+  await page.goto('/financial-tracker/');
+
+  const health = page.getByRole('region', { name: 'Setup health' });
+  await expect(health).toContainText('Add a snapshot before relying on forecasts.');
+  await expect(health).toContainText('Add salary or regular income to calculate capacity.');
+  await expect(health).toContainText('Add goals to make surplus decisions easier.');
 });
 
 test('primary pages render with demo data', async ({ page }) => {

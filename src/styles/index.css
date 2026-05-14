@@ -2939,6 +2939,64 @@ html.light .focus-balance {
   white-space: nowrap;
 }
 
+.setup-health-panel {
+  display: grid;
+  gap: 1rem;
+}
+
+.setup-health-panel .dashboard-section-header svg {
+  color: var(--primary);
+}
+
+.setup-health-list {
+  display: grid;
+  gap: 0.65rem;
+}
+
+.setup-health-row {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  gap: 0.8rem;
+  align-items: center;
+  min-height: 4.1rem;
+  padding: 0.85rem;
+  border: 1px solid rgba(148, 163, 184, 0.12);
+  border-radius: 0.65rem;
+  background: var(--panel-surface-soft);
+}
+
+.setup-health-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2rem;
+  height: 2rem;
+  border-radius: 999px;
+  background: rgba(148, 163, 184, 0.12);
+}
+
+.setup-health-positive .setup-health-icon {
+  color: var(--success);
+  background: rgba(16, 185, 129, 0.12);
+}
+
+.setup-health-warning .setup-health-icon {
+  color: var(--warning);
+  background: rgba(245, 158, 11, 0.12);
+}
+
+.setup-health-row h3 {
+  margin: 0;
+  color: var(--text-primary);
+  font-size: 0.96rem;
+}
+
+.setup-health-row p {
+  margin: 0.2rem 0 0;
+  color: var(--text-secondary);
+  font-size: 0.84rem;
+}
+
 .dashboard-actions-panel {
   display: grid;
   grid-template-columns: minmax(220px, 0.32fr) minmax(0, 1fr);
@@ -3720,6 +3778,7 @@ button.metric-tile {
   .dashboard-health-strip,
   .dashboard-action-grid,
   .recurring-forecast-row,
+  .setup-health-row,
   .recurring-row,
   .planning-timeline-row,
   .timeline-row,
