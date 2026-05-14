@@ -6,6 +6,17 @@ test.beforeEach(async ({ page }) => {
   await page.goto('/financial-tracker/');
 });
 
+test('reports show net worth trend from current finance snapshots', async ({ page }) => {
+  const nav = page.getByRole('navigation', { name: 'Primary navigation' });
+  await nav.getByRole('button', { name: 'Reports', exact: true }).click();
+
+  await expect(page.getByRole('heading', { name: 'Net worth trend' })).toBeVisible();
+  await expect(page.getByText('4 snapshots from Feb 26 to May 26')).toBeVisible();
+  await expect(page.getByText('Latest available assets')).toBeVisible();
+  await expect(page.getByText('House deposit access').first()).toBeVisible();
+  await expect(page.getByRole('img', { name: 'Net worth trend chart' })).toBeVisible();
+});
+
 test('current finances template can add a custom bank and card', async ({ page }) => {
   const nav = page.getByRole('navigation', { name: 'Primary navigation' });
   await nav.getByRole('button', { name: 'Current Finances', exact: true }).click();

@@ -1140,6 +1140,7 @@ function App() {
               goals={data.goals}
               recurringTransactions={data.recurringTransactions}
               planningItems={data.planningItems}
+              netWorthSnapshots={data.netWorthSnapshots}
               latestSnapshot={data.netWorthSnapshots[0]}
               currency={currency}
             />

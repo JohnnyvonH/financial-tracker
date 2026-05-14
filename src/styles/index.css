@@ -1730,7 +1730,9 @@ html.light .sidebar-brand .header-logo-text {
   .snapshot-template-section-header,
   .snapshot-template-entry,
   .snapshot-template-footer,
-  .planning-metrics {
+  .planning-metrics,
+  .trend-summary-grid,
+  .trend-delta-grid {
     grid-template-columns: 1fr;
   }
 
@@ -2173,6 +2175,106 @@ html.light .focus-balance {
 .report-health-strip {
   grid-template-columns: 1fr;
   margin-top: 0;
+}
+
+.net-worth-trend-card {
+  margin: 1.5rem 0;
+}
+
+.net-worth-trend-card .dashboard-section-header p {
+  margin: 0.35rem 0 0;
+  color: var(--text-secondary);
+  font-size: 0.92rem;
+}
+
+.net-worth-trend-card .dashboard-section-header svg {
+  color: var(--primary);
+}
+
+.trend-summary-grid,
+.trend-delta-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 1rem;
+  margin-top: 1.25rem;
+}
+
+.trend-summary-grid article,
+.trend-delta {
+  min-width: 0;
+  padding: 1rem;
+  border: 1px solid var(--border);
+  border-radius: 0.75rem;
+  background: var(--bg-secondary);
+}
+
+.trend-summary-grid span,
+.trend-delta span,
+.trend-delta small {
+  display: block;
+  color: var(--text-secondary);
+  font-size: 0.78rem;
+}
+
+.trend-summary-grid strong,
+.trend-delta strong {
+  display: block;
+  margin-top: 0.35rem;
+  color: var(--text-primary);
+  font-size: 1.2rem;
+}
+
+.trend-delta-positive strong {
+  color: var(--success);
+}
+
+.trend-delta-danger strong {
+  color: var(--danger);
+}
+
+.net-worth-chart-wrap {
+  margin-top: 1.5rem;
+  width: 100%;
+  min-height: 320px;
+  overflow-x: auto;
+}
+
+.net-worth-chart-wrap svg {
+  display: block;
+  width: 100%;
+  min-width: 42rem;
+}
+
+.trend-grid-line {
+  stroke: var(--border);
+  stroke-dasharray: 4 4;
+}
+
+.trend-axis-label {
+  fill: var(--text-secondary);
+  font-size: 0.76rem;
+}
+
+.trend-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.85rem;
+  margin-top: 0.85rem;
+  color: var(--text-secondary);
+  font-size: 0.84rem;
+}
+
+.trend-legend span {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.trend-legend i {
+  display: inline-block;
+  width: 0.75rem;
+  height: 0.75rem;
+  border-radius: 999px;
 }
 
 .compact-commitment-row span {
