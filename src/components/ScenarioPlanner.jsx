@@ -13,6 +13,12 @@ function ScenarioMetric({ label, value, detail, tone = 'neutral' }) {
   );
 }
 
+const formatSignedCurrency = (amount, currency) => (
+  amount < 0
+    ? `-${formatCurrency(Math.abs(amount), currency)}`
+    : formatCurrency(amount, currency)
+);
+
 export default function ScenarioPlanner({
   planningItems = [],
   latestSnapshot,
@@ -88,7 +94,7 @@ export default function ScenarioPlanner({
         />
         <ScenarioMetric
           label="Scenario 90-day cash"
-          value={formatCurrency(scenario.projectedMaxCash, currency)}
+          value={formatSignedCurrency(scenario.projectedMaxCash, currency)}
           detail={scenario.fundingGap > 0 ? `${formatCurrency(scenario.fundingGap, currency)} gap` : 'No cash gap projected'}
           tone={scenarioTone}
         />
@@ -103,7 +109,7 @@ export default function ScenarioPlanner({
       <div className="scenario-footnote">
         <CalendarClock size={16} />
         <span>
-          Current monthly capacity is {formatCurrency(monthlySummary.surplus, currency)} before scenario adjustments.
+          Current monthly capacity is {formatSignedCurrency(monthlySummary.surplus, currency)} before scenario adjustments.
         </span>
       </div>
     </section>

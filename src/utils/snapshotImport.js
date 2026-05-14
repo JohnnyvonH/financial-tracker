@@ -33,22 +33,91 @@ const parseCSVLine = (line) => {
   return values;
 };
 
+const monthNames = {
+  jan: 1,
+  january: 1,
+  feb: 2,
+  february: 2,
+  mar: 3,
+  march: 3,
+  apr: 4,
+  april: 4,
+  may: 5,
+  jun: 6,
+  june: 6,
+  jul: 7,
+  july: 7,
+  aug: 8,
+  august: 8,
+  sep: 9,
+  sept: 9,
+  september: 9,
+  oct: 10,
+  october: 10,
+  nov: 11,
+  november: 11,
+  dec: 12,
+  december: 12,
+};
+
+const formatDateParts = (year, month, day) => {
+  const date = new Date(year, month - 1, day);
+  if (
+    date.getFullYear() !== year ||
+    date.getMonth() !== month - 1 ||
+    date.getDate() !== day
+  ) {
+    return '';
+  }
+
+  return [
+    String(year).padStart(4, '0'),
+    String(month).padStart(2, '0'),
+    String(day).padStart(2, '0'),
+  ].join('-');
+};
+
+const normaliseYear = (rawYear) => {
+  const year = Number(rawYear);
+  if (!Number.isInteger(year)) return null;
+  if (String(rawYear).length === 2) return 2000 + year;
+  return year;
+};
+
 const parseImportDate = (value = '') => {
   const input = String(value).trim();
   if (!input) return '';
 
-  if (/^\d{4}-\d{2}-\d{2}$/.test(input)) return input;
+  const isoMatch = input.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+  if (isoMatch) {
+    const [, year, month, day] = isoMatch;
+    return formatDateParts(Number(year), Number(month), Number(day));
+  }
 
   const slashMatch = input.match(/^(\d{1,2})\/(\d{1,2})\/(\d{2,4})$/);
   if (slashMatch) {
     const [, day, month, rawYear] = slashMatch;
-    const year = rawYear.length === 2 ? `20${rawYear}` : rawYear;
-    return `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`;
+    const year = normaliseYear(rawYear);
+    return year ? formatDateParts(year, Number(month), Number(day)) : '';
   }
 
-  const parsed = new Date(input);
-  if (Number.isNaN(parsed.getTime())) return '';
-  return parsed.toISOString().split('T')[0];
+  const dayMonthYearMatch = input.match(/^(\d{1,2})[\s-]+([A-Za-z]+)[\s,-]+(\d{2,4})$/);
+  if (dayMonthYearMatch) {
+    const [, day, rawMonth, rawYear] = dayMonthYearMatch;
+    const month = monthNames[rawMonth.toLowerCase()];
+    const year = normaliseYear(rawYear);
+    return month && year ? formatDateParts(year, month, Number(day)) : '';
+  }
+
+  const monthDayYearMatch = input.match(/^([A-Za-z]+)[\s-]+(\d{1,2}),?[\s-]+(\d{2,4})$/);
+  if (monthDayYearMatch) {
+    const [, rawMonth, day, rawYear] = monthDayYearMatch;
+    const month = monthNames[rawMonth.toLowerCase()];
+    const year = normaliseYear(rawYear);
+    return month && year ? formatDateParts(year, month, Number(day)) : '';
+  }
+
+  return '';
 };
 
 const parseMoney = (value = '') => {

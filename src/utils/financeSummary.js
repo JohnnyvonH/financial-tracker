@@ -220,7 +220,7 @@ export function getTransactionsForWindow(transactions = [], days = 30) {
   const start = new Date(now.getTime() - days * 24 * 60 * 60 * 1000);
 
   return transactions.filter((transaction) => {
-    const date = new Date(transaction.date);
+    const date = parseDateInput(transaction.date);
     return date >= start && date <= now;
   });
 }

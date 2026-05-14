@@ -132,8 +132,10 @@ test('budgets page explains monthly flow and next action', async ({ page }) => {
   await expect(page.getByLabel('Monthly budget calculation')).toContainText('Money in');
   await expect(page.getByRole('heading', { name: 'Outgoing categories' })).toBeVisible();
   await expect(page.getByRole('heading', { name: 'Next best action' })).toBeVisible();
-  await expect(page.getByRole('heading', { name: 'Recurring income' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Monthly recurring items' })).toBeVisible();
+  await expect(page.getByLabel('Monthly recurring items')).toContainText('Salary');
   await expect(page.getByRole('heading', { name: 'Category limits' })).toBeVisible();
+  await expect(page.getByText('Snapshot commitments')).toHaveCount(0);
 });
 
 test('destructive settings actions use app confirmation dialog', async ({ page }) => {
@@ -184,6 +186,7 @@ test('plan page compares temporary what-if scenarios', async ({ page }) => {
   await expect(page.getByRole('heading', { name: 'What-if scenario' })).toBeVisible();
   await expect(page.getByText('Baseline 90-day cash')).toBeVisible();
   await expect(page.getByText('Scenario 90-day cash')).toBeVisible();
+  await expect(page.locator('.scenario-metric').filter({ hasText: 'Scenario movement' }).getByText(/0\.00/)).toBeVisible();
 
   await page.getByLabel('Extra one-off cost').fill('1000');
   await page.getByLabel('Monthly capacity adjustment').fill('-200');

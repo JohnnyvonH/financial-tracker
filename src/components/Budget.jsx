@@ -125,7 +125,7 @@ export default function Budget({
         <BudgetMetric
           label="Known outgoings"
           value={formatCurrency(monthlySummary.outgoings, currency)}
-          detail="Bills, subscriptions, transfers, and snapshot commitments"
+          detail="Bills, subscriptions, transfers, and known commitments"
           icon={TrendingDown}
           tone={monthlySummary.outgoings > monthlySummary.income ? 'warning' : 'info'}
         />
@@ -156,7 +156,10 @@ export default function Budget({
             <ArrowRight size={15} />
           </button>
         </div>
-        <div className="budget-flow-grid" aria-label="Monthly budget calculation">
+        <div
+          className={`budget-flow-grid ${snapshotCommitmentTotal > 0 ? 'budget-flow-grid-detailed' : 'budget-flow-grid-simple'}`}
+          aria-label="Monthly budget calculation"
+        >
           <FlowStep
             label="Money in"
             value={hasIncomeSource ? formatCurrency(monthlySummary.income, currency) : 'Missing'}
@@ -170,13 +173,17 @@ export default function Budget({
             detail="Regular payments you expect each month."
             tone="info"
           />
-          <div className="budget-flow-operator">-</div>
-          <FlowStep
-            label="Snapshot commitments"
-            value={formatCurrency(snapshotCommitmentTotal, currency)}
-            detail="Saved current-finance commitments included in the month."
-            tone="info"
-          />
+          {snapshotCommitmentTotal > 0 && (
+            <>
+              <div className="budget-flow-operator">-</div>
+              <FlowStep
+                label="Current-finance commitments"
+                value={formatCurrency(snapshotCommitmentTotal, currency)}
+                detail="Saved commitments from the latest current-finance snapshot."
+                tone="info"
+              />
+            </>
+          )}
           <div className="budget-flow-operator">=</div>
           <FlowStep
             label="Capacity left"
@@ -265,56 +272,39 @@ export default function Budget({
         </section>
       </section>
 
-      <section className="budget-recurring-grid">
-        <section className="panel">
-          <div className="dashboard-section-header">
-            <div>
-              <h2>Recurring income</h2>
-              <p>The dependable income sources feeding the monthly budget.</p>
-            </div>
+      <section className="panel">
+        <div className="dashboard-section-header">
+          <div>
+            <h2>Monthly recurring items</h2>
+            <p>All regular money in and out, ordered so the full budget is easier to scan.</p>
           </div>
-          {incomeItems.length === 0 ? (
-            <p className="empty-inline">No active recurring income yet.</p>
-          ) : (
-            <div className="compact-commitment-list">
-              {sortedIncomeItems.map((item) => (
-                <article key={item.id} className="compact-commitment-row">
-                  <div>
-                    <strong>{item.description}</strong>
-                    <span>{item.category}</span>
-                  </div>
-                  <b>{formatMonthlyAmount(item, currency)}</b>
-                </article>
-              ))}
+          <button type="button" className="text-action" onClick={() => onNavigate?.('recurring')}>
+            Edit items
+            <ArrowRight size={15} />
+          </button>
+        </div>
+        {activeItems.length === 0 ? (
+          <p className="empty-inline">No active recurring items yet.</p>
+        ) : (
+          <div className="budget-item-table" role="table" aria-label="Monthly recurring items">
+            <div className="budget-item-table-head" role="row">
+              <span>Description</span>
+              <span>Category</span>
+              <span>Type</span>
+              <span>Monthly</span>
             </div>
-          )}
-        </section>
-
-        <section className="panel">
-          <div className="dashboard-section-header">
-            <div>
-              <h2>Largest outgoings</h2>
-              <p>The biggest regular commitments to review first.</p>
-            </div>
+            {[...sortedIncomeItems, ...sortedOutgoingItems].map((item) => (
+              <article key={item.id} className="budget-item-table-row" role="row">
+                <strong>{item.description}</strong>
+                <span>{item.category}</span>
+                <span className={`budget-type-pill budget-type-${item.type === 'income' ? 'income' : 'outgoing'}`}>
+                  {item.type === 'income' ? 'Income' : 'Outgoing'}
+                </span>
+                <b>{formatMonthlyAmount(item, currency)}</b>
+              </article>
+            ))}
           </div>
-          {outgoingItems.length === 0 ? (
-            <p className="empty-inline">No active recurring outgoings yet.</p>
-          ) : (
-            <div className="compact-commitment-list">
-              {sortedOutgoingItems
-                .slice(0, 8)
-                .map((item) => (
-                  <article key={item.id} className="compact-commitment-row">
-                    <div>
-                      <strong>{item.description}</strong>
-                      <span>{item.category}</span>
-                    </div>
-                    <b>{formatMonthlyAmount(item, currency)}</b>
-                  </article>
-                ))}
-            </div>
-          )}
-        </section>
+        )}
       </section>
 
       <section className="panel">

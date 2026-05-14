@@ -19,13 +19,20 @@ export function getScenarioProjection({
     horizonDays
   );
   const scenarioAssetSales = delayAssetSales ? 0 : baseline.assetSales;
+  const baselineCapacityOverHorizon = monthlySummary.surplus * (horizonDays / 30);
+  const baselineProjectedMaxCash = baseline.projectedMaxCash + baselineCapacityOverHorizon;
   const adjustedCapacity = monthlySummary.surplus + toNumber(monthlyCapacityAdjustment);
   const capacityOverHorizon = adjustedCapacity * (horizonDays / 30);
   const scenarioCosts = baseline.costs + toNumber(extraCost);
   const projectedMaxCash = snapshotTotals.maxAvailableCash + scenarioAssetSales - scenarioCosts + capacityOverHorizon;
 
   return {
-    baseline,
+    baseline: {
+      ...baseline,
+      planOnlyProjectedMaxCash: baseline.projectedMaxCash,
+      capacityOverHorizon: baselineCapacityOverHorizon,
+      projectedMaxCash: baselineProjectedMaxCash,
+    },
     monthlySummary,
     scenario: {
       costs: scenarioCosts,
@@ -37,7 +44,7 @@ export function getScenarioProjection({
       horizonDays,
     },
     deltas: {
-      projectedMaxCash: projectedMaxCash - baseline.projectedMaxCash,
+      projectedMaxCash: projectedMaxCash - baselineProjectedMaxCash,
       costs: scenarioCosts - baseline.costs,
       assetSales: scenarioAssetSales - baseline.assetSales,
     },

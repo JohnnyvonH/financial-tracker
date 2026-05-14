@@ -700,27 +700,27 @@ function App() {
       return false;
     }
 
+    const importedCloudSnapshotIds = [];
+
     try {
       setSyncing(true);
       const savedSnapshots = [];
       const importDates = new Set(snapshots.map((snapshot) => snapshot.date));
-
-      if (user && isConfigured && supabaseSync.isAvailable()) {
-        const existingToReplace = data.netWorthSnapshots.filter((snapshot) => importDates.has(snapshot.date));
-        for (const existingSnapshot of existingToReplace) {
-          await supabaseSync.deleteNetWorthSnapshot(existingSnapshot.id);
-        }
-      }
+      const shouldSyncCloud = user && isConfigured && supabaseSync.isAvailable();
+      const existingToReplace = shouldSyncCloud
+        ? data.netWorthSnapshots.filter((snapshot) => importDates.has(snapshot.date))
+        : [];
 
       for (const snapshot of snapshots) {
         const snapshotToSave = applyLegacySnapshotFields(snapshot, data.snapshotSections);
         let savedSnapshot = null;
 
-        if (user && isConfigured && supabaseSync.isAvailable()) {
+        if (shouldSyncCloud) {
           savedSnapshot = await supabaseSync.addNetWorthSnapshot(snapshotToSave);
           if (!savedSnapshot) {
             throw new Error(`Cloud snapshot import failed for ${snapshot.date}`);
           }
+          importedCloudSnapshotIds.push(savedSnapshot.id);
         }
 
         savedSnapshots.push(savedSnapshot || {
@@ -728,6 +728,13 @@ function App() {
           ...snapshotToSave,
           createdAt: snapshot.createdAt || new Date().toISOString()
         });
+      }
+
+      for (const existingSnapshot of existingToReplace) {
+        const deleted = await supabaseSync.deleteNetWorthSnapshot(existingSnapshot.id);
+        if (!deleted) {
+          throw new Error(`Cloud snapshot replacement cleanup failed for ${existingSnapshot.date}`);
+        }
       }
 
       const importedDates = new Set(savedSnapshots.map((snapshot) => snapshot.date));
@@ -747,6 +754,11 @@ function App() {
       return true;
     } catch (error) {
       console.error('Error importing net worth snapshots:', error);
+      if (user && isConfigured && supabaseSync.isAvailable()) {
+        await Promise.allSettled(
+          importedCloudSnapshotIds.map((snapshotId) => supabaseSync.deleteNetWorthSnapshot(snapshotId))
+        );
+      }
       showToast('Failed to import snapshots. Please check the CSV file.', 'error');
       return false;
     } finally {
