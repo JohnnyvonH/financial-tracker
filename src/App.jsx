@@ -995,6 +995,7 @@ function App() {
               budgets={data.budgets}
               currency={currency}
               onNavigate={setView}
+              onUpdateBudgets={updateBudgets}
             />
           )}
 

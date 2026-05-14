@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react';
+import React, { useMemo, useState } from 'react';
 import {
   AlertTriangle,
   ArrowRight,
@@ -6,6 +6,7 @@ import {
   CheckCircle2,
   ListChecks,
   Plus,
+  Trash2,
   TrendingDown,
   TrendingUp,
   WalletCards,
@@ -51,7 +52,11 @@ export default function Budget({
   budgets = {},
   currency = 'USD',
   onNavigate,
+  onUpdateBudgets,
 }) {
+  const [limitCategory, setLimitCategory] = useState('');
+  const [limitAmount, setLimitAmount] = useState('');
+
   const monthlySummary = useMemo(
     () => getRecurringMonthlySummary(recurringTransactions, latestSnapshot),
     [recurringTransactions, latestSnapshot]
@@ -91,6 +96,35 @@ export default function Budget({
   const sortedOutgoingItems = [...outgoingItems].sort(
     (a, b) => getMonthlyEquivalent(b.amount, b.frequency) - getMonthlyEquivalent(a.amount, a.frequency)
   );
+  const editableCategories = [...new Set([
+    ...Object.keys(monthlySummary.byCategory),
+    ...Object.keys(budgets),
+  ])].sort((a, b) => a.localeCompare(b));
+
+  const handleLimitSubmit = async (event) => {
+    event.preventDefault();
+    const category = limitCategory.trim();
+    const amount = Number(limitAmount);
+
+    if (!category || !Number.isFinite(amount) || amount <= 0 || !onUpdateBudgets) return;
+
+    const saved = await onUpdateBudgets({
+      ...budgets,
+      [category]: amount,
+    });
+
+    if (saved !== false) {
+      setLimitCategory('');
+      setLimitAmount('');
+    }
+  };
+
+  const handleRemoveLimit = async (category) => {
+    if (!onUpdateBudgets) return;
+    const nextBudgets = { ...budgets };
+    delete nextBudgets[category];
+    await onUpdateBudgets(nextBudgets);
+  };
 
   return (
     <div className="recurring-workspace monthly-budget-page">
@@ -314,6 +348,39 @@ export default function Budget({
             <p>Optional guardrails for monthly categories.</p>
           </div>
         </div>
+        <form className="budget-limit-editor" onSubmit={handleLimitSubmit}>
+          <div className="form-group">
+            <label htmlFor="budget-limit-category">Category</label>
+            <input
+              id="budget-limit-category"
+              list="budget-limit-categories"
+              value={limitCategory}
+              onChange={(event) => setLimitCategory(event.target.value)}
+              placeholder="Groceries"
+            />
+            <datalist id="budget-limit-categories">
+              {editableCategories.map((category) => (
+                <option key={category} value={category} />
+              ))}
+            </datalist>
+          </div>
+          <div className="form-group">
+            <label htmlFor="budget-limit-amount">Monthly limit</label>
+            <input
+              id="budget-limit-amount"
+              type="number"
+              min="0"
+              step="0.01"
+              value={limitAmount}
+              onChange={(event) => setLimitAmount(event.target.value)}
+              placeholder="0.00"
+            />
+          </div>
+          <button type="submit" className="btn btn-primary" disabled={!onUpdateBudgets}>
+            <Plus size={16} />
+            Save limit
+          </button>
+        </form>
         {categoryLimitRows.length > 0 ? (
           <div className="monthly-category-list">
             {categoryLimitRows.map((row) => {
@@ -337,6 +404,15 @@ export default function Budget({
                       ? `${formatCurrency(Math.abs(row.remaining), currency)} over limit`
                       : `${formatCurrency(row.remaining, currency)} left`}
                   </small>
+                  <button
+                    type="button"
+                    className="text-action budget-remove-limit"
+                    onClick={() => handleRemoveLimit(row.category)}
+                    disabled={!onUpdateBudgets}
+                  >
+                    <Trash2 size={14} />
+                    Remove limit
+                  </button>
                 </article>
               );
             })}

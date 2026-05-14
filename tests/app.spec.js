@@ -138,6 +138,18 @@ test('budgets page explains monthly flow and next action', async ({ page }) => {
   await expect(page.getByText('Snapshot commitments')).toHaveCount(0);
 });
 
+test('budgets page can edit category limits inline', async ({ page }) => {
+  const nav = page.getByRole('navigation', { name: 'Primary navigation' });
+  await nav.getByRole('button', { name: 'Budgets', exact: true }).click();
+
+  await page.getByLabel('Category').fill('Groceries');
+  await page.getByLabel('Monthly limit').fill('500');
+  await page.getByRole('button', { name: 'Save limit' }).click();
+
+  const groceriesLimit = page.locator('.monthly-category-row').filter({ hasText: 'Groceries' });
+  await expect(groceriesLimit.getByText(/500\.00/)).toBeVisible();
+});
+
 test('destructive settings actions use app confirmation dialog', async ({ page }) => {
   const nav = page.getByRole('navigation', { name: 'Primary navigation' });
   await nav.getByRole('button', { name: 'Settings', exact: true }).click();
