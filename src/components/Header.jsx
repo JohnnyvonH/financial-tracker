@@ -51,7 +51,7 @@ export default function Header({ view, setView, isDarkMode, onToggleDarkMode }) 
       </nav>
 
       <div className="sidebar-actions">
-        <AuthButton onSignInClick={() => setView('auth')} />
+        <AuthButton onSignInClick={() => setView('auth')} onSettingsClick={() => setView('settings')} />
         <div className="quick-action-stack">
           {actionButtons.map((button) => {
           const Icon = button.icon;

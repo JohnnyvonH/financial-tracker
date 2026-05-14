@@ -16,6 +16,7 @@ import ReportsPage from './components/ReportsPage';
 import AuthPage from './pages/AuthPage';
 import Toast from './components/Toast';
 import LoadingSpinner from './components/LoadingSpinner';
+import ConfirmDialog from './components/ConfirmDialog';
 import { useAuth } from './contexts/AuthContext';
 import { storageService } from './services/storage';
 import { supabaseSync } from './services/supabaseSync';
@@ -52,7 +53,9 @@ function App() {
   const [loading, setLoading] = useState(true);
   const [syncing, setSyncing] = useState(false);
   const [toast, setToast] = useState(null);
+  const [confirmation, setConfirmation] = useState(null);
   const recurringProcessedRef = useRef(false);
+  const confirmationResolverRef = useRef(null);
 
   // Count duplicates
   const duplicateCount = useMemo(() => countDuplicates(data.transactions), [data.transactions]);
@@ -60,6 +63,19 @@ function App() {
   // Show toast notification
   const showToast = (message, type = 'info') => {
     setToast({ message, type });
+  };
+
+  const requestConfirmation = (options) => new Promise((resolve) => {
+    confirmationResolverRef.current = resolve;
+    setConfirmation(options);
+  });
+
+  const resolveConfirmation = (confirmed) => {
+    if (confirmationResolverRef.current) {
+      confirmationResolverRef.current(confirmed);
+    }
+    confirmationResolverRef.current = null;
+    setConfirmation(null);
   };
 
   // Initialize data on mount or when user changes
@@ -258,7 +274,12 @@ function App() {
 
   // Remove duplicate transactions
   const handleRemoveDuplicates = async () => {
-    if (!confirm(`Remove ${duplicateCount} duplicate transaction${duplicateCount > 1 ? 's' : ''}? This cannot be undone.`)) return;
+    const confirmed = await requestConfirmation({
+      title: 'Remove duplicate transactions?',
+      message: `Remove ${duplicateCount} duplicate transaction${duplicateCount > 1 ? 's' : ''}? This cannot be undone.`,
+      confirmLabel: 'Remove duplicates',
+    });
+    if (!confirmed) return;
 
     try {
       setSyncing(true);
@@ -405,7 +426,12 @@ function App() {
 
   // Delete transaction
   const deleteTransaction = async (id) => {
-    if (!confirm('Are you sure you want to delete this transaction?')) return;
+    const confirmed = await requestConfirmation({
+      title: 'Delete transaction?',
+      message: 'This transaction will be removed and your balance will be recalculated.',
+      confirmLabel: 'Delete transaction',
+    });
+    if (!confirmed) return;
 
     try {
       setSyncing(true);
@@ -494,7 +520,12 @@ function App() {
 
   // Delete recurring transaction
   const deleteRecurringTransaction = async (id) => {
-    if (!confirm('Are you sure you want to delete this recurring transaction?')) return;
+    const confirmed = await requestConfirmation({
+      title: 'Delete recurring item?',
+      message: 'This recurring payment will stop appearing in your monthly plan.',
+      confirmLabel: 'Delete recurring item',
+    });
+    if (!confirmed) return;
 
     try {
       setSyncing(true);
@@ -626,7 +657,12 @@ function App() {
 
   // Delete goal
   const deleteGoal = async (id) => {
-    if (!confirm('Are you sure you want to delete this goal?')) return;
+    const confirmed = await requestConfirmation({
+      title: 'Delete savings goal?',
+      message: 'This goal and its progress will be removed from your plan.',
+      confirmLabel: 'Delete goal',
+    });
+    if (!confirmed) return;
 
     try {
       setSyncing(true);
@@ -729,7 +765,12 @@ function App() {
   };
 
   const deletePlanningItem = async (id) => {
-    if (!confirm('Delete this plan item?')) return;
+    const confirmed = await requestConfirmation({
+      title: 'Delete plan item?',
+      message: 'This planned cost, sale, or target will be removed from your forecast.',
+      confirmLabel: 'Delete plan item',
+    });
+    if (!confirmed) return;
 
     try {
       setSyncing(true);
@@ -931,7 +972,12 @@ function App() {
   };
 
   const deleteNetWorthSnapshot = async (id) => {
-    if (!confirm('Delete this snapshot?')) return;
+    const confirmed = await requestConfirmation({
+      title: 'Delete current finances snapshot?',
+      message: 'This dated snapshot will be removed from history and trend reporting.',
+      confirmLabel: 'Delete snapshot',
+    });
+    if (!confirmed) return;
 
     try {
       setSyncing(true);
@@ -991,8 +1037,13 @@ function App() {
   };
 
   // Clear all data
-  const clearAllData = () => {
-    if (!confirm('Are you sure you want to clear ALL data? This cannot be undone!')) return;
+  const clearAllData = async () => {
+    const confirmed = await requestConfirmation({
+      title: 'Clear all local data?',
+      message: 'This permanently removes transactions, goals, budgets, plans, recurring items, and snapshots from local storage.',
+      confirmLabel: 'Clear all data',
+    });
+    if (!confirmed) return;
 
     try {
       const success = storageService.clearData();
@@ -1084,6 +1135,14 @@ function App() {
             onClose={() => setToast(null)}
           />
         )}
+
+        {confirmation && (
+          <ConfirmDialog
+            {...confirmation}
+            onConfirm={() => resolveConfirmation(true)}
+            onCancel={() => resolveConfirmation(false)}
+          />
+        )}
         <AuthPage onBack={() => setView('dashboard')} />
       </ErrorBoundary>
     );
@@ -1097,6 +1156,14 @@ function App() {
             message={toast.message}
             type={toast.type}
             onClose={() => setToast(null)}
+          />
+        )}
+
+        {confirmation && (
+          <ConfirmDialog
+            {...confirmation}
+            onConfirm={() => resolveConfirmation(true)}
+            onCancel={() => resolveConfirmation(false)}
           />
         )}
         

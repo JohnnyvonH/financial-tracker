@@ -2,7 +2,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { User, LogOut, Settings, Cloud, CloudOff } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 
-export default function UserMenu() {
+export default function UserMenu({ onSettingsClick }) {
   const { user, signOut, isAuthenticated, isConfigured } = useAuth();
   const [isOpen, setIsOpen] = useState(false);
   const menuRef = useRef(null);
@@ -184,7 +184,7 @@ export default function UserMenu() {
             <button
               onClick={() => {
                 setIsOpen(false);
-                // TODO: Navigate to settings
+                onSettingsClick?.();
               }}
               style={{
                 width: '100%',

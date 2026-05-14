@@ -3,7 +3,7 @@ import { LogIn } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import UserMenu from './UserMenu';
 
-export default function AuthButton({ onSignInClick }) {
+export default function AuthButton({ onSignInClick, onSettingsClick }) {
   const { isAuthenticated, isConfigured, loading } = useAuth();
 
   // Don't show anything while loading
@@ -30,7 +30,7 @@ export default function AuthButton({ onSignInClick }) {
 
   // Show user menu if authenticated
   if (isAuthenticated) {
-    return <UserMenu />;
+    return <UserMenu onSettingsClick={onSettingsClick} />;
   }
 
   // Show sign in button
