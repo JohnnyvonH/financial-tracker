@@ -750,6 +750,57 @@ html.light .sidebar-brand .header-logo-text {
   top: 1rem;
 }
 
+.snapshot-import-panel {
+  display: grid;
+  gap: 0.9rem;
+}
+
+.snapshot-import-panel p {
+  margin: 0;
+  color: var(--text-secondary);
+  font-size: 0.9rem;
+}
+
+.snapshot-import-preview,
+.snapshot-import-errors {
+  display: grid;
+  gap: 0.65rem;
+  padding: 0.9rem;
+  border: 1px solid var(--border);
+  border-radius: 0.75rem;
+  background: var(--bg-secondary);
+}
+
+.snapshot-import-preview strong {
+  color: var(--text-primary);
+}
+
+.snapshot-import-preview span,
+.snapshot-import-errors p {
+  color: var(--text-secondary);
+  font-size: 0.84rem;
+}
+
+.snapshot-import-dates {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+}
+
+.snapshot-import-dates span {
+  padding: 0.25rem 0.5rem;
+  border-radius: 999px;
+  background: rgba(16, 185, 129, 0.12);
+  color: var(--primary-light);
+  font-size: 0.78rem;
+  font-weight: 700;
+}
+
+.snapshot-import-errors {
+  border-color: rgba(239, 68, 68, 0.38);
+  background: rgba(239, 68, 68, 0.08);
+}
+
 .snapshot-hero p:not(.eyebrow) {
   max-width: 700px;
   color: var(--text-secondary);

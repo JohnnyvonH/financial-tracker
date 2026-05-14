@@ -870,6 +870,66 @@ function App() {
     }
   };
 
+  const importNetWorthSnapshots = async (snapshots) => {
+    if (!Array.isArray(snapshots) || snapshots.length === 0) {
+      showToast('No snapshots to import.', 'warning');
+      return false;
+    }
+
+    try {
+      setSyncing(true);
+      const savedSnapshots = [];
+      const importDates = new Set(snapshots.map((snapshot) => snapshot.date));
+
+      if (user && isConfigured && supabaseSync.isAvailable()) {
+        const existingToReplace = data.netWorthSnapshots.filter((snapshot) => importDates.has(snapshot.date));
+        for (const existingSnapshot of existingToReplace) {
+          await supabaseSync.deleteNetWorthSnapshot(existingSnapshot.id);
+        }
+      }
+
+      for (const snapshot of snapshots) {
+        const snapshotToSave = applyLegacySnapshotFields(snapshot, data.snapshotSections);
+        let savedSnapshot = null;
+
+        if (user && isConfigured && supabaseSync.isAvailable()) {
+          savedSnapshot = await supabaseSync.addNetWorthSnapshot(snapshotToSave);
+          if (!savedSnapshot) {
+            throw new Error(`Cloud snapshot import failed for ${snapshot.date}`);
+          }
+        }
+
+        savedSnapshots.push(savedSnapshot || {
+          id: snapshot.id || `${Date.now()}-${snapshot.date}`,
+          ...snapshotToSave,
+          createdAt: snapshot.createdAt || new Date().toISOString()
+        });
+      }
+
+      const importedDates = new Set(savedSnapshots.map((snapshot) => snapshot.date));
+      const mergedSnapshots = [
+        ...savedSnapshots,
+        ...data.netWorthSnapshots.filter((snapshot) => !importedDates.has(snapshot.date))
+      ].sort((a, b) => new Date(b.date) - new Date(a.date));
+      const snapshotTotals = getSnapshotTotals(mergedSnapshots[0]);
+
+      await saveData({
+        ...data,
+        balance: snapshotTotals.maxAvailableCash,
+        netWorthSnapshots: mergedSnapshots
+      });
+
+      showToast(`${savedSnapshots.length} current finance snapshot${savedSnapshots.length === 1 ? '' : 's'} imported.`, 'success');
+      return true;
+    } catch (error) {
+      console.error('Error importing net worth snapshots:', error);
+      showToast('Failed to import snapshots. Please check the CSV file.', 'error');
+      return false;
+    } finally {
+      setSyncing(false);
+    }
+  };
+
   const deleteNetWorthSnapshot = async (id) => {
     if (!confirm('Delete this snapshot?')) return;
 
@@ -1129,6 +1189,7 @@ function App() {
               snapshotSections={data.snapshotSections}
               onUpdateSnapshotSections={updateSnapshotSections}
               onAddNetWorthSnapshot={addNetWorthSnapshot}
+              onImportNetWorthSnapshots={importNetWorthSnapshots}
               onDeleteNetWorthSnapshot={deleteNetWorthSnapshot}
               currency={currency}
             />
