@@ -2,9 +2,12 @@ import React, { useMemo } from 'react';
 import {
   BarChart3,
   CalendarClock,
+  CheckCircle2,
   Download,
+  ListChecks,
   PiggyBank,
   Target,
+  AlertTriangle,
   TrendingDown,
   TrendingUp,
   WalletCards,
@@ -14,6 +17,7 @@ import { exportGoalsToCSV, exportMonthlyFlowToCSV, exportToCSV } from '../utils/
 import NetWorthTrendChart from './NetWorthTrendChart';
 import {
   getCommitmentProjection,
+  getFinanceInsights,
   getGoalSummary,
   getMonthlyEquivalent,
   getRecurringMonthlySummary,
@@ -51,9 +55,16 @@ function DeltaValue({ value, currency, inverse = false }) {
   );
 }
 
+function InsightIcon({ tone }) {
+  if (tone === 'positive') return <CheckCircle2 size={18} />;
+  if (tone === 'warning' || tone === 'danger') return <AlertTriangle size={18} />;
+  return <ListChecks size={18} />;
+}
+
 export default function ReportsPage({
   transactions = [],
   goals = [],
+  budgets = {},
   recurringTransactions = [],
   planningItems = [],
   netWorthSnapshots = [],
@@ -70,6 +81,16 @@ export default function ReportsPage({
   const planningSummary = getPlanningReportSummary(planningItems);
   const transactionComparison = getMonthlyTransactionComparison(transactions);
   const commitmentProjection = getCommitmentProjection(planningItems.filter((item) => item.type !== 'saving'), snapshotTotals, 90);
+  const insights = getFinanceInsights({
+    balance: snapshotTotals.maxAvailableCash,
+    monthlyIncome: monthlySummary.income,
+    monthlyExpenses: monthlySummary.outgoings,
+    budgets,
+    transactions,
+    planningItems: planningItems.filter((item) => item.type !== 'saving'),
+    goals,
+    netWorthSnapshots,
+  });
   const surplusTone = monthlySummary.surplus >= 0 ? 'positive' : 'danger';
   const topOutgoings = activeRecurring
     .filter((item) => item.type !== 'income')
@@ -291,6 +312,21 @@ export default function ReportsPage({
             {transactionComparison.current.count} current-month transaction{transactionComparison.current.count === 1 ? '' : 's'} versus {transactionComparison.previous.count} last month.
           </p>
         </section>
+      </section>
+
+      <section className="card report-insight-card">
+        <h3 className="text-xl font-semibold mb-4" style={{ color: 'var(--text-primary)' }}>Insight radar</h3>
+        <div className="report-insight-list">
+          {insights.map((insight) => (
+            <article key={insight.title} className={`insight-row insight-${insight.tone}`}>
+              <div className="insight-row-icon"><InsightIcon tone={insight.tone} /></div>
+              <div>
+                <h4>{insight.title}</h4>
+                <p>{insight.message}</p>
+              </div>
+            </article>
+          ))}
+        </div>
       </section>
 
       <section className="grid grid-2 gap-6">

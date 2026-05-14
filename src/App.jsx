@@ -1201,6 +1201,7 @@ function App() {
             <ReportsPage
               transactions={data.transactions}
               goals={data.goals}
+              budgets={data.budgets}
               recurringTransactions={data.recurringTransactions}
               planningItems={data.planningItems}
               netWorthSnapshots={data.netWorthSnapshots}

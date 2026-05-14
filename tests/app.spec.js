@@ -20,6 +20,8 @@ test('reports show net worth trend from current finance snapshots', async ({ pag
   await expect(page.getByText('Upcoming costs after saved funds')).toBeVisible();
   await expect(page.getByRole('heading', { name: 'Month-over-month check' })).toBeVisible();
   await expect(page.getByText('Expense change')).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Insight radar' })).toBeVisible();
+  await expect(page.getByText('Housing budget pressure')).toBeVisible();
 });
 
 test('current finances template can add a custom bank and card', async ({ page }) => {
