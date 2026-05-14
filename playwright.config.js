@@ -3,6 +3,7 @@ import process from 'node:process';
 
 export default defineConfig({
   testDir: './tests',
+  testMatch: /.*\.spec\.js/,
   timeout: 30_000,
   expect: {
     timeout: 8_000,
