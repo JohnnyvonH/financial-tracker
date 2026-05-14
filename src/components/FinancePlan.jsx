@@ -30,6 +30,30 @@ const getFormValue = (item) => (
     : item.targetAmount || ''
 );
 
+const parsePlanDate = (dateString) => {
+  if (!dateString) return null;
+  const [year, month, day] = String(dateString).split('-').map(Number);
+  if (!year || !month || !day) return null;
+  const date = new Date(year, month - 1, day);
+  return Number.isNaN(date.getTime()) ? null : date;
+};
+
+const formatPlanDate = (dateString) => {
+  const date = parsePlanDate(dateString);
+  if (!date) return 'No date';
+  return date.toLocaleDateString('en-GB', {
+    day: 'numeric',
+    month: 'short',
+    year: 'numeric',
+  });
+};
+
+const getPlanTypeLabel = (type) => {
+  if (type === 'asset-sale') return 'Asset sale';
+  if (type === 'saving') return 'Savings target';
+  return 'Upcoming cost';
+};
+
 function PlanningItemCard({ item, currency, onDelete, onEdit }) {
   const value = getPlanningValue(item);
   const saved = numberValue(item.savedAmount);
@@ -87,6 +111,55 @@ function PlanningItemCard({ item, currency, onDelete, onEdit }) {
       </div>
       {item.notes && <p className="planning-notes">{item.notes}</p>}
     </article>
+  );
+}
+
+function PlanningTimeline({ items, currency }) {
+  const datedItems = items
+    .map((item) => ({ item, date: parsePlanDate(item.dueDate) }))
+    .filter(({ date }) => date)
+    .sort((a, b) => a.date - b.date);
+  const undatedItems = items.filter((item) => !parsePlanDate(item.dueDate));
+
+  return (
+    <section className="panel planning-timeline-panel">
+      <div className="dashboard-section-header">
+        <div>
+          <h2>Planning timeline</h2>
+          <p>Dated costs, asset sales, and saving targets in the order they are expected.</p>
+        </div>
+        <Calendar size={20} />
+      </div>
+
+      {datedItems.length === 0 ? (
+        <p className="empty-inline">No dated plan items yet.</p>
+      ) : (
+        <div className="planning-timeline-list">
+          {datedItems.map(({ item }) => {
+            const Icon = item.type === 'asset-sale' ? Car : item.type === 'saving' ? Home : Calendar;
+            const value = getPlanningValue(item);
+            return (
+              <article key={item.id} className={`planning-timeline-row timeline-${item.type}`}>
+                <span className="planning-timeline-marker"><Icon size={16} /></span>
+                <div>
+                  <h3>{item.title}</h3>
+                  <p>{getPlanTypeLabel(item.type)} - {item.status}</p>
+                </div>
+                <span>{formatPlanDate(item.dueDate)}</span>
+                <b>{formatCurrency(value, currency)}</b>
+              </article>
+            );
+          })}
+        </div>
+      )}
+
+      {undatedItems.length > 0 && (
+        <div className="planning-undated-strip">
+          <strong>Undated</strong>
+          <span>{undatedItems.map((item) => item.title).join(', ')}</span>
+        </div>
+      )}
+    </section>
   );
 }
 
@@ -293,6 +366,8 @@ export default function FinancePlan({
         recurringTransactions={recurringTransactions}
         currency={currency}
       />
+
+      <PlanningTimeline items={planningItems} currency={currency} />
 
       <section className="planning-list">
         {planningItems.length === 0 ? (
