@@ -80,6 +80,8 @@ export default function Dashboard({
     balance: snapshotTotals.maxAvailableCash,
     monthlyIncome: monthlySummary.income,
     monthlyExpenses: monthlySummary.outgoings,
+    budgets: data.budgets,
+    transactions: data.transactions,
     planningItems: commitmentItems,
     goals: data.goals,
     netWorthSnapshots: data.netWorthSnapshots,

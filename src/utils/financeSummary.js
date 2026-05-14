@@ -252,6 +252,8 @@ export function getFinanceInsights({
   balance = 0,
   monthlyIncome = 0,
   monthlyExpenses = 0,
+  budgets = {},
+  transactions = [],
   planningItems = [],
   goals = [],
   netWorthSnapshots = [],
@@ -262,6 +264,20 @@ export function getFinanceInsights({
   const surplus = monthlyIncome - monthlyExpenses;
   const latestSnapshot = netWorthSnapshots[0];
   const latestTotals = getSnapshotTotals(latestSnapshot);
+  const previousSnapshot = netWorthSnapshots[1];
+  const previousTotals = getSnapshotTotals(previousSnapshot);
+  const currentMonthTransactions = transactions.filter((transaction) => {
+    const date = parseDateInput(transaction.date);
+    const now = new Date();
+    return date && date.getMonth() === now.getMonth() && date.getFullYear() === now.getFullYear();
+  });
+  const spendingByCategory = currentMonthTransactions
+    .filter((transaction) => transaction.type === 'expense')
+    .reduce((summary, transaction) => {
+      const category = transaction.category || 'Other';
+      summary[category] = (summary[category] || 0) + toNumber(transaction.amount);
+      return summary;
+    }, {});
   const insights = [];
 
   if (fundingGap > 0) {
@@ -291,6 +307,21 @@ export function getFinanceInsights({
     });
   }
 
+  Object.entries(budgets).forEach(([category, budget]) => {
+    const spent = spendingByCategory[category] || 0;
+    const limit = toNumber(budget);
+    if (limit <= 0 || spent <= 0) return;
+
+    const usage = (spent / limit) * 100;
+    if (usage >= 90) {
+      insights.push({
+        tone: usage >= 100 ? 'danger' : 'warning',
+        title: `${category} budget pressure`,
+        message: `${usage.toFixed(0)}% of this month's ${category} budget is already used.`,
+      });
+    }
+  });
+
   if (goalsSummary.remaining > 0) {
     insights.push({
       tone: 'info',
@@ -304,6 +335,30 @@ export function getFinanceInsights({
       tone: 'info',
       title: 'Current finances may need refreshing',
       message: 'Your current balance is higher than the latest available cash after cards and MoneyBox monthly.',
+    });
+  }
+
+  if (latestSnapshot?.date) {
+    const snapshotDate = parseDateInput(latestSnapshot.date);
+    const daysOld = snapshotDate
+      ? Math.floor((new Date() - snapshotDate) / (24 * 60 * 60 * 1000))
+      : 0;
+
+    if (daysOld > 21) {
+      insights.push({
+        tone: 'warning',
+        title: 'Current finances are getting stale',
+        message: `Your latest snapshot is ${daysOld} days old. Refresh it before relying on forecasts.`,
+      });
+    }
+  }
+
+  if (previousSnapshot) {
+    const wealthDelta = latestTotals.allAssets - previousTotals.allAssets;
+    insights.push({
+      tone: wealthDelta >= 0 ? 'positive' : 'warning',
+      title: wealthDelta >= 0 ? 'Net worth moved up' : 'Net worth moved down',
+      message: `${Math.abs(wealthDelta).toFixed(0)} ${wealthDelta >= 0 ? 'increase' : 'decrease'} since the previous current-finances snapshot.`,
     });
   }
 
