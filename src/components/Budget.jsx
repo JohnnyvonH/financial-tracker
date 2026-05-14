@@ -4,6 +4,7 @@ import {
   ArrowRight,
   CalendarClock,
   CheckCircle2,
+  ListChecks,
   Plus,
   TrendingDown,
   TrendingUp,
@@ -34,6 +35,16 @@ function formatMonthlyAmount(item, currency) {
   return formatCurrency(monthlyAmount, currency);
 }
 
+function FlowStep({ label, value, detail, tone = 'neutral' }) {
+  return (
+    <article className={`budget-flow-step budget-flow-${tone}`}>
+      <span>{label}</span>
+      <strong>{value}</strong>
+      <p>{detail}</p>
+    </article>
+  );
+}
+
 export default function Budget({
   recurringTransactions = [],
   latestSnapshot,
@@ -55,10 +66,13 @@ export default function Budget({
   const outgoingItems = activeItems.filter((item) => item.type !== 'income');
   const hasIncomeSource = monthlySummary.recurringIncome > 0 || monthlySummary.snapshotPaycheck > 0;
   const surplusTone = monthlySummary.surplus >= 0 ? 'positive' : 'danger';
+  const recurringExpenseTotal = monthlySummary.recurringExpenses;
+  const snapshotCommitmentTotal = monthlySummary.moneyboxMonthly;
   const topCategories = Object.entries(monthlySummary.byCategory)
     .sort(([, a], [, b]) => b - a)
     .slice(0, 6);
   const widestCategoryAmount = Math.max(...topCategories.map(([, amount]) => amount), 1);
+  const categoryTotal = Math.max(monthlySummary.outgoings, 1);
   const categoryLimitRows = Object.entries(budgets)
     .map(([category, limit]) => {
       const committed = monthlySummary.byCategory[category] || 0;
@@ -71,35 +85,47 @@ export default function Budget({
     })
     .sort((a, b) => b.committed - a.committed);
 
+  const sortedIncomeItems = [...incomeItems].sort(
+    (a, b) => getMonthlyEquivalent(b.amount, b.frequency) - getMonthlyEquivalent(a.amount, a.frequency)
+  );
+  const sortedOutgoingItems = [...outgoingItems].sort(
+    (a, b) => getMonthlyEquivalent(b.amount, b.frequency) - getMonthlyEquivalent(a.amount, a.frequency)
+  );
+
   return (
     <div className="recurring-workspace monthly-budget-page">
       <section className="dashboard-hero recurring-hero">
         <div>
-          <h1>Monthly budget</h1>
+          <h1>Monthly budget planner</h1>
           <p>
-            Build the month from dependable income and known outgoings, then use the remaining capacity for goals and planned commitments.
+            See the dependable money coming in, the commitments already spoken for, and the capacity left for goals and planned costs.
           </p>
         </div>
         <div className="hero-actions">
           <button type="button" className="btn btn-primary" onClick={() => onNavigate?.('recurring')}>
             <Plus size={17} />
-            Add monthly item
+            Add income or outgoing
           </button>
         </div>
       </section>
+
+      <div className="budget-page-intro">
+        <span>Month at a glance</span>
+        <p>Use this page as the calmer monthly version of your money: regular income, known outgoings, and the space left to plan.</p>
+      </div>
 
       <section className="metric-grid recurring-summary-grid">
         <BudgetMetric
           label="Monthly income"
           value={hasIncomeSource ? formatCurrency(monthlySummary.income, currency) : 'Missing'}
-          detail={hasIncomeSource ? 'Recurring income or latest paycheck snapshot' : 'Add salary or regular income'}
+          detail={hasIncomeSource ? 'Salary, benefits, or latest paycheck snapshot' : 'Add salary or regular income'}
           icon={TrendingUp}
           tone={hasIncomeSource ? 'positive' : 'warning'}
         />
         <BudgetMetric
           label="Known outgoings"
           value={formatCurrency(monthlySummary.outgoings, currency)}
-          detail="Bills, subscriptions, transfers, and commitments"
+          detail="Bills, subscriptions, transfers, and snapshot commitments"
           icon={TrendingDown}
           tone={monthlySummary.outgoings > monthlySummary.income ? 'warning' : 'info'}
         />
@@ -119,10 +145,55 @@ export default function Budget({
         />
       </section>
 
-      <section className="dashboard-decision-grid">
+      <section className="budget-flow-panel panel">
+        <div className="dashboard-section-header">
+          <div>
+            <h2>Monthly flow</h2>
+            <p>How your available budget is calculated before one-off plans and goals.</p>
+          </div>
+          <button type="button" className="text-action" onClick={() => onNavigate?.('recurring')}>
+            Adjust regular items
+            <ArrowRight size={15} />
+          </button>
+        </div>
+        <div className="budget-flow-grid" aria-label="Monthly budget calculation">
+          <FlowStep
+            label="Money in"
+            value={hasIncomeSource ? formatCurrency(monthlySummary.income, currency) : 'Missing'}
+            detail="Recurring income plus the latest paycheck snapshot when present."
+            tone={hasIncomeSource ? 'positive' : 'warning'}
+          />
+          <div className="budget-flow-operator">-</div>
+          <FlowStep
+            label="Recurring outgoings"
+            value={formatCurrency(recurringExpenseTotal, currency)}
+            detail="Regular payments you expect each month."
+            tone="info"
+          />
+          <div className="budget-flow-operator">-</div>
+          <FlowStep
+            label="Snapshot commitments"
+            value={formatCurrency(snapshotCommitmentTotal, currency)}
+            detail="Saved current-finance commitments included in the month."
+            tone="info"
+          />
+          <div className="budget-flow-operator">=</div>
+          <FlowStep
+            label="Capacity left"
+            value={hasIncomeSource ? `${monthlySummary.surplus >= 0 ? '+' : '-'}${formatCurrency(Math.abs(monthlySummary.surplus), currency)}` : 'Unknown'}
+            detail={monthlySummary.surplus >= 0 ? 'Available for goals, plans, and buffers.' : 'Outgoings are higher than dependable income.'}
+            tone={hasIncomeSource ? surplusTone : 'warning'}
+          />
+        </div>
+      </section>
+
+      <section className="budget-decision-grid">
         <section className="panel panel-wide">
           <div className="dashboard-section-header">
-            <h2>Monthly outgoings by category</h2>
+            <div>
+              <h2>Outgoing categories</h2>
+              <p>Where the known monthly budget is going.</p>
+            </div>
             <button type="button" className="text-action" onClick={() => onNavigate?.('recurring')}>
               Manage recurring
               <ArrowRight size={15} />
@@ -138,6 +209,7 @@ export default function Budget({
                     <strong>{category}</strong>
                     <span>{formatCurrency(amount, currency)} per month</span>
                   </div>
+                  <small>{Math.round((amount / categoryTotal) * 100)}% of known outgoings</small>
                   <div className="progress-bar">
                     <div
                       className="progress-fill"
@@ -152,7 +224,10 @@ export default function Budget({
 
         <section className="panel dashboard-next-panel">
           <div className="dashboard-section-header">
-            <h2>Monthly health</h2>
+            <div>
+              <h2>Next best action</h2>
+              <p>A simple prompt based on the current monthly setup.</p>
+            </div>
           </div>
           <div className="insight-feed">
             <article className={`insight-row insight-${hasIncomeSource ? surplusTone : 'warning'}`}>
@@ -160,14 +235,23 @@ export default function Budget({
                 {hasIncomeSource && monthlySummary.surplus >= 0 ? <CheckCircle2 size={18} /> : <AlertTriangle size={18} />}
               </div>
               <div>
-                <h3>{hasIncomeSource && monthlySummary.surplus >= 0 ? 'Capacity available' : 'Budget needs attention'}</h3>
+                <h3>{hasIncomeSource && monthlySummary.surplus >= 0 ? 'Set the plan from capacity' : 'Budget needs attention'}</h3>
                 <p>
                   {hasIncomeSource
-                    ? `${formatCurrency(Math.abs(monthlySummary.surplus), currency)} ${monthlySummary.surplus >= 0 ? 'remains after known outgoings.' : 'shortfall against known outgoings.'}`
+                    ? `${formatCurrency(Math.abs(monthlySummary.surplus), currency)} ${monthlySummary.surplus >= 0 ? 'remains after known outgoings. Use it for goals, planned costs, or a buffer.' : 'shortfall against known outgoings. Review the largest outgoing rows first.'}`
                     : 'Add recurring income so monthly capacity can be calculated.'}
                 </p>
               </div>
             </article>
+            {categoryLimitRows.length === 0 && (
+              <article className="insight-row insight-info">
+                <div className="insight-row-icon"><ListChecks size={18} /></div>
+                <div>
+                  <h3>No category limits yet</h3>
+                  <p>Add limits when you want this page to show how much room is left inside each monthly category.</p>
+                </div>
+              </article>
+            )}
             {monthlySummary.moneyboxMonthly > 0 && (
               <article className="insight-row insight-info">
                 <div className="insight-row-icon"><WalletCards size={18} /></div>
@@ -181,14 +265,19 @@ export default function Budget({
         </section>
       </section>
 
-      <section className="grid grid-2 gap-6">
-        <section className="card">
-          <h3 className="text-xl font-semibold mb-4" style={{ color: 'var(--text-primary)' }}>Income rhythm</h3>
+      <section className="budget-recurring-grid">
+        <section className="panel">
+          <div className="dashboard-section-header">
+            <div>
+              <h2>Recurring income</h2>
+              <p>The dependable income sources feeding the monthly budget.</p>
+            </div>
+          </div>
           {incomeItems.length === 0 ? (
             <p className="empty-inline">No active recurring income yet.</p>
           ) : (
             <div className="compact-commitment-list">
-              {incomeItems.map((item) => (
+              {sortedIncomeItems.map((item) => (
                 <article key={item.id} className="compact-commitment-row">
                   <div>
                     <strong>{item.description}</strong>
@@ -201,14 +290,18 @@ export default function Budget({
           )}
         </section>
 
-        <section className="card">
-          <h3 className="text-xl font-semibold mb-4" style={{ color: 'var(--text-primary)' }}>Largest outgoings</h3>
+        <section className="panel">
+          <div className="dashboard-section-header">
+            <div>
+              <h2>Largest outgoings</h2>
+              <p>The biggest regular commitments to review first.</p>
+            </div>
+          </div>
           {outgoingItems.length === 0 ? (
             <p className="empty-inline">No active recurring outgoings yet.</p>
           ) : (
             <div className="compact-commitment-list">
-              {[...outgoingItems]
-                .sort((a, b) => getMonthlyEquivalent(b.amount, b.frequency) - getMonthlyEquivalent(a.amount, a.frequency))
+              {sortedOutgoingItems
                 .slice(0, 8)
                 .map((item) => (
                   <article key={item.id} className="compact-commitment-row">
@@ -224,11 +317,14 @@ export default function Budget({
         </section>
       </section>
 
-      {categoryLimitRows.length > 0 && (
-        <section className="panel">
-          <div className="dashboard-section-header">
-            <h2>Existing category limits</h2>
+      <section className="panel">
+        <div className="dashboard-section-header">
+          <div>
+            <h2>Category limits</h2>
+            <p>Optional guardrails for monthly categories.</p>
           </div>
+        </div>
+        {categoryLimitRows.length > 0 ? (
           <div className="monthly-category-list">
             {categoryLimitRows.map((row) => {
               const percentage = row.limit > 0 ? Math.min((row.committed / row.limit) * 100, 100) : 0;
@@ -255,8 +351,16 @@ export default function Budget({
               );
             })}
           </div>
-        </section>
-      )}
+        ) : (
+          <div className="budget-empty-limits">
+            <ListChecks size={22} />
+            <div>
+              <strong>No category limits have been set</strong>
+              <p>Budgets still works from monthly income and recurring outgoings. Add category limits later if you want stricter spending guardrails.</p>
+            </div>
+          </div>
+        )}
+      </section>
     </div>
   );
 }

@@ -106,7 +106,7 @@ test('dashboard softens funding gap when monthly capacity covers it', async ({ p
 
 test('primary pages render with demo data', async ({ page }) => {
   const pages = [
-    ['Budgets', 'Housing'],
+    ['Budgets', 'Monthly budget planner'],
     ['Recurring', 'Monthly paycheck'],
     ['Plan', 'Sell XK8'],
     ['Goals', 'Emergency fund'],
@@ -121,6 +121,19 @@ test('primary pages render with demo data', async ({ page }) => {
     await nav.getByRole('button', { name: navName, exact: true }).click();
     await expect(page.getByText(expectedText).first()).toBeVisible();
   }
+});
+
+test('budgets page explains monthly flow and next action', async ({ page }) => {
+  const nav = page.getByRole('navigation', { name: 'Primary navigation' });
+  await nav.getByRole('button', { name: 'Budgets', exact: true }).click();
+
+  await expect(page.getByRole('heading', { name: 'Monthly budget planner' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Monthly flow' })).toBeVisible();
+  await expect(page.getByLabel('Monthly budget calculation')).toContainText('Money in');
+  await expect(page.getByRole('heading', { name: 'Outgoing categories' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Next best action' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Recurring income' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Category limits' })).toBeVisible();
 });
 
 test('destructive settings actions use app confirmation dialog', async ({ page }) => {
