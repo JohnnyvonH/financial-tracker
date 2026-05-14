@@ -2,6 +2,7 @@ import React, { useMemo, useState } from 'react';
 import { CalendarClock, Plus, RefreshCw, TrendingDown, TrendingUp, WalletCards } from 'lucide-react';
 import { formatCurrency } from '../utils/currency';
 import { getMonthlyEquivalent } from '../utils/financeSummary';
+import { getUpcomingRecurringOccurrences } from '../utils/recurring';
 import RecurringTransactionForm from './RecurringTransactionForm';
 import RecurringTransactionList from './RecurringTransactionList';
 
@@ -19,6 +20,16 @@ function SummaryTile({ label, value, detail, icon: Icon, tone = 'info' }) {
     </article>
   );
 }
+
+const formatForecastDate = (dateString) => {
+  const [year, month, day] = String(dateString).split('-').map(Number);
+  if (!year || !month || !day) return 'No date';
+
+  return new Date(year, month - 1, day).toLocaleDateString('en-GB', {
+    day: 'numeric',
+    month: 'short',
+  });
+};
 
 export default function RecurringPaymentsPage({
   recurringTransactions,
@@ -54,6 +65,10 @@ export default function RecurringPaymentsPage({
   }), [recurringTransactions]);
 
   const monthlyNet = summary.income - summary.outgoings;
+  const upcomingOccurrences = useMemo(
+    () => getUpcomingRecurringOccurrences(recurringTransactions, { limit: 6, horizonDays: 60 }),
+    [recurringTransactions]
+  );
 
   const handleSubmit = async (values) => {
     const saved = editingRecurring
@@ -142,6 +157,35 @@ export default function RecurringPaymentsPage({
           submitLabel={editingRecurring ? 'Save changes' : 'Create recurring item'}
         />
       )}
+
+      <section className="panel recurring-forecast-panel">
+        <div className="dashboard-section-header">
+          <div>
+            <h2>Upcoming recurring dates</h2>
+            <p>The next active income and outgoing items expected from your saved recurring setup.</p>
+          </div>
+          <RefreshCw size={20} />
+        </div>
+        {upcomingOccurrences.length === 0 ? (
+          <p className="empty-inline">No upcoming recurring items in the next 60 days.</p>
+        ) : (
+          <div className="recurring-forecast-list" aria-label="Upcoming recurring dates">
+            {upcomingOccurrences.map(({ id, item, date, daysAway }) => (
+              <article key={id} className="recurring-forecast-row">
+                <div className={`forecast-date-chip forecast-date-${item.type === 'income' ? 'income' : 'outgoing'}`}>
+                  <strong>{formatForecastDate(date)}</strong>
+                  <span>{daysAway === 0 ? 'Today' : `In ${daysAway} day${daysAway === 1 ? '' : 's'}`}</span>
+                </div>
+                <div>
+                  <h3>{item.description}</h3>
+                  <p>{item.category} - {item.frequency || 'monthly'}</p>
+                </div>
+                <b>{formatCurrency(Number(item.amount || 0), currency)}</b>
+              </article>
+            ))}
+          </div>
+        )}
+      </section>
 
       <RecurringTransactionList
         recurringTransactions={recurringTransactions}

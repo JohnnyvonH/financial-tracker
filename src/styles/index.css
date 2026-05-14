@@ -3316,6 +3316,71 @@ button.metric-tile {
   margin-bottom: 0;
 }
 
+.recurring-forecast-panel {
+  display: grid;
+  gap: 1rem;
+}
+
+.recurring-forecast-list {
+  display: grid;
+  gap: 0.65rem;
+}
+
+.recurring-forecast-row {
+  display: grid;
+  grid-template-columns: minmax(92px, auto) minmax(0, 1fr) auto;
+  gap: 0.9rem;
+  align-items: center;
+  min-height: 4.7rem;
+  padding: 0.85rem;
+  border: 1px solid rgba(148, 163, 184, 0.12);
+  border-radius: 0.65rem;
+  background: var(--panel-surface-soft);
+}
+
+.forecast-date-chip {
+  display: grid;
+  gap: 0.18rem;
+  min-width: 5.75rem;
+  padding: 0.55rem 0.65rem;
+  border-radius: 0.55rem;
+  background: rgba(148, 163, 184, 0.12);
+}
+
+.forecast-date-chip strong,
+.recurring-forecast-row h3,
+.recurring-forecast-row b {
+  color: var(--text-primary);
+}
+
+.forecast-date-chip span,
+.recurring-forecast-row p {
+  color: var(--text-secondary);
+  font-size: 0.82rem;
+}
+
+.forecast-date-income {
+  border: 1px solid rgba(16, 185, 129, 0.22);
+}
+
+.forecast-date-outgoing {
+  border: 1px solid rgba(239, 68, 68, 0.18);
+}
+
+.recurring-forecast-row h3 {
+  margin: 0;
+  font-size: 0.98rem;
+}
+
+.recurring-forecast-row p {
+  margin: 0.2rem 0 0;
+}
+
+.recurring-forecast-row b {
+  font-size: 1rem;
+  white-space: nowrap;
+}
+
 .recurring-list-card {
   margin-bottom: 0;
 }
@@ -3541,6 +3606,7 @@ button.metric-tile {
   .budget-flow-grid,
   .dashboard-health-strip,
   .dashboard-action-grid,
+  .recurring-forecast-row,
   .recurring-row,
   .timeline-row,
   .plan-workspace,
