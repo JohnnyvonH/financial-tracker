@@ -173,6 +173,10 @@ test('plan asset sales use one value and existing plans can be edited', async ({
   const nav = page.getByRole('navigation', { name: 'Primary navigation' });
   await nav.getByRole('button', { name: 'Plan', exact: true }).click();
 
+  await expect(page.getByRole('heading', { name: 'Planning timeline' })).toBeVisible();
+  await expect(page.locator('.planning-timeline-panel')).toContainText('Car service and MOT');
+  await expect(page.locator('.planning-timeline-panel')).toContainText('Undated furniture wish list');
+
   await page.getByRole('button', { name: 'Edit Sell XK8' }).click();
   await page.getByLabel('Value').fill('4000');
   await page.getByRole('button', { name: 'Save changes' }).click();

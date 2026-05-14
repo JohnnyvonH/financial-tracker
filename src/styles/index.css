@@ -1058,6 +1058,98 @@ html.light .sidebar-brand .header-logo-text {
   margin-bottom: 2rem;
 }
 
+.planning-timeline-panel {
+  display: grid;
+  gap: 1rem;
+}
+
+.planning-timeline-list {
+  display: grid;
+  gap: 0.65rem;
+}
+
+.planning-timeline-row {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) minmax(130px, auto) minmax(110px, auto);
+  gap: 0.9rem;
+  align-items: center;
+  min-height: 4.25rem;
+  padding: 0.85rem;
+  border: 1px solid rgba(148, 163, 184, 0.12);
+  border-radius: 0.65rem;
+  background: var(--panel-surface-soft);
+}
+
+.planning-timeline-marker {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2rem;
+  height: 2rem;
+  border-radius: 999px;
+  color: var(--primary);
+  background: rgba(16, 185, 129, 0.12);
+}
+
+.timeline-asset-sale .planning-timeline-marker {
+  color: var(--info);
+  background: rgba(6, 182, 212, 0.12);
+}
+
+.timeline-saving .planning-timeline-marker {
+  color: var(--warning);
+  background: rgba(245, 158, 11, 0.12);
+}
+
+.planning-timeline-row h3 {
+  margin: 0;
+  overflow: hidden;
+  color: var(--text-primary);
+  font-size: 0.98rem;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.planning-timeline-row p {
+  margin: 0.2rem 0 0;
+  color: var(--text-secondary);
+  font-size: 0.84rem;
+}
+
+.planning-timeline-row > span:not(.planning-timeline-marker) {
+  color: var(--text-secondary);
+  font-size: 0.86rem;
+  white-space: nowrap;
+}
+
+.planning-timeline-row b {
+  color: var(--text-primary);
+  font-size: 1rem;
+  text-align: right;
+  white-space: nowrap;
+}
+
+.planning-undated-strip {
+  display: flex;
+  gap: 0.75rem;
+  align-items: center;
+  padding: 0.85rem;
+  border: 1px dashed rgba(148, 163, 184, 0.24);
+  border-radius: 0.65rem;
+  background: var(--panel-surface-soft);
+}
+
+.planning-undated-strip strong {
+  color: var(--text-primary);
+  font-size: 0.86rem;
+  text-transform: uppercase;
+}
+
+.planning-undated-strip span {
+  color: var(--text-secondary);
+  font-size: 0.9rem;
+}
+
 .scenario-planner {
   margin: 1.5rem 0;
 }
@@ -3608,6 +3700,7 @@ button.metric-tile {
   .dashboard-action-grid,
   .recurring-forecast-row,
   .recurring-row,
+  .planning-timeline-row,
   .timeline-row,
   .plan-workspace,
   .snapshot-layout {
