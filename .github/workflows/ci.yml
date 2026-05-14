@@ -5,6 +5,10 @@ on:
   push:
     branches:
       - main
+  workflow_dispatch:
+
+permissions:
+  contents: read
 
 jobs:
   test:
@@ -31,7 +35,7 @@ jobs:
       - name: Install Playwright browsers
         run: npx playwright install --with-deps chromium
 
-      - name: Run end-to-end tests
+      - name: E2E tests
         run: npm run test:e2e
 
       - name: Upload Playwright report

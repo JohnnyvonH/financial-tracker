@@ -2,15 +2,18 @@ import React, { useState } from 'react';
 import { Plus, Edit2, Trash2, Check, X } from 'lucide-react';
 import { formatCurrency } from '../utils/currency';
 import { EXPENSE_CATEGORIES } from '../utils/categories';
+import ConfirmDialog from './ConfirmDialog';
 
 export default function BudgetManager({ budgets, currentMonthSpending, onUpdateBudgets, currency = 'USD' }) {
   const [isAdding, setIsAdding] = useState(false);
   const [editingId, setEditingId] = useState(null);
   const [formData, setFormData] = useState({ category: '', amount: '' });
+  const [formError, setFormError] = useState('');
+  const [pendingDeleteCategory, setPendingDeleteCategory] = useState(null);
 
   const handleAdd = () => {
     if (!formData.category || !formData.amount || parseFloat(formData.amount) <= 0) {
-      alert('Please enter a valid category and amount');
+      setFormError('Please enter a valid category and amount.');
       return;
     }
 
@@ -21,6 +24,7 @@ export default function BudgetManager({ budgets, currentMonthSpending, onUpdateB
 
     onUpdateBudgets(newBudgets);
     setFormData({ category: '', amount: '' });
+    setFormError('');
     setIsAdding(false);
   };
 
@@ -31,7 +35,7 @@ export default function BudgetManager({ budgets, currentMonthSpending, onUpdateB
 
   const handleSaveEdit = () => {
     if (!formData.amount || parseFloat(formData.amount) <= 0) {
-      alert('Please enter a valid amount');
+      setFormError('Please enter a valid amount.');
       return;
     }
 
@@ -42,26 +46,40 @@ export default function BudgetManager({ budgets, currentMonthSpending, onUpdateB
     onUpdateBudgets(newBudgets);
     setEditingId(null);
     setFormData({ category: '', amount: '' });
+    setFormError('');
   };
 
   const handleDelete = (category) => {
-    if (!confirm(`Delete budget for ${category}?`)) return;
+    setPendingDeleteCategory(category);
+  };
 
+  const confirmDelete = () => {
     const newBudgets = { ...budgets };
-    delete newBudgets[category];
+    delete newBudgets[pendingDeleteCategory];
     onUpdateBudgets(newBudgets);
+    setPendingDeleteCategory(null);
   };
 
   const handleCancel = () => {
     setIsAdding(false);
     setEditingId(null);
     setFormData({ category: '', amount: '' });
+    setFormError('');
   };
 
   const availableCategories = EXPENSE_CATEGORIES.filter(cat => !budgets[cat] || cat === editingId);
 
   return (
     <div className="card">
+      {pendingDeleteCategory && (
+        <ConfirmDialog
+          title="Delete budget?"
+          message={`Delete the monthly budget for ${pendingDeleteCategory}?`}
+          confirmLabel="Delete budget"
+          onConfirm={confirmDelete}
+          onCancel={() => setPendingDeleteCategory(null)}
+        />
+      )}
       <div className="flex justify-between items-center mb-6">
         <h3 className="text-xl font-semibold">Monthly Budgets</h3>
         {!isAdding && !editingId && (
@@ -113,6 +131,7 @@ export default function BudgetManager({ budgets, currentMonthSpending, onUpdateB
               Cancel
             </button>
           </div>
+          {formError && <p className="form-error">{formError}</p>}
         </div>
       )}
 

@@ -124,6 +124,16 @@ test('primary pages render with demo data', async ({ page }) => {
   }
 });
 
+test('destructive settings actions use app confirmation dialog', async ({ page }) => {
+  const nav = page.getByRole('navigation', { name: 'Primary navigation' });
+  await nav.getByRole('button', { name: 'Settings', exact: true }).click();
+
+  await page.getByRole('button', { name: 'Clear All Data' }).click();
+  await expect(page.getByRole('dialog', { name: 'Clear all local data?' })).toBeVisible();
+  await page.getByRole('button', { name: 'Cancel' }).click();
+  await expect(page.getByRole('dialog', { name: 'Clear all local data?' })).toHaveCount(0);
+});
+
 test('transaction entry is reachable from quick actions', async ({ page }) => {
   await page.getByRole('button', { name: 'Add Transaction' }).click();
 
