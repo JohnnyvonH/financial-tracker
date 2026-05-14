@@ -1155,6 +1155,8 @@ function App() {
           {view === 'plan' && (
             <FinancePlan
               planningItems={data.planningItems}
+              latestSnapshot={data.netWorthSnapshots[0]}
+              recurringTransactions={data.recurringTransactions}
               onAddPlanningItem={addPlanningItem}
               onUpdatePlanningItem={updatePlanningItem}
               onDeletePlanningItem={deletePlanningItem}

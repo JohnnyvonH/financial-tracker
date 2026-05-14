@@ -1006,6 +1006,84 @@ html.light .sidebar-brand .header-logo-text {
   margin-bottom: 2rem;
 }
 
+.scenario-planner {
+  margin: 1.5rem 0;
+}
+
+.scenario-planner .dashboard-section-header p {
+  margin: 0.35rem 0 0;
+  color: var(--text-secondary);
+  font-size: 0.9rem;
+}
+
+.scenario-planner .dashboard-section-header svg {
+  color: var(--primary);
+}
+
+.scenario-controls,
+.scenario-metric-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 1rem;
+  margin-top: 1rem;
+}
+
+.scenario-toggle {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  min-height: 100%;
+  padding: 0.85rem;
+  border: 1px solid var(--border);
+  border-radius: 0.75rem;
+  background: var(--bg-secondary);
+  color: var(--text-primary);
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.scenario-toggle input {
+  width: 1rem;
+  height: 1rem;
+  accent-color: var(--primary);
+}
+
+.scenario-metric {
+  padding: 1rem;
+  border: 1px solid var(--border);
+  border-radius: 0.75rem;
+  background: var(--bg-secondary);
+}
+
+.scenario-metric span,
+.scenario-metric p,
+.scenario-footnote {
+  color: var(--text-secondary);
+  font-size: 0.84rem;
+}
+
+.scenario-metric strong {
+  display: block;
+  margin-top: 0.35rem;
+  color: var(--text-primary);
+  font-size: 1.25rem;
+}
+
+.scenario-metric-positive strong {
+  color: var(--success);
+}
+
+.scenario-metric-danger strong {
+  color: var(--danger);
+}
+
+.scenario-footnote {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-top: 1rem;
+}
+
 .planning-card {
   padding: 1.25rem;
   border: 1px solid var(--border);
@@ -1782,6 +1860,8 @@ html.light .sidebar-brand .header-logo-text {
   .snapshot-template-entry,
   .snapshot-template-footer,
   .planning-metrics,
+  .scenario-controls,
+  .scenario-metric-grid,
   .trend-summary-grid,
   .trend-delta-grid {
     grid-template-columns: 1fr;
