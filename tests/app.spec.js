@@ -156,6 +156,22 @@ test('plan asset sales use one value and existing plans can be edited', async ({
   await expect(page.getByLabel('Expected sale value')).toHaveCount(0);
 });
 
+test('plan page compares temporary what-if scenarios', async ({ page }) => {
+  const nav = page.getByRole('navigation', { name: 'Primary navigation' });
+  await nav.getByRole('button', { name: 'Plan', exact: true }).click();
+
+  await expect(page.getByRole('heading', { name: 'What-if scenario' })).toBeVisible();
+  await expect(page.getByText('Baseline 90-day cash')).toBeVisible();
+  await expect(page.getByText('Scenario 90-day cash')).toBeVisible();
+
+  await page.getByLabel('Extra one-off cost').fill('1000');
+  await page.getByLabel('Monthly capacity adjustment').fill('-200');
+  await page.getByLabel('Delay asset sales beyond 90 days').check();
+
+  await expect(page.getByText('Scenario movement')).toBeVisible();
+  await expect(page.getByText('Versus saved plan')).toBeVisible();
+});
+
 test('empty goals page has an add goal button', async ({ page }) => {
   await seedDemoData(page, { goals: [] });
   await page.goto('/financial-tracker/');

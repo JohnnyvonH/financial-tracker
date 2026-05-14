@@ -1,6 +1,7 @@
 import React, { useMemo, useState } from 'react';
 import { Calendar, Car, Home, Pencil, PiggyBank, Plus, Save, Trash2, WalletCards, X } from 'lucide-react';
 import { formatCurrency } from '../utils/currency';
+import ScenarioPlanner from './ScenarioPlanner';
 
 const defaultPlanningItem = {
   title: '',
@@ -91,6 +92,8 @@ function PlanningItemCard({ item, currency, onDelete, onEdit }) {
 
 export default function FinancePlan({
   planningItems,
+  latestSnapshot,
+  recurringTransactions,
   onAddPlanningItem,
   onUpdatePlanningItem,
   onDeletePlanningItem,
@@ -283,6 +286,13 @@ export default function FinancePlan({
           <strong>{formatCurrency(planSummary.expectedIncome, currency)}</strong>
         </div>
       </section>
+
+      <ScenarioPlanner
+        planningItems={planningItems}
+        latestSnapshot={latestSnapshot}
+        recurringTransactions={recurringTransactions}
+        currency={currency}
+      />
 
       <section className="planning-list">
         {planningItems.length === 0 ? (
