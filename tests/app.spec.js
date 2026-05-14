@@ -157,12 +157,16 @@ test('recurring payments can be edited from the management page', async ({ page 
   const nav = page.getByRole('navigation', { name: 'Primary navigation' });
   await nav.getByRole('button', { name: 'Recurring', exact: true }).click();
 
+  await expect(page.getByRole('heading', { name: 'Upcoming recurring dates' })).toBeVisible();
+  await expect(page.getByLabel('Upcoming recurring dates')).toContainText('Monthly paycheck');
+
   await page.getByRole('button', { name: 'Edit Streaming subscriptions' }).click();
   await page.getByLabel('Amount').fill('49.99');
   await page.getByRole('button', { name: 'Save changes' }).click();
 
-  await expect(page.getByText('Streaming subscriptions')).toBeVisible();
-  await expect(page.getByText(/49\.99/)).toBeVisible();
+  const streamingRow = page.locator('.recurring-row').filter({ hasText: 'Streaming subscriptions' });
+  await expect(streamingRow).toBeVisible();
+  await expect(streamingRow.getByText(/49\.99/)).toBeVisible();
 });
 
 test('plan asset sales use one value and existing plans can be edited', async ({ page }) => {

@@ -9,33 +9,96 @@ export const FREQUENCY_OPTIONS = [
   { value: 'yearly', label: 'Yearly' }
 ];
 
-export const calculateNextDate = (startDate, frequency) => {
-  const date = new Date(startDate);
+const parseLocalDate = (dateString) => {
+  if (!dateString) return null;
+  const [year, month, day] = String(dateString).split('-').map(Number);
+  if (!year || !month || !day) return null;
+  const date = new Date(year, month - 1, day);
+  return Number.isNaN(date.getTime()) ? null : date;
+};
+
+const formatLocalDate = (date) => [
+  date.getFullYear(),
+  String(date.getMonth() + 1).padStart(2, '0'),
+  String(date.getDate()).padStart(2, '0'),
+].join('-');
+
+const addFrequency = (date, frequency) => {
+  const nextDate = new Date(date);
   
   switch (frequency) {
     case 'daily':
-      date.setDate(date.getDate() + 1);
+      nextDate.setDate(nextDate.getDate() + 1);
       break;
     case 'weekly':
-      date.setDate(date.getDate() + 7);
+      nextDate.setDate(nextDate.getDate() + 7);
       break;
     case 'biweekly':
-      date.setDate(date.getDate() + 14);
+      nextDate.setDate(nextDate.getDate() + 14);
       break;
     case 'monthly':
-      date.setMonth(date.getMonth() + 1);
+      nextDate.setMonth(nextDate.getMonth() + 1);
       break;
     case 'quarterly':
-      date.setMonth(date.getMonth() + 3);
+      nextDate.setMonth(nextDate.getMonth() + 3);
       break;
     case 'yearly':
-      date.setFullYear(date.getFullYear() + 1);
+      nextDate.setFullYear(nextDate.getFullYear() + 1);
       break;
     default:
       break;
   }
+
+  return nextDate;
+};
+
+export const calculateNextDate = (startDate, frequency) => {
+  const date = parseLocalDate(startDate);
+  if (!date) return '';
   
-  return date.toISOString().split('T')[0];
+  return formatLocalDate(addFrequency(date, frequency));
+};
+
+export const getUpcomingRecurringOccurrences = (
+  recurringTransactions = [],
+  { limit = 8, horizonDays = 45, referenceDate = new Date() } = {}
+) => {
+  const today = new Date(referenceDate);
+  today.setHours(0, 0, 0, 0);
+  const horizon = new Date(today);
+  horizon.setDate(horizon.getDate() + horizonDays);
+  const occurrences = [];
+
+  recurringTransactions.forEach((item) => {
+    if (item.active === false || item.is_active === false) return;
+
+    const startDate = parseLocalDate(item.nextDate || item.next_date || item.startDate || item.start_date);
+    if (!startDate) return;
+
+    const lastProcessedDate = parseLocalDate(item.lastProcessed || item.last_processed || item.last_generated_date);
+    let nextDate = lastProcessedDate
+      ? addFrequency(lastProcessedDate, item.frequency)
+      : startDate;
+
+    while (nextDate < today) {
+      nextDate = addFrequency(nextDate, item.frequency);
+    }
+
+    const endDate = parseLocalDate(item.endDate || item.end_date);
+    if ((endDate && nextDate > endDate) || nextDate > horizon) return;
+
+    occurrences.push({
+      id: `${item.id || item.description}-${formatLocalDate(nextDate)}`,
+      item,
+      date: formatLocalDate(nextDate),
+      dateValue: nextDate.getTime(),
+      daysAway: Math.round((nextDate - today) / (24 * 60 * 60 * 1000)),
+    });
+  });
+
+  return occurrences
+    .sort((a, b) => a.dateValue - b.dateValue)
+    .slice(0, limit);
 };
 
 export const shouldProcessRecurring = (recurringTransaction) => {
@@ -43,12 +106,14 @@ export const shouldProcessRecurring = (recurringTransaction) => {
   today.setHours(0, 0, 0, 0);
   
   // Use start_date if it exists (Supabase format), otherwise use nextDate or startDate
-  const startDate = new Date(recurringTransaction.start_date || recurringTransaction.startDate);
+  const startDate = parseLocalDate(recurringTransaction.start_date || recurringTransaction.startDate);
+  if (!startDate) return false;
   startDate.setHours(0, 0, 0, 0);
   
   // Check if we've already processed for today
   if (recurringTransaction.last_processed || recurringTransaction.lastProcessed) {
-    const lastProcessed = new Date(recurringTransaction.last_processed || recurringTransaction.lastProcessed);
+    const lastProcessed = parseLocalDate(recurringTransaction.last_processed || recurringTransaction.lastProcessed);
+    if (!lastProcessed) return false;
     lastProcessed.setHours(0, 0, 0, 0);
     
     // If already processed today or in the future, skip
@@ -57,27 +122,7 @@ export const shouldProcessRecurring = (recurringTransaction) => {
     }
     
     // Calculate next due date from last processed
-    const nextDate = new Date(lastProcessed);
-    switch (recurringTransaction.frequency) {
-      case 'daily':
-        nextDate.setDate(nextDate.getDate() + 1);
-        break;
-      case 'weekly':
-        nextDate.setDate(nextDate.getDate() + 7);
-        break;
-      case 'biweekly':
-        nextDate.setDate(nextDate.getDate() + 14);
-        break;
-      case 'monthly':
-        nextDate.setMonth(nextDate.getMonth() + 1);
-        break;
-      case 'quarterly':
-        nextDate.setMonth(nextDate.getMonth() + 3);
-        break;
-      case 'yearly':
-        nextDate.setFullYear(nextDate.getFullYear() + 1);
-        break;
-    }
+    const nextDate = addFrequency(lastProcessed, recurringTransaction.frequency);
     nextDate.setHours(0, 0, 0, 0);
     
     // Only process if we're past the next date
